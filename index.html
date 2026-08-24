@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Universal Limbs — R&D Dashboard</title>
 
-<link rel="stylesheet" href="assets/css/dashboard.css?v=20260815">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://apis.google.com/js/api.js" async defer></script>
+<link rel="stylesheet" href="assets/css/dashboard.css?v=20260824">
+<script src="assets/js/config.js"></script>
+<script src="assets/js/submit.js"></script>
 </head>
 
 <body>
@@ -207,7 +207,7 @@
                 <div class="update-title">Presentation for UTFPR</div>
                 <div class="update-line"><strong>Current</strong><span>Prepare partner-facing presentation for external review.</span></div>
                 <div class="update-line"><strong>Next</strong><span>Add final scope, test bench ask, and file handoff instructions.</span></div>
-                <div class="update-line"><strong>Link</strong><span><a class="pill primary" href="PASTE_PRESENTATION_LINK_HERE" target="_blank" rel="noopener">presentation placeholder</a></span></div>
+                <div class="update-line"><strong>Link</strong><span><a class="pill primary" href="https://docs.google.com/presentation/d/1r0JcQKQnXlVC0-lzlxrTwiQEwjLhIUrXq-Rz3xRa6Tk/edit?usp=sharing" target="_blank" rel="noopener">UTFPR Presentation</a></span></div>
               </article>
 
               <article class="update-slide">
@@ -345,7 +345,7 @@
           <div class="section-rule"></div>
           <div class="resource-list">
             <div class="resource-row"><strong>Project Software</strong><span>Current project management software placeholder.</span><a class="pill primary" href="PASTE_PROJECT_MANAGEMENT_SOFTWARE_LINK_HERE" target="_blank" rel="noopener">Open</a></div>
-            <div class="resource-row"><strong>Drive Folder</strong><span>Main Google Drive folder placeholder.</span><a class="pill primary" href="PASTE_GOOGLE_DRIVE_FOLDER_LINK_HERE" target="_blank" rel="noopener">Open</a></div>
+            <div class="resource-row"><strong>Drive Folder</strong><span>Main Google Drive folder. Shared with universallimbs.com accounts only.</span><a class="pill primary" href="https://drive.google.com/drive/folders/14iGYmt91YZmHAzsnil6HtJv8Nu5YTF6X" target="_blank" rel="noopener">Open</a></div>
           </div>
         </section>
 
@@ -353,7 +353,7 @@
           <h1 class="section-heading">Presentations</h1>
           <div class="section-rule"></div>
           <div class="resource-list">
-            <div class="resource-row"><strong>UTFPR Presentation</strong><span>Partner-facing presentation placeholder.</span><a class="pill primary" href="PASTE_PRESENTATION_LINK_HERE" target="_blank" rel="noopener">Open</a></div>
+            <div class="resource-row"><strong>UTFPR Presentation</strong><span>Partner-facing presentation placeholder.</span><a class="pill primary" href="https://docs.google.com/presentation/d/1r0JcQKQnXlVC0-lzlxrTwiQEwjLhIUrXq-Rz3xRa6Tk/edit?usp=sharing" target="_blank" rel="noopener">Open</a></div>
             <div class="resource-row"><strong>Project Overview Deck</strong><span>General R&amp;D overview presentation placeholder.</span><a class="pill primary" href="#">Add link</a></div>
           </div>
         </section>
@@ -373,6 +373,25 @@
             </span>
           </span>
         </div>
+
+        <section class="portal-reference-section portal-video-section">
+          <div class="portal-topbar">
+            <div class="portal-top-center">University collaboration presentation</div>
+            <div class="portal-top-spacer"></div>
+          </div>
+
+          <div class="portal-video-body">
+            <div class="portal-video-frame">
+              <iframe
+                src="https://www.canva.com/design/DAHTNfcZ7mY/-mLW3MtJCuIdiUuWD4xeDQ/view?embed"
+                title="University collaboration presentation on Canva"
+                allow="autoplay; fullscreen"
+                allowfullscreen
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+          </div>
+        </section>
 
         <section class="portal-reference-section">
           <div class="portal-topbar">
@@ -498,14 +517,13 @@
 </div>
 
 <script type="module" src="assets/js/app.js"></script>
-</div>
-<div id="asana-react-root"></div>
 
 <div class="modal" id="deliverableModal" aria-hidden="true">
   <div class="modal-card editor-card">
     <div class="modal-top"><strong>Submit deliverable</strong><button class="modal-close" type="button" id="deliverableClose">×</button></div>
     <form id="deliverableForm" class="submission-form">
       <label><span>Your name</span><input name="submitterName" required></label>
+      <label><span>Your email</span><input name="submitterEmail" type="email" required placeholder="you@university.edu" aria-describedby="emailHelp"><small id="emailHelp">The reviewer replies to this address.</small></label>
       <label><span>University / organization</span><input name="organization" required></label>
       <label><span>Task name</span><input name="taskName" required></label>
       <label><span>What are you submitting?</span><select name="submissionType" required><option value="">Choose</option><option>Concept</option><option>Working file</option><option>Final file</option><option>Research or validation result</option><option>Other</option></select></label>
@@ -529,6 +547,7 @@
       <label><span>Expected next steps</span><select name="nextSteps" required><option value="">Choose</option><option>Review</option><option>Revision required</option><option>Approve</option><option>Testing</option><option>Other</option></select></label>
       <label><span>Upload your deliverable file</span><input name="deliverableFile" type="file" required accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.stl,.step,.stp,.png,.jpg,.jpeg" aria-describedby="fileHelp"><small id="fileHelp">Upload the working or final file for UL review. Maximum 10 MB.</small></label>
       <label><span>Notes</span><textarea name="notes" rows="4"></textarea></label>
+      <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
       <p id="deliverableStatus" role="status"></p>
       <div class="editor-actions"><button class="pill primary" type="submit">Send deliverable</button></div>
     </form>

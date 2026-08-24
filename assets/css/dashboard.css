@@ -1680,3 +1680,44 @@ a:focus-visible {
   }
 }
 
+
+/* Honeypot field: present in the DOM for bots, never shown to people. */
+.hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* University collaboration walkthrough video */
+.portal-video-body {
+  border:1px solid rgba(255,255,255,.08);
+  border-top:0;
+  border-radius:0 0 12px 12px;
+  padding:14px;
+  background:#0d1014;
+}
+
+.portal-video-frame {
+  position:relative;
+  aspect-ratio:16 / 9;
+  border-radius:10px;
+  overflow:hidden;
+  background:#000;
+  border:1px solid rgba(255,255,255,.08);
+}
+
+/* Older engines that do not support aspect-ratio still get a 16:9 box. */
+@supports not (aspect-ratio: 16 / 9) {
+  .portal-video-frame { height:0; padding-bottom:56.25%; }
+}
+
+.portal-video-frame iframe {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}

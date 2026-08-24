@@ -452,6 +452,12 @@ deliverableModal.addEventListener('click', event => {
 
 deliverableForm.addEventListener('submit', async event => {
   event.preventDefault();
+
+  if (!window.ulfSubmitConfigured()) {
+    deliverableStatus.textContent = 'Submissions are not configured yet. Set submissionEndpoint in assets/js/config.js.';
+    return;
+  }
+
   const submittedForm = new FormData(deliverableForm);
   const file = submittedForm.get('deliverableFile');
   if (!(file instanceof File) || !file.size) {
@@ -462,29 +468,31 @@ deliverableForm.addEventListener('submit', async event => {
     deliverableStatus.textContent = 'The selected file is larger than the 10 MB limit.';
     return;
   }
-  const formData = Object.fromEntries(submittedForm);
-  delete formData.deliverableFile;
-  formData.fileName = file.name;
-  formData.fileType = file.type || 'application/octet-stream';
-  formData.fileBase64 = await new Promise((resolve, reject) => {
+
+  const payload = Object.fromEntries(submittedForm);
+  delete payload.deliverableFile;
+  payload.fileName = file.name;
+  payload.fileType = file.type || 'application/octet-stream';
+  payload.fileBase64 = await new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result).split(',')[1]);
     reader.onerror = () => reject(new Error('Unable to read the selected file'));
     reader.readAsDataURL(file);
   });
+
+  const submitButton = deliverableForm.querySelector('button[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
   deliverableStatus.textContent = 'Sending deliverable...';
 
   try {
-    const response = await fetch('/api/deliverables', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    });
-    if (!response.ok) throw new Error('Submission failed');
-    deliverableStatus.textContent = 'Deliverable sent to the selected reviewer.';
+    await window.ulfSubmit('deliverable', payload);
+    deliverableStatus.textContent = 'Deliverable sent. The reviewer has been emailed and you will receive a receipt.';
     deliverableForm.reset();
+    otherReviewerField.hidden = true;
+    otherReviewerInput.required = false;
   } catch (error) {
-    deliverableStatus.textContent = 'Unable to send. Please try again or contact the R&D team.';
+    deliverableStatus.textContent = error.message;
+  } finally {
+    if (submitButton) submitButton.disabled = false;
   }
 });
-
