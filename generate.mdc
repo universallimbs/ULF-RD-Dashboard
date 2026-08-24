@@ -1,0 +1,16 @@
+# Generation Rules
+
+This document defines the rules for generating new R&D components and documentation.
+
+1. **Naming Convention**:
+   - Files: lowercase-with-hyphens.
+   - Variables: camelCase.
+   - Constants: UPPER_SNAKE_CASE.
+
+2. **Template Usage**:
+   - Every new dashboard view must include a header, a rule, and a container with the `view` class.
+   - All interactive elements must support keyboard navigation (`tabindex`, `focus-visible`).
+
+3. **Data Integrity**:
+   - Milestone/state data lives in the `getMilestones()` / `saveMilestones()` helpers in `assets/js/app.js` and persists via `localStorage` (`ulf-milestones` key).
+   - Any new persisted state should follow the same get/save pair pattern rather than scattering `localStorage` calls throughout the code.

@@ -1,0 +1,8 @@
+{
+  "name": "Universal Limbs R&D Dashboard",
+  "description": "R&D dashboard and prosthetic user survey for Universal Limbs Foundation",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

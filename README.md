@@ -1,6 +1,6 @@
 # ULF R&D Dashboard
 
-Static, single-page R&D dashboard for the Universal Limbs Foundation prosthetic hand program. No build step, no framework, no server-side code — everything renders directly from static HTML/CSS/JS.
+React and Vite R&D dashboard for the Universal Limbs Foundation prosthetic hand program.
 
 ## Live pages
 
@@ -10,31 +10,86 @@ Static, single-page R&D dashboard for the Universal Limbs Foundation prosthetic 
 | `develop` | Active development / staging | Run locally (see below) until a preview deployment is configured |
 
 Direct pages:
-- Dashboard: `index.html`
-- Prosthetic user survey: `prosthetic-user-survey.html`
+- Dashboard: `/`
+- Prosthetic user survey: `/survey`
 
 ## Quick start (local preview)
 
-This is a static site — any static file server works. From the repo root:
+Install Node.js 20 or later, then run from the repository root:
 
 ```bash
-# Python 3 (no install needed on macOS)
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
 Then open:
-- http://localhost:8000/index.html
-- http://localhost:8000/prosthetic-user-survey.html
+- http://localhost:8000/
+- http://localhost:8000/survey
 
-To preview a specific branch locally:
+Build and preview the production bundle:
 
 ```bash
-git fetch origin
-git checkout develop   # or main
-python3 -m http.server 8000
+npm run build
+npm run preview
 ```
 
-No `npm install`, `pip install`, or environment variables are required.
+
+`npm start` runs the same files through Express on port 8000 with the production
+URLs (`/` and `/survey`). The site is plain static HTML/CSS/JS, so any static file
+server works too.
+
+## Form Submissions
+
+The prosthetic-user survey and the University Collaboration deliverable form post
+directly to a Google Apps Script web app. Everything runs on the Google Workspace
+for Nonprofits plan — Apps Script, Sheets, Drive and Gmail. There is no server to
+host and no Google Cloud project, so the dashboard stays a static site and keeps
+working on GitHub Pages.
+
+```
+browser  ->  Apps Script web app  ->  Drive file + Sheet row + email to the reviewer
+```
+
+### Setup
+
+1. Create two Google Sheets: one for survey responses, one for deliverables.
+2. Open [google-apps-script.gs](google-apps-script.gs) in a new Apps Script project
+   (script.google.com → New project) and paste the file in.
+3. In **Project Settings → Script properties**, add:
+
+   | Property | Value |
+   | --- | --- |
+   | `DELIVERABLE_SHEET_ID` | id of the deliverables Sheet |
+   | `SURVEY_SHEET_ID` | id of the survey Sheet |
+   | `DELIVERABLE_PARENT_FOLDER_ID` | Drive folder to file submissions under |
+   | `REVIEWERS_JSON` | reviewer id → name/email map; run `setup()` to print a template |
+   | `FALLBACK_REVIEWER_EMAIL` | receives "Other" and any misrouted submission |
+
+   Optional: `ALLOWED_MAIL_DOMAINS` (default `universallimbs.com`),
+   `DAILY_SUBMISSION_CAP` (default 200), `ACK_SUBMITTERS` (default true).
+
+4. Run `setup()` once and read the execution log — it lists anything still missing
+   instead of letting submissions fail later. `selfTest()` files a throwaway
+   deliverable end to end so you can confirm Drive, Sheets and mail all work.
+5. **Deploy → New deployment → Web app**, with *Execute as* **Me** and
+   *Who has access* **Anyone**. Copy the `/exec` URL into
+   `submissionEndpoint` in [assets/js/config.js](assets/js/config.js).
+
+The reviewer ids in `REVIEWERS_JSON` must match the `<option value>` entries in the
+reviewer dropdown in [index.html](index.html).
+
+### How reviewer routing is protected
+
+The browser sends a reviewer **id** (`saja-amro`, `walid`, …), never an email
+address. Apps Script resolves that id against `REVIEWERS_JSON` on its own side, so
+the endpoint can only ever mail people on that allowlist — it cannot be used to
+send mail to arbitrary addresses. The "Other" option, and any id that is missing or
+misconfigured, routes to `FALLBACK_REVIEWER_EMAIL`; whatever the submitter typed is
+recorded in the Sheet rather than mailed.
+
+There is deliberately **no shared secret**. A static site cannot keep one — it
+would sit in readable JavaScript. The endpoint is public and rate-limited
+(per-minute and per-day caps, a honeypot field, and a 10 MB file ceiling).
 
 ## Project structure
 

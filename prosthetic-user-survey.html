@@ -1,799 +1,89 @@
-<!DOCTYPE html>
-<!-- saved from url=(0094)file:///C:/Users/vlman/Downloads/Universal%20Limbs%20-%20Prosthetic%20User%20Survey%20(2).html -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style>
-    .sc-placeholder{background:color-mix(in srgb,currentColor 8%,transparent);
-      border:1px solid color-mix(in srgb,currentColor 50%,transparent);
-      border-radius:2px;box-sizing:border-box;overflow:hidden}
-    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
-    html.sc-dc-streaming .sc-placeholder,
-    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
-      background:color-mix(in srgb,currentColor 5%,transparent);
-      border-color:transparent}
-    html.sc-dc-streaming .sc-placeholder::before,
-    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
-      position:absolute;inset:0;pointer-events:none;
-      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
-      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
-    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
-    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
-      background:color-mix(in srgb,currentColor 8%,transparent)}
-    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
-      color:color-mix(in srgb,currentColor 70%,transparent);word-break:break-word}
-    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
-      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
-      border-radius:2px;box-sizing:border-box;color:transparent;
-      user-select:none}
-    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
-      color:color-mix(in srgb,currentColor 50%,transparent);
-      background:color-mix(in srgb,currentColor 10%,transparent);border-radius:3px;
-      padding:0 3px}
-    .sc-host.sc-has-error{position:relative}
-    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
-      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
-      border-radius:4px;white-space:pre-wrap;pointer-events:none}
-    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
-       in sync until dc-runtime regains a build step. */
-    @media print {
-      @page { margin: 0.5cm; }
-      figure, table { break-inside: avoid; }
-      #dc-root, #dc-root > .sc-host { height: auto; }
-      *, *::before, *::after {
-        print-color-adjust: exact; -webkit-print-color-adjust: exact;
-        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
-        animation-delay: -99s !important; animation-duration: .001s !important;
-        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
-        animation-play-state: running !important; transition-duration: 0s !important;
-      }
-    }
-  </style><script>window.__resources = {"https://unpkg.com/react@18.3.1/umd/react.production.min.js":"blob:null/762ad123-272e-4138-a692-d9c0d101ccc8","https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js":"blob:null/f58469aa-5409-4f69-a733-13b6e1dcdb53"};</script>
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="blob:null/1f987334-4e81-4668-8b20-fc1bf15ce37a"></script>
-
-<style>x-dc{display:none!important}</style><script src="blob:null/762ad123-272e-4138-a692-d9c0d101ccc8"></script><script src="blob:null/f58469aa-5409-4f69-a733-13b6e1dcdb53"></script><style>html,body{height:100%;margin:0}#dc-root,#dc-root>.sc-host{height:100%}</style><meta name="viewport" content="width=device-width, initial-scale=1" data-dc-tpl="1"><style data-dc-tpl="2">
-    @font-face { font-family: 'system'; src: local('Helvetica Neue'); }
-    body { margin: 0; background: #F4F0E8; }
-    a { color: #1B3B33; }
-    a:hover { color: #2E5A4C; }
-    input[type=text]::placeholder, textarea::placeholder { color: #9A9284; }
-  </style></head>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prosthetic User Survey | Universal Limbs</title>
+  <style>
+    :root { color:#1b3b33; background:#f4f0e8; font-family:"Helvetica Neue",Helvetica,sans-serif; }
+    body { margin:0; padding:32px 16px 64px; }
+    main { max-width:760px; margin:auto; padding:36px; background:#fbf9f4; border:1px solid #ddd6c6; border-radius:8px; box-sizing:border-box; }
+    header { display:flex; align-items:center; gap:16px; margin-bottom:24px; }
+    header img { width:52px; height:52px; object-fit:contain; } h1 { margin:0; font-size:28px; } header p,.hint { margin:6px 0 0; color:#607069; line-height:1.5; }
+    .notice { margin:24px 0; padding:20px; background:#efeae0; border-radius:6px; line-height:1.6; }
+    fieldset { margin:32px 0; padding:0; border:0; } legend { width:100%; padding-bottom:8px; border-bottom:1px solid #ddd6c6; font-weight:700; font-size:18px; }
+    label { display:block; margin-top:18px; font-weight:600; } label > span { display:block; margin-bottom:7px; }
+    input:not([type=radio]):not([type=checkbox]),select,textarea { width:100%; padding:10px; box-sizing:border-box; border:1px solid #b9b0a1; border-radius:4px; background:#fff; color:inherit; font:inherit; }
+    textarea { resize:vertical; } .choice-row,.scale { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+    .choice-row label,.consent { display:flex; align-items:start; gap:8px; margin:0; font-weight:400; }.choice-row input,.consent input { margin-top:3px; }
+    .scale label { display:grid; place-items:center; width:32px; height:32px; margin:0; border:1px solid #1b3b33; border-radius:50%; cursor:pointer; font-size:12px; }.scale input { position:absolute; opacity:0; }.scale label:has(input:checked) { background:#1b3b33; color:#fff; }
+    .scale-note { display:flex; justify-content:space-between; max-width:420px; margin-top:6px; color:#607069; font-size:12px; }
+    .rank-grid { display:grid; grid-template-columns:70px 1fr; gap:12px; align-items:center; margin-top:12px; }.rank-grid label { margin:0; }
+    button { margin-top:28px; padding:12px 20px; border:0; border-radius:4px; background:#1b3b33; color:#fff; cursor:pointer; font:inherit; font-weight:700; }button:disabled { opacity:.55; cursor:wait; } #status { min-height:24px; margin:16px 0 0; font-weight:600; }
+    @media(max-width:560px) { main { padding:24px; }.rank-grid { grid-template-columns:1fr; gap:4px; } }
+  </style>
+</head>
 <body>
-<div id="dc-root"><div class="sc-host" data-sc-name="Universal Limbs - Prosthetic User Survey (2)"><div data-dc-tpl="3" style="font-family: -apple-system, &quot;Helvetica Neue&quot;, Arial, sans-serif; background: rgb(244, 240, 232); min-height: 100vh; padding: 48px 20px 100px; box-sizing: border-box; color: rgb(27, 59, 51);">
-  <div data-dc-tpl="4" style="max-width: 680px; margin: 0px auto; background: rgb(251, 249, 244); border-radius: 12px; padding: 44px 40px; box-shadow: rgba(27, 59, 51, 0.08) 0px 2px 24px;">
-
-    <div data-dc-tpl="5" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-      <div data-dc-tpl="6" style="font-size: 30px; font-weight: 700; letter-spacing: -0.5px;">Prosthetic User Survey</div>
-      <img data-dc-tpl="7" src="blob:null/8264a5c5-1263-4652-8cfc-d93f36053f6a" alt="Universal Limbs logo" style="height: 36px; width: auto; flex-shrink: 0;">
-    </div>
-    <div data-dc-tpl="8" style="font-size: 14px; color: rgb(107, 125, 116); margin-bottom: 28px;">This survey will help us design better, low-cost, body-powered upper-limb prosthetic devices</div>
-
-    
-
-    
-    <div data-dc-tpl="18">
-
-      
-      <div data-dc-tpl="19" style="background: rgb(239, 234, 224); border-radius: 10px; padding: 20px 22px; margin-bottom: 32px;">
-        <div data-dc-tpl="20" style="font-weight: 700; font-size: 15px; margin-bottom: 8px;">Before you start</div>
-        <div data-dc-tpl="21" style="font-size: 13.5px; line-height: 1.6; color: rgb(62, 76, 70);">
-          This survey is voluntary and anonymous — we do not collect your name or any identifying information unless you choose to share it. Your answers will only be used by Universal Limbs Foundation, a non-profit, to guide the design of an open-source pediatric prosthetic hand. Answers may be shared in aggregate (never individually) with our engineering and research partners. You can skip any question or stop at any time. This is not a medical service and does not replace advice from a clinician.
-        </div>
-        <label data-dc-tpl="22" style="display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 14px; cursor: pointer;">
-          <input data-dc-tpl="23" type="checkbox" style="margin-top: 3px; width: 16px; height: 16px; accent-color: rgb(27, 59, 51);">
-          <span data-dc-tpl="24">I understand how my information will be used and I agree to take part in this survey.</span>
-        </label>
-      </div>
-
-      
-      <div data-dc-tpl="25" style="font-size: 17px; font-weight: 700; margin-bottom: 4px;">1. Basic Information</div>
-      <div data-dc-tpl="26" style="height: 1px; background: rgb(221, 214, 198); margin-bottom: 20px;"></div>
-
-      <div data-dc-tpl="27" style="margin-bottom: 18px;">
-        <div data-dc-tpl="28" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">What is your age range?</div>
-        <div data-dc-tpl="29" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="31" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">0-5</span></button>
-          
-            <button data-dc-tpl="31" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">6-12</span></button>
-          
-            <button data-dc-tpl="31" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">13-18</span></button>
-          
-            <button data-dc-tpl="31" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">19-31</span></button>
-          
-            <button data-dc-tpl="31" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">32-40</span></button>
-          
-            <button data-dc-tpl="31" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">41-50</span></button>
-          
-            <button data-dc-tpl="31" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">51-60</span></button>
-          
-            <button data-dc-tpl="31" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">61+</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="32" style="margin-bottom: 18px;">
-        <div data-dc-tpl="33" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Which arm is affected?</div>
-        <div data-dc-tpl="34" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="36" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Left</span></button>
-          
-            <button data-dc-tpl="36" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Right</span></button>
-          
-            <button data-dc-tpl="36" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Both</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="37" style="margin-bottom: 18px;">
-        <div data-dc-tpl="38" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Is your amputation below the elbow / transradial?</div>
-        <div data-dc-tpl="39" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="41" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Yes</span></button>
-          
-            <button data-dc-tpl="41" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">No</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="42" style="margin-bottom: 18px;">
-        <div data-dc-tpl="43" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">How long have you had your amputation?</div>
-        <input data-dc-tpl="44" type="text" placeholder="e.g. 3 years, since birth..." value="" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255);">
-      </div>
-
-      <div data-dc-tpl="45" style="margin-bottom: 8px;">
-        <div data-dc-tpl="46" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">What country or region do you live in?</div>
-        <input data-dc-tpl="47" type="text" placeholder="Country / region" value="" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255);">
-      </div>
-
-      
-      <div data-dc-tpl="48" style="font-size: 17px; font-weight: 700; margin: 32px 0px 4px;">2. Current Prosthetic Use</div>
-      <div data-dc-tpl="49" style="height: 1px; background: rgb(221, 214, 198); margin-bottom: 20px;"></div>
-
-      <div data-dc-tpl="50" style="margin-bottom: 18px;">
-        <div data-dc-tpl="51" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Do you currently use a prosthetic?</div>
-        <div data-dc-tpl="52" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="54" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Yes</span></button>
-          
-            <button data-dc-tpl="54" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">No</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="55" style="margin-bottom: 18px;">
-        <div data-dc-tpl="56" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">What type do you use?</div>
-        <div data-dc-tpl="57" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="59" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Cosmetic</span></button>
-          
-            <button data-dc-tpl="59" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Body-powered</span></button>
-          
-            <button data-dc-tpl="59" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Myoelectric</span></button>
-          
-            <button data-dc-tpl="59" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">3D-printed</span></button>
-          
-            <button data-dc-tpl="59" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Other</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="60" style="margin-bottom: 22px;">
-        <div data-dc-tpl="61" style="font-size: 14px; font-weight: 600; margin-bottom: 14px;">How easy is it to control movements with the prosthetic?</div>
-        <div data-dc-tpl="62" style="position: relative; display: flex; justify-content: space-between; align-items: center; max-width: 520px;">
-          <div data-dc-tpl="63" style="position: absolute; left: 16px; right: 16px; top: 16px; height: 1px; background: rgb(201, 192, 174); z-index: 0;"></div>
-          
-            <button data-dc-tpl="65" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">1</span></button>
-          
-            <button data-dc-tpl="65" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">2</span></button>
-          
-            <button data-dc-tpl="65" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">3</span></button>
-          
-            <button data-dc-tpl="65" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">4</span></button>
-          
-            <button data-dc-tpl="65" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">5</span></button>
-          
-            <button data-dc-tpl="65" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">6</span></button>
-          
-            <button data-dc-tpl="65" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">7</span></button>
-          
-            <button data-dc-tpl="65" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">8</span></button>
-          
-            <button data-dc-tpl="65" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">9</span></button>
-          
-            <button data-dc-tpl="65" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">10</span></button>
-          
-        </div>
-        <div data-dc-tpl="66" style="display: flex; justify-content: space-between; font-size: 11.5px; color: rgb(124, 136, 128); margin-top: 6px; max-width: 520px;">
-          <span data-dc-tpl="67">Very difficult</span><span data-dc-tpl="68">Neutral</span><span data-dc-tpl="69">Very easy</span>
-        </div>
-      </div>
-
-      <div data-dc-tpl="70" style="margin-bottom: 18px;">
-        <div data-dc-tpl="71" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">How often do you use it?</div>
-        <div data-dc-tpl="72" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="74" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Daily</span></button>
-          
-            <button data-dc-tpl="74" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Weekly</span></button>
-          
-            <button data-dc-tpl="74" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Occasionally</span></button>
-          
-            <button data-dc-tpl="74" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Rarely</span></button>
-          
-            <button data-dc-tpl="74" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Never</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="75" style="margin-bottom: 8px;">
-        <div data-dc-tpl="76" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Where do you use it most?</div>
-        <div data-dc-tpl="77" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="79" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Home</span></button>
-          
-            <button data-dc-tpl="79" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Work</span></button>
-          
-            <button data-dc-tpl="79" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Public / social settings</span></button>
-          
-            <button data-dc-tpl="79" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Specific activities only</span></button>
-          
-        </div>
-      </div>
-
-      
-      <div data-dc-tpl="80" style="font-size: 17px; font-weight: 700; margin: 32px 0px 4px;">3. Cost &amp; Decision-Making</div>
-      <div data-dc-tpl="81" style="height: 1px; background: rgb(221, 214, 198); margin-bottom: 20px;"></div>
-
-      <div data-dc-tpl="82" style="margin-bottom: 18px;">
-        <div data-dc-tpl="83" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">How was your current prosthetic (or previous devices) paid for?</div>
-        <div data-dc-tpl="84" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="86" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Free / donated</span></button>
-          
-            <button data-dc-tpl="86" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Government or public healthcare</span></button>
-          
-            <button data-dc-tpl="86" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Insurance</span></button>
-          
-            <button data-dc-tpl="86" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Paid out of pocket</span></button>
-          
-            <button data-dc-tpl="86" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">NGO / charity</span></button>
-          
-            <button data-dc-tpl="86" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Prefer not to say</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="87" style="margin-bottom: 18px;">
-        <div data-dc-tpl="88" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Roughly how much could your family realistically afford to pay for a prosthetic hand (one-time cost)?</div>
-        <input data-dc-tpl="89" type="text" placeholder="e.g. under $20 USD, whatever aid provides, nothing..." value="" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255);">
-      </div>
-
-      <div data-dc-tpl="90" style="margin-bottom: 8px;">
-        <div data-dc-tpl="91" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">What is the single biggest barrier to getting (or keeping) a prosthetic?</div>
-        <div data-dc-tpl="92" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="94" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Cost</span></button>
-          
-            <button data-dc-tpl="94" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Access to a clinic/provider</span></button>
-          
-            <button data-dc-tpl="94" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Awareness that options exist</span></button>
-          
-            <button data-dc-tpl="94" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Fit / comfort concerns</span></button>
-          
-            <button data-dc-tpl="94" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Appearance concerns</span></button>
-          
-            <button data-dc-tpl="94" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Other</span></button>
-          
-        </div>
-      </div>
-
-      
-      <div data-dc-tpl="95" style="font-size: 17px; font-weight: 700; margin: 32px 0px 4px;">4. Reasons for Use or Non-Use</div>
-      <div data-dc-tpl="96" style="height: 1px; background: rgb(221, 214, 198); margin-bottom: 20px;"></div>
-
-      <div data-dc-tpl="97" style="margin-bottom: 14px;">
-        <div data-dc-tpl="98" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">If you use your prosthetic, what do you like about it?</div>
-        <textarea data-dc-tpl="99" rows="2" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255); resize: vertical;"></textarea>
-      </div>
-      <div data-dc-tpl="100" style="margin-bottom: 14px;">
-        <div data-dc-tpl="101" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">If you do not use it often, why not?</div>
-        <textarea data-dc-tpl="102" rows="2" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255); resize: vertical;"></textarea>
-      </div>
-      <div data-dc-tpl="103" style="margin-bottom: 8px;">
-        <div data-dc-tpl="104" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">What is one reason you would stop using your prosthetic entirely?</div>
-        <textarea data-dc-tpl="105" rows="2" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255); resize: vertical;"></textarea>
-      </div>
-
-      
-      <div data-dc-tpl="106" style="font-size: 17px; font-weight: 700; margin: 32px 0px 4px;">5. Comfort and Fit</div>
-      <div data-dc-tpl="107" style="height: 1px; background: rgb(221, 214, 198); margin-bottom: 20px;"></div>
-
-      <div data-dc-tpl="108" style="margin-bottom: 22px;">
-        <div data-dc-tpl="109" style="font-size: 14px; font-weight: 600; margin-bottom: 14px;">How comfortable is your current prosthetic?</div>
-        <div data-dc-tpl="110" style="position: relative; display: flex; justify-content: space-between; align-items: center; max-width: 520px;">
-          <div data-dc-tpl="111" style="position: absolute; left: 16px; right: 16px; top: 16px; height: 1px; background: rgb(201, 192, 174); z-index: 0;"></div>
-          
-            <button data-dc-tpl="113" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">1</span></button>
-          
-            <button data-dc-tpl="113" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">2</span></button>
-          
-            <button data-dc-tpl="113" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">3</span></button>
-          
-            <button data-dc-tpl="113" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">4</span></button>
-          
-            <button data-dc-tpl="113" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">5</span></button>
-          
-            <button data-dc-tpl="113" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">6</span></button>
-          
-            <button data-dc-tpl="113" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">7</span></button>
-          
-            <button data-dc-tpl="113" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">8</span></button>
-          
-            <button data-dc-tpl="113" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">9</span></button>
-          
-            <button data-dc-tpl="113" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">10</span></button>
-          
-        </div>
-        <div data-dc-tpl="114" style="display: flex; justify-content: space-between; font-size: 11.5px; color: rgb(124, 136, 128); margin-top: 6px; max-width: 520px;">
-          <span data-dc-tpl="115">Very uncomfortable</span><span data-dc-tpl="116">Neutral</span><span data-dc-tpl="117">Very comfortable</span>
-        </div>
-      </div>
-
-      <div data-dc-tpl="118" style="margin-bottom: 18px;">
-        <div data-dc-tpl="119" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Does the socket cause any of the following? (select all that apply)</div>
-        <div data-dc-tpl="120" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="122" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Pressure</span></button>
-          
-            <button data-dc-tpl="122" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Pain</span></button>
-          
-            <button data-dc-tpl="122" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Sweating</span></button>
-          
-            <button data-dc-tpl="122" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Slipping</span></button>
-          
-            <button data-dc-tpl="122" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Skin irritation</span></button>
-          
-            <button data-dc-tpl="122" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">None of these</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="123" style="margin-bottom: 18px;">
-        <div data-dc-tpl="124" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">If yes, when does the discomfort occur?</div>
-        <div data-dc-tpl="125" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="127" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Continuously</span></button>
-          
-            <button data-dc-tpl="127" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Only during a certain activity</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="128" style="margin-bottom: 14px;">
-        <div data-dc-tpl="129" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">What would make the socket more comfortable?</div>
-        <textarea data-dc-tpl="130" rows="2" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255); resize: vertical;"></textarea>
-      </div>
-
-      <div data-dc-tpl="131" style="margin-bottom: 18px;">
-        <div data-dc-tpl="132" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Are you able to put on/remove your prosthetic without assistance?</div>
-        <div data-dc-tpl="133" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="135" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Yes, independently</span></button>
-          
-            <button data-dc-tpl="135" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">With some help</span></button>
-          
-            <button data-dc-tpl="135" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">No, needs assistance</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="136" style="margin-bottom: 8px;">
-        <div data-dc-tpl="137" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">How long does it take you to put on or take off your prosthetic?</div>
-        <input data-dc-tpl="138" type="text" placeholder="e.g. under a minute, 5 minutes with help..." value="" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255);">
-      </div>
-
-      
-      <div data-dc-tpl="139" style="font-size: 17px; font-weight: 700; margin: 32px 0px 4px;">6. Function and Daily Use</div>
-      <div data-dc-tpl="140" style="height: 1px; background: rgb(221, 214, 198); margin-bottom: 20px;"></div>
-
-      <div data-dc-tpl="141" style="margin-bottom: 8px;">
-        <div data-dc-tpl="142" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Which daily activities do you want the most help with? (select all that apply)</div>
-        <div data-dc-tpl="143" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Eating</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Drinking</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Phone use</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Writing / typing</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Carrying objects</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Opening doors</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Dressing</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Cooking</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">School / work tasks</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Sports</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Hobbies</span></button>
-          
-            <button data-dc-tpl="145" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Other</span></button>
-          
-        </div>
-      </div>
-
-      
-      <div data-dc-tpl="146" style="font-size: 17px; font-weight: 700; margin: 32px 0px 4px;">7. Appearance and Confidence</div>
-      <div data-dc-tpl="147" style="height: 1px; background: rgb(221, 214, 198); margin-bottom: 20px;"></div>
-
-      <div data-dc-tpl="148" style="margin-bottom: 22px;">
-        <div data-dc-tpl="149" style="font-size: 14px; font-weight: 600; margin-bottom: 14px;">How important is the appearance of the prosthetic to you?</div>
-        <div data-dc-tpl="150" style="position: relative; display: flex; justify-content: space-between; align-items: center; max-width: 520px;">
-          <div data-dc-tpl="151" style="position: absolute; left: 16px; right: 16px; top: 16px; height: 1px; background: rgb(201, 192, 174); z-index: 0;"></div>
-          
-            <button data-dc-tpl="153" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">1</span></button>
-          
-            <button data-dc-tpl="153" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">2</span></button>
-          
-            <button data-dc-tpl="153" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">3</span></button>
-          
-            <button data-dc-tpl="153" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">4</span></button>
-          
-            <button data-dc-tpl="153" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">5</span></button>
-          
-            <button data-dc-tpl="153" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">6</span></button>
-          
-            <button data-dc-tpl="153" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">7</span></button>
-          
-            <button data-dc-tpl="153" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">8</span></button>
-          
-            <button data-dc-tpl="153" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">9</span></button>
-          
-            <button data-dc-tpl="153" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">10</span></button>
-          
-        </div>
-        <div data-dc-tpl="154" style="display: flex; justify-content: space-between; font-size: 11.5px; color: rgb(124, 136, 128); margin-top: 6px; max-width: 520px;">
-          <span data-dc-tpl="155">Not important</span><span data-dc-tpl="156">Neutral</span><span data-dc-tpl="157">Very important</span>
-        </div>
-      </div>
-
-      <div data-dc-tpl="158" style="margin-bottom: 8px;">
-        <div data-dc-tpl="159" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Which type of prosthetic do you prefer?</div>
-        <div data-dc-tpl="160" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="162" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Realistic-looking</span></button>
-          
-            <button data-dc-tpl="162" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Functional / robotic-looking</span></button>
-          
-            <button data-dc-tpl="162" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Custom design</span></button>
-          
-        </div>
-      </div>
-
-      
-      <div data-dc-tpl="163" style="font-size: 17px; font-weight: 700; margin: 32px 0px 4px;">8. Durability and Maintenance</div>
-      <div data-dc-tpl="164" style="height: 1px; background: rgb(221, 214, 198); margin-bottom: 20px;"></div>
-
-      <div data-dc-tpl="165" style="margin-bottom: 18px;">
-        <div data-dc-tpl="166" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Has your prosthetic ever broken?</div>
-        <div data-dc-tpl="167" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          
-            <button data-dc-tpl="169" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">Yes</span></button>
-          
-            <button data-dc-tpl="169" style="padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-family: inherit; cursor: pointer; white-space: nowrap; border: 1px solid rgb(221, 214, 198); background: rgb(255, 255, 255); color: rgb(27, 59, 51); font-weight: 500;"><span class="sc-interp">No</span></button>
-          
-        </div>
-      </div>
-
-      <div data-dc-tpl="170" style="margin-bottom: 14px;">
-        <div data-dc-tpl="171" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">What part broke first?</div>
-        <input data-dc-tpl="172" type="text" placeholder="e.g. thumb joint, cable, socket edge..." value="" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255);">
-      </div>
-
-      <div data-dc-tpl="173" style="margin-bottom: 8px;">
-        <div data-dc-tpl="174" style="font-size: 14px; font-weight: 600; margin-bottom: 14px;">How easy is it to repair or adjust?</div>
-        <div data-dc-tpl="175" style="position: relative; display: flex; justify-content: space-between; align-items: center; max-width: 520px;">
-          <div data-dc-tpl="176" style="position: absolute; left: 16px; right: 16px; top: 16px; height: 1px; background: rgb(201, 192, 174); z-index: 0;"></div>
-          
-            <button data-dc-tpl="178" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">1</span></button>
-          
-            <button data-dc-tpl="178" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">2</span></button>
-          
-            <button data-dc-tpl="178" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">3</span></button>
-          
-            <button data-dc-tpl="178" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">4</span></button>
-          
-            <button data-dc-tpl="178" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">5</span></button>
-          
-            <button data-dc-tpl="178" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">6</span></button>
-          
-            <button data-dc-tpl="178" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">7</span></button>
-          
-            <button data-dc-tpl="178" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">8</span></button>
-          
-            <button data-dc-tpl="178" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">9</span></button>
-          
-            <button data-dc-tpl="178" style="position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid rgb(27, 59, 51); background: rgb(255, 255, 255); color: rgb(27, 59, 51);"><span class="sc-interp">10</span></button>
-          
-        </div>
-        <div data-dc-tpl="179" style="display: flex; justify-content: space-between; font-size: 11.5px; color: rgb(124, 136, 128); margin-top: 6px; max-width: 520px;">
-          <span data-dc-tpl="180">Very difficult</span><span data-dc-tpl="181">Neutral</span><span data-dc-tpl="182">Very easy</span>
-        </div>
-      </div>
-
-      
-      <div data-dc-tpl="183" style="font-size: 17px; font-weight: 700; margin: 32px 0px 4px;">9. What Matters Most</div>
-      <div data-dc-tpl="184" style="height: 1px; background: rgb(221, 214, 198); margin-bottom: 20px;"></div>
-      <div data-dc-tpl="185" style="font-size: 13.5px; color: rgb(107, 125, 116); margin-bottom: 16px;">Pick your top 3 factors when deciding whether to get, or keep using, a prosthetic — ranked 1st to 3rd.</div>
-
-      <div data-dc-tpl="186" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 8px;">
-        <div data-dc-tpl="187" style="display: flex; align-items: center; gap: 12px;">
-          <div data-dc-tpl="188" style="width: 26px; height: 26px; border-radius: 50%; background: rgb(27, 59, 51); color: rgb(251, 249, 244); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
-          <select data-dc-tpl="189" style="flex: 1 1 0%; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255);">
-            
-              <option data-dc-tpl="191" value="cost"><span class="sc-interp">Cost</span></option>
-            
-              <option data-dc-tpl="191" value="comfort"><span class="sc-interp">Comfort</span></option>
-            
-              <option data-dc-tpl="191" value="function"><span class="sc-interp">Function / usefulness</span></option>
-            
-              <option data-dc-tpl="191" value="appearance"><span class="sc-interp">Appearance</span></option>
-            
-              <option data-dc-tpl="191" value="durability"><span class="sc-interp">Durability</span></option>
-            
-              <option data-dc-tpl="191" value="ease"><span class="sc-interp">Ease of putting on/off</span></option>
-            
-              <option data-dc-tpl="191" value="repair"><span class="sc-interp">Availability of repair</span></option>
-            
-              <option data-dc-tpl="191" value="weight"><span class="sc-interp">Weight</span></option>
-            
-          </select>
-        </div>
-        <div data-dc-tpl="192" style="display: flex; align-items: center; gap: 12px;">
-          <div data-dc-tpl="193" style="width: 26px; height: 26px; border-radius: 50%; background: rgb(27, 59, 51); color: rgb(251, 249, 244); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
-          <select data-dc-tpl="194" style="flex: 1 1 0%; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255);">
-            
-              <option data-dc-tpl="196" value="cost"><span class="sc-interp">Cost</span></option>
-            
-              <option data-dc-tpl="196" value="comfort"><span class="sc-interp">Comfort</span></option>
-            
-              <option data-dc-tpl="196" value="function"><span class="sc-interp">Function / usefulness</span></option>
-            
-              <option data-dc-tpl="196" value="appearance"><span class="sc-interp">Appearance</span></option>
-            
-              <option data-dc-tpl="196" value="durability"><span class="sc-interp">Durability</span></option>
-            
-              <option data-dc-tpl="196" value="ease"><span class="sc-interp">Ease of putting on/off</span></option>
-            
-              <option data-dc-tpl="196" value="repair"><span class="sc-interp">Availability of repair</span></option>
-            
-              <option data-dc-tpl="196" value="weight"><span class="sc-interp">Weight</span></option>
-            
-          </select>
-        </div>
-        <div data-dc-tpl="197" style="display: flex; align-items: center; gap: 12px;">
-          <div data-dc-tpl="198" style="width: 26px; height: 26px; border-radius: 50%; background: rgb(27, 59, 51); color: rgb(251, 249, 244); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
-          <select data-dc-tpl="199" style="flex: 1 1 0%; padding: 10px 12px; border-radius: 8px; border: 1px solid rgb(221, 214, 198); font-size: 14px; font-family: inherit; background: rgb(255, 255, 255);">
-            
-              <option data-dc-tpl="201" value="cost"><span class="sc-interp">Cost</span></option>
-            
-              <option data-dc-tpl="201" value="comfort"><span class="sc-interp">Comfort</span></option>
-            
-              <option data-dc-tpl="201" value="function"><span class="sc-interp">Function / usefulness</span></option>
-            
-              <option data-dc-tpl="201" value="appearance"><span class="sc-interp">Appearance</span></option>
-            
-              <option data-dc-tpl="201" value="durability"><span class="sc-interp">Durability</span></option>
-            
-              <option data-dc-tpl="201" value="ease"><span class="sc-interp">Ease of putting on/off</span></option>
-            
-              <option data-dc-tpl="201" value="repair"><span class="sc-interp">Availability of repair</span></option>
-            
-              <option data-dc-tpl="201" value="weight"><span class="sc-interp">Weight</span></option>
-            
-          </select>
-        </div>
-      </div>
-
-      <div data-dc-tpl="202" style="margin-top: 36px; text-align: center;">
-        <button data-dc-tpl="203" disabled="" style="padding: 13px 32px; border-radius: 8px; border: none; font-size: 14.5px; font-weight: 700; font-family: inherit; cursor: not-allowed; background: rgb(201, 192, 174); color: rgb(251, 249, 244);">Submit survey</button>
-        <div data-dc-tpl="204" style="font-size: 12.5px; color: rgb(178, 59, 59); margin-top: 10px; min-height: 16px;"><span class="sc-interp">Please confirm you understand and agree at the top of the form before submitting.</span></div>
-      </div>
-
-    </div>
-    
-
-  </div></div></div></div>
-<script type="text/x-dc" data-dc-script="">
-const FACTORS = [
-  { value: 'cost', label: 'Cost' },
-  { value: 'comfort', label: 'Comfort' },
-  { value: 'function', label: 'Function / usefulness' },
-  { value: 'appearance', label: 'Appearance' },
-  { value: 'durability', label: 'Durability' },
-  { value: 'ease', label: 'Ease of putting on/off' },
-  { value: 'repair', label: 'Availability of repair' },
-  { value: 'weight', label: 'Weight' }
-];
-
-class Component extends DCLogic {
-  state = {
-    submitted: false,
-    consentAgreed: false,
-    ageRange: null, arm: null, transradial: null, durationText: '', country: '',
-    currentlyUse: null, prostheticType: null, controlEase: null, useFrequency: null, useLocation: null,
-    paymentSource: null, affordableAmount: '', biggestBarrier: null,
-    likes: '', whyNotOften: '', stopReason: '',
-    comfort: null, socketIssues: {}, issueTiming: null, comfortImprovement: '', donning: null, donningTime: '',
-    activities: {},
-    appearanceImportance: null, appearancePreference: null,
-    everBroke: null, partBroke: '', repairEase: null,
-    rank1: '', rank2: '', rank3: ''
-  };
-
-  pillStyle(selected) {
-    return `padding:9px 16px; border-radius:20px; font-size:13.5px; font-family:inherit; cursor:pointer; white-space:nowrap; border:1px solid ${selected ? '#1B3B33' : '#DDD6C6'}; background:${selected ? '#1B3B33' : '#fff'}; color:${selected ? '#FBF9F4' : '#1B3B33'}; font-weight:${selected ? 600 : 500};`;
-  }
-
-  circleStyle(selected) {
-    return `position:relative; z-index:1; width:32px; height:32px; border-radius:50%; font-size:12px; font-weight:700; cursor:pointer; border:1.5px solid #1B3B33; background:${selected ? '#1B3B33' : '#fff'}; color:${selected ? '#FBF9F4' : '#1B3B33'};`;
-  }
-
-  singleSelectOptions(field, values) {
-    return values.map(v => ({
-      label: v,
-      style: this.pillStyle(this.state[field] === v),
-      onClick: () => this.setState({ [field]: v })
-    }));
-  }
-
-  multiSelectOptions(field, values) {
-    return values.map(v => ({
-      label: v,
-      style: this.pillStyle(!!this.state[field][v]),
-      onClick: () => this.setState(s => ({ [field]: { ...s[field], [v]: !s[field][v] } }))
-    }));
-  }
-
-  scaleCircles(field) {
-    const arr = [];
-    for (let n = 1; n <= 10; n++) {
-      arr.push({ n, style: this.circleStyle(this.state[field] === n), onClick: () => this.setState({ [field]: n }) });
-    }
-    return arr;
-  }
-
-  buildMailBody() {
-    const s = this.state;
-    const yn = (v) => v == null ? '(not answered)' : v;
-    const list = (obj) => Object.keys(obj || {}).filter(k => obj[k]).join(', ') || '(none selected)';
-    const lines = [
-      'UNIVERSAL LIMBS FOUNDATION - Prosthetic User Survey',
-      '',
-      '1. Basic Information',
-      `Age range: ${yn(s.ageRange)}`,
-      `Arm affected: ${yn(s.arm)}`,
-      `Transradial: ${yn(s.transradial)}`,
-      `Duration since amputation: ${yn(s.durationText)}`,
-      `Country/region: ${yn(s.country)}`,
-      '',
-      '2. Current Prosthetic Use',
-      `Currently uses a prosthetic: ${yn(s.currentlyUse)}`,
-      `Type: ${yn(s.prostheticType)}`,
-      `Ease of control (1-10): ${yn(s.controlEase)}`,
-      `Frequency of use: ${yn(s.useFrequency)}`,
-      `Where used most: ${yn(s.useLocation)}`,
-      '',
-      '3. Cost & Decision-Making',
-      `How paid for: ${yn(s.paymentSource)}`,
-      `Affordable amount: ${yn(s.affordableAmount)}`,
-      `Biggest barrier: ${yn(s.biggestBarrier)}`,
-      '',
-      '4. Reasons for Use or Non-Use',
-      `Likes: ${yn(s.likes)}`,
-      `Why not used often: ${yn(s.whyNotOften)}`,
-      `Reason would stop using: ${yn(s.stopReason)}`,
-      '',
-      '5. Comfort and Fit',
-      `Comfort (1-10): ${yn(s.comfort)}`,
-      `Socket issues: ${list(s.socketIssues)}`,
-      `Discomfort timing: ${yn(s.issueTiming)}`,
-      `What would improve comfort: ${yn(s.comfortImprovement)}`,
-      `Can don/doff independently: ${yn(s.donning)}`,
-      `Time to don/doff: ${yn(s.donningTime)}`,
-      '',
-      '6. Function and Daily Use',
-      `Activities wanting help with: ${list(s.activities)}`,
-      '',
-      '7. Appearance and Confidence',
-      `Importance of appearance (1-10): ${yn(s.appearanceImportance)}`,
-      `Preferred style: ${yn(s.appearancePreference)}`,
-      '',
-      '8. Durability and Maintenance',
-      `Ever broke: ${yn(s.everBroke)}`,
-      `Part that broke first: ${yn(s.partBroke)}`,
-      `Ease of repair (1-10): ${yn(s.repairEase)}`,
-      '',
-      '9. What Matters Most (ranked)',
-      `1st: ${yn(s.rank1)}`,
-      `2nd: ${yn(s.rank2)}`,
-      `3rd: ${yn(s.rank3)}`
-    ];
-    return lines.join('\n');
-  }
-
-  renderVals() {
-    const s = this.state;
-    const submitDisabled = !s.consentAgreed;
-    return {
-      submitted: s.submitted,
-      notSubmitted: !s.submitted,
-      consentAgreed: s.consentAgreed,
-      toggleConsent: () => this.setState(st => ({ consentAgreed: !st.consentAgreed })),
-
-      ageOptions: this.singleSelectOptions('ageRange', ['0-5', '6-12', '13-18', '19-31', '32-40', '41-50', '51-60', '61+']),
-      armOptions: this.singleSelectOptions('arm', ['Left', 'Right', 'Both']),
-      transradialOptions: this.singleSelectOptions('transradial', ['Yes', 'No']),
-      durationText: s.durationText,
-      setDurationText: (e) => this.setState({ durationText: e.target.value }),
-      country: s.country,
-      setCountry: (e) => this.setState({ country: e.target.value }),
-
-      currentlyUseOptions: this.singleSelectOptions('currentlyUse', ['Yes', 'No']),
-      prostheticTypeOptions: this.singleSelectOptions('prostheticType', ['Cosmetic', 'Body-powered', 'Myoelectric', '3D-printed', 'Other']),
-      controlEaseCircles: this.scaleCircles('controlEase'),
-      useFrequencyOptions: this.singleSelectOptions('useFrequency', ['Daily', 'Weekly', 'Occasionally', 'Rarely', 'Never']),
-      useLocationOptions: this.singleSelectOptions('useLocation', ['Home', 'Work', 'Public / social settings', 'Specific activities only']),
-
-      paymentOptions: this.singleSelectOptions('paymentSource', ['Free / donated', 'Government or public healthcare', 'Insurance', 'Paid out of pocket', 'NGO / charity', 'Prefer not to say']),
-      affordableAmount: s.affordableAmount,
-      setAffordableAmount: (e) => this.setState({ affordableAmount: e.target.value }),
-      barrierOptions: this.singleSelectOptions('biggestBarrier', ['Cost', 'Access to a clinic/provider', 'Awareness that options exist', 'Fit / comfort concerns', 'Appearance concerns', 'Other']),
-
-      likes: s.likes, setLikes: (e) => this.setState({ likes: e.target.value }),
-      whyNotOften: s.whyNotOften, setWhyNotOften: (e) => this.setState({ whyNotOften: e.target.value }),
-      stopReason: s.stopReason, setStopReason: (e) => this.setState({ stopReason: e.target.value }),
-
-      comfortCircles: this.scaleCircles('comfort'),
-      socketIssueOptions: this.multiSelectOptions('socketIssues', ['Pressure', 'Pain', 'Sweating', 'Slipping', 'Skin irritation', 'None of these']),
-      issueTimingOptions: this.singleSelectOptions('issueTiming', ['Continuously', 'Only during a certain activity']),
-      comfortImprovement: s.comfortImprovement, setComfortImprovement: (e) => this.setState({ comfortImprovement: e.target.value }),
-      donningOptions: this.singleSelectOptions('donning', ['Yes, independently', 'With some help', 'No, needs assistance']),
-      donningTime: s.donningTime, setDonningTime: (e) => this.setState({ donningTime: e.target.value }),
-
-      activityOptions: this.multiSelectOptions('activities', ['Eating', 'Drinking', 'Phone use', 'Writing / typing', 'Carrying objects', 'Opening doors', 'Dressing', 'Cooking', 'School / work tasks', 'Sports', 'Hobbies', 'Other']),
-
-      appearanceCircles: this.scaleCircles('appearanceImportance'),
-      appearancePreferenceOptions: this.singleSelectOptions('appearancePreference', ['Realistic-looking', 'Functional / robotic-looking', 'Custom design']),
-
-      everBrokeOptions: this.singleSelectOptions('everBroke', ['Yes', 'No']),
-      partBroke: s.partBroke, setPartBroke: (e) => this.setState({ partBroke: e.target.value }),
-      repairCircles: this.scaleCircles('repairEase'),
-
-      factorOptions: FACTORS,
-      rank1: s.rank1, setRank1: (e) => this.setState({ rank1: e.target.value }),
-      rank2: s.rank2, setRank2: (e) => this.setState({ rank2: e.target.value }),
-      rank3: s.rank3, setRank3: (e) => this.setState({ rank3: e.target.value }),
-
-      submitDisabled,
-      submitStyle: `padding:13px 32px; border-radius:8px; border:none; font-size:14.5px; font-weight:700; font-family:inherit; cursor:${submitDisabled ? 'not-allowed' : 'pointer'}; background:${submitDisabled ? '#C9C0AE' : '#1B3B33'}; color:#FBF9F4;`,
-      validationMessage: submitDisabled ? 'Please confirm you understand and agree at the top of the form before submitting.' : '',
-      handleSubmit: () => { if (!submitDisabled) this.setState({ submitted: true }); },
-
-      mailtoHref: `mailto:survey@universallimbs.org?subject=${encodeURIComponent('Prosthetic User Survey Response')}&body=${encodeURIComponent(this.buildMailBody())}`,
-      copyToClipboard: () => {
-        navigator.clipboard.writeText(this.buildMailBody()).then(() => this.setState({ copyStatus: 'Copied! You can paste it into an email or message.' }));
-      },
-      copyStatus: s.copyStatus || ''
-    };
-  }
-}
-</script>
-
-
-</body></html>
+  <main>
+    <header><img src="ul-logo.png" alt="Universal Limbs logo"><div><h1>Prosthetic User Survey</h1><p>This survey will help us design better, low-cost, body-powered upper-limb prosthetic devices.</p></div></header>
+    <form id="surveyForm">
+      <section class="notice"><strong>Before you start</strong><p>This survey is voluntary and anonymous — we do not collect your name or any identifying information unless you choose to share it. Your answers will only be used by Universal Limbs Foundation, a non-profit, to guide the design of an open-source pediatric prosthetic hand. Answers may be shared in aggregate (never individually) with our engineering and research partners. You can skip any question or stop at any time. This is not a medical service and does not replace advice from a clinician.</p><label class="consent"><input name="consent" type="checkbox" required><span>I understand how my information will be used and I agree to take part in this survey.</span></label></section>
+      <fieldset><legend>1. Basic Information</legend>
+        <label><span>What is your age range?</span><select name="ageRange"><option value="">Prefer not to say</option><option>0-5</option><option>6-12</option><option>13-18</option><option>19-31</option><option>32-40</option><option>41-50</option><option>51-60</option><option>61+</option></select></label>
+        <label><span>Which arm is affected?</span><select name="affectedArm"><option value="">Prefer not to say</option><option>Left</option><option>Right</option><option>Both</option></select></label>
+        <label><span>Is your amputation below the elbow / transradial?</span><select name="transradial"><option value="">Prefer not to say</option><option>Yes</option><option>No</option></select></label>
+        <label><span>How long have you had your amputation?</span><input name="amputationDuration"></label><label><span>What country or region do you live in?</span><input name="region" autocomplete="country-name"></label>
+      </fieldset>
+      <fieldset><legend>2. Current Prosthetic Use</legend>
+        <label><span>Do you currently use a prosthetic?</span><select name="currentlyUses"><option value="">Prefer not to say</option><option>Yes</option><option>No</option></select></label><label><span>What type do you use?</span><select name="prostheticType"><option value="">Prefer not to say</option><option>Cosmetic</option><option>Body-powered</option><option>Myoelectric</option><option>3D-printed</option><option>Other</option></select></label>
+        <div class="rating" data-name="controlEase" data-question="How easy is it to control movements with the prosthetic?" data-low="Very difficult" data-high="Very easy"></div>
+        <label><span>How often do you use it?</span><select name="useFrequency"><option value="">Prefer not to say</option><option>Daily</option><option>Weekly</option><option>Occasionally</option><option>Rarely</option><option>Never</option></select></label><label><span>Where do you use it most?</span><select name="useLocation"><option value="">Prefer not to say</option><option>Home</option><option>Work</option><option>Public / social settings</option><option>Specific activities only</option></select></label>
+      </fieldset>
+      <fieldset><legend>3. Cost &amp; Decision-Making</legend>
+        <label><span>How was your current prosthetic (or previous devices) paid for?</span><select name="paymentSource"><option value="">Prefer not to say</option><option>Free / donated</option><option>Government or public healthcare</option><option>Insurance</option><option>Paid out of pocket</option><option>NGO / charity</option><option>Prefer not to say</option></select></label><label><span>Roughly how much could your family realistically afford to pay for a prosthetic hand (one-time cost)?</span><input name="affordableAmount"></label><label><span>What is the single biggest barrier to getting (or keeping) a prosthetic?</span><select name="biggestBarrier"><option value="">Prefer not to say</option><option>Cost</option><option>Access to a clinic/provider</option><option>Awareness that options exist</option><option>Fit / comfort concerns</option><option>Appearance concerns</option><option>Other</option></select></label>
+      </fieldset>
+      <fieldset><legend>4. Reasons for Use or Non-Use</legend><label><span>If you use your prosthetic, what do you like about it?</span><textarea name="likes" rows="3"></textarea></label><label><span>If you do not use it often, why not?</span><textarea name="whyNotOften" rows="3"></textarea></label><label><span>What is one reason you would stop using your prosthetic entirely?</span><textarea name="stopReason" rows="3"></textarea></label></fieldset>
+      <fieldset><legend>5. Comfort and Fit</legend>
+        <div class="rating" data-name="comfort" data-question="How comfortable is your current prosthetic?" data-low="Very uncomfortable" data-high="Very comfortable"></div>
+        <div class="multi" data-name="socketIssues" data-question="Does the socket cause any of the following? (select all that apply)" data-options="Pressure|Pain|Sweating|Slipping|Skin irritation|None of these"></div>
+        <label><span>If yes, when does the discomfort occur?</span><select name="discomfortTiming"><option value="">Prefer not to say</option><option>Continuously</option><option>Only during a certain activity</option></select></label><label><span>What would make the socket more comfortable?</span><textarea name="comfortImprovement" rows="3"></textarea></label><label><span>Are you able to put on/remove your prosthetic without assistance?</span><select name="donning"><option value="">Prefer not to say</option><option>Yes, independently</option><option>With some help</option><option>No, needs assistance</option></select></label><label><span>How long does it take you to put on or take off your prosthetic?</span><input name="donningTime"></label>
+      </fieldset>
+      <fieldset><legend>6. Function and Daily Use</legend><div class="multi" data-name="activities" data-question="Which daily activities do you want the most help with? (select all that apply)" data-options="Eating|Drinking|Phone use|Writing / typing|Carrying objects|Opening doors|Dressing|Cooking|School / work tasks|Sports|Hobbies|Other"></div></fieldset>
+      <fieldset><legend>7. Appearance and Confidence</legend><div class="rating" data-name="appearanceImportance" data-question="How important is the appearance of the prosthetic to you?" data-low="Not important" data-high="Very important"></div><label><span>Which type of prosthetic do you prefer?</span><select name="appearancePreference"><option value="">Prefer not to say</option><option>Realistic-looking</option><option>Functional / robotic-looking</option><option>Custom design</option></select></label></fieldset>
+      <fieldset><legend>8. Durability and Maintenance</legend><label><span>Has your prosthetic ever broken?</span><select name="everBroke"><option value="">Prefer not to say</option><option>Yes</option><option>No</option></select></label><label><span>What part broke first?</span><input name="partBroke"></label><div class="rating" data-name="repairEase" data-question="How easy is it to repair or adjust?" data-low="Very difficult" data-high="Very easy"></div></fieldset>
+      <fieldset><legend>9. What Matters Most</legend><p class="hint">Pick your top 3 factors when deciding whether to get, or keep using, a prosthetic — ranked 1st to 3rd.</p><div id="rankFields"></div></fieldset>
+      <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div><button id="submitButton" type="submit">Submit survey</button><p id="status" role="status"></p>
+    </form>
+  </main>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/submit.js"></script>
+  <script>
+    const factors = ['Cost','Comfort','Function / usefulness','Appearance','Durability','Ease of putting on/off','Availability of repair','Weight'];
+    document.querySelectorAll('.rating').forEach(node => { node.innerHTML = `<label><span>${node.dataset.question}</span><div class="scale">${Array.from({ length:10 }, (_, index) => `<label><input type="radio" name="${node.dataset.name}" value="${index + 1}">${index + 1}</label>`).join('')}</div><div class="scale-note"><span>${node.dataset.low}</span><span>Neutral</span><span>${node.dataset.high}</span></div></label>`; });
+    document.querySelectorAll('.multi').forEach(node => { node.innerHTML = `<label><span>${node.dataset.question}</span><div class="choice-row">${node.dataset.options.split('|').map(option => `<label><input type="checkbox" name="${node.dataset.name}" value="${option}">${option}</label>`).join('')}</div></label>`; });
+    document.getElementById('rankFields').innerHTML = [1,2,3].map(rank => `<div class="rank-grid"><label for="rank${rank}">${rank}${rank === 1 ? 'st' : rank === 2 ? 'nd' : 'rd'}</label><select id="rank${rank}" name="rank${rank}"><option value="">Choose a factor</option>${factors.map(factor => `<option>${factor}</option>`).join('')}</select></div>`).join('');
+    function serializeForm(form) { const payload = {}; new FormData(form).forEach((value, key) => { if (key in payload) payload[key] = [].concat(payload[key], value); else payload[key] = value; }); return payload; }
+    const surveyForm = document.getElementById('surveyForm'); const surveyStatus = document.getElementById('status'); const submitButton = document.getElementById('submitButton');
+    surveyForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const payload = serializeForm(surveyForm);
+      payload.consent = surveyForm.elements.consent.checked;
+      if (!payload.consent) { surveyStatus.textContent = 'Please confirm consent before submitting.'; return; }
+      const ranks = [payload.rank1, payload.rank2, payload.rank3].filter(Boolean);
+      if (new Set(ranks).size !== ranks.length) { surveyStatus.textContent = 'Please choose three different ranked factors.'; return; }
+      submitButton.disabled = true;
+      surveyStatus.textContent = 'Submitting survey...';
+      try {
+        await window.ulfSubmit('survey', payload);
+        surveyForm.reset();
+        surveyStatus.textContent = 'Thank you. Your response has been submitted.';
+      } catch (error) {
+        surveyStatus.textContent = error.message;
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

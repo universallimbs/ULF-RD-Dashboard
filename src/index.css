@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Ensure React Asana root takes full width/height */
+#asana-react-root {
+  width: 100%;
+  min-height: 100%;
+}
