@@ -6,8 +6,10 @@ React and Vite R&D dashboard for the Universal Limbs Foundation prosthetic hand 
 
 | Branch | Purpose | URL |
 | --- | --- | --- |
-| `main` | Production (published via GitHub Pages) | https://rasna-spec.github.io/ULF-RD-Dashboard/ |
-| `develop` | Active development / staging | Run locally (see below) until a preview deployment is configured |
+| `main` | Production (published via GitHub Pages) | https://universallimbs.github.io/ULF-RD-Dashboard/ |
+| `develop` | Active development — all work happens here | Run locally (see below); open a PR into `main` to publish |
+
+Repository: https://github.com/universallimbs/ULF-RD-Dashboard
 
 Direct pages:
 - Dashboard: `/`
@@ -107,8 +109,10 @@ See [project_structure.md](project_structure.md) for the full file layout and th
 
 ## Branching
 
-- `main` — production, published via GitHub Pages.
-- `develop` — active development branch. Open PRs from `develop` into `main` when a change is ready to publish.
+- `main` — production, published via GitHub Pages at
+  https://universallimbs.github.io/ULF-RD-Dashboard/. Deploys on every push.
+- `develop` — the working branch. All edits land here first; open a PR into
+  `main` when a change is ready to go live.
 
 ## Continuous checks
 
