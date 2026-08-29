@@ -48,13 +48,14 @@ first render.
 sections that map to an MVP pattern:
 
 - **Model** — the `PEOPLE`, `RAIL`, `PHASES`, `REFERENCES`, `DOWNLOADS`,
-  `LINKS`, `TEAM`, `MINUTES` and `TASKS` tables at the top of the file. Each
+  `LINKS`, `TEAM`, `PARTS`, `SYSTEM_FLOW`, `BRIEF`, `MINUTES` and `TASKS`
+  tables at the top of the file. Each
   entry holds i18n *keys*, not text.
 - **View** — `renderPriority()`, `renderReference()`, `renderRail()`,
   `renderPhases()`, `renderTasks()`, `renderDownloads()`, `renderLinks()`,
-  `renderTeam()`, `renderMinutes()`, `renderClocks()`.
+  `renderTeam()`, `renderMinutes()`, `renderPortal()`, `renderClocks()`.
 - **Presenter** — tab switching, the two carousels, the task range control, the
-  timezone picker, and the drag-and-drop upload.
+  timezone picker, the drag-and-drop upload, and the deliverable modal.
 
 It is kept as one file (not split into `model.js` / `view.js` / `presenter.js`)
 so load order and shared DOM references stay simple for a static, no-build site.

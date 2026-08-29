@@ -75,6 +75,17 @@ const TEAM = [
   { name: 'Maria',     initial: 'M', role: 'r4', desc: 'x4', email: 'maria@universallimbs.com' }
 ];
 
+// Test-rig parts: the process list on the left and the labelled grid below
+// both read this, so they can never drift apart.
+const PARTS = ['motor', 'cableCell', 'bowden', 'bed', 'wrist', 'hand', 'gripCell', 'daq', 'python'];
+
+const SYSTEM_FLOW = [
+  ['part.actuator', 'part.cableCell', 'part.tendon'],
+  ['part.hand', 'part.gripCell', 'part.daqLog']
+];
+
+const BRIEF = ['goal', 'concept', 'hardware', 'themes'];
+
 const MINUTES = [
   { name: 'mm1', date: 'mm1date' },
   { name: 'mm2', date: 'mm2date' },
@@ -314,6 +325,51 @@ function renderMinutes() {
   });
 }
 
+// ============================================ VIEW: university collaboration
+
+function renderPortal() {
+  const list = document.getElementById('processList');
+  if (list) {
+    list.innerHTML = '';
+    PARTS.forEach(key => {
+      const item = el('div', 'process-item');
+      item.appendChild(el('strong', null, t('part.' + key)));
+      item.appendChild(el('small', null, t('part.' + key + '.d')));
+      list.appendChild(item);
+    });
+  }
+
+  const grid = document.getElementById('partsGrid');
+  if (grid) {
+    grid.innerHTML = '';
+    PARTS.forEach(key => grid.appendChild(el('div', 'part-item', t('part.' + key))));
+  }
+
+  const flow = document.getElementById('systemFlow');
+  if (flow) {
+    flow.innerHTML = '';
+    SYSTEM_FLOW.forEach(steps => {
+      const row = el('div', 'flow-row');
+      steps.forEach((key, i) => {
+        if (i) row.appendChild(el('div', 'flow-arrow', '→'));
+        row.appendChild(el('div', 'flow-item', t(key)));
+      });
+      flow.appendChild(row);
+    });
+  }
+
+  const brief = document.getElementById('briefGrid');
+  if (brief) {
+    brief.innerHTML = '';
+    BRIEF.forEach(key => {
+      const card = el('article', 'brief-card');
+      card.appendChild(el('h4', null, t('brief.' + key)));
+      card.appendChild(el('p', null, t('brief.' + key + '.d')));
+      brief.appendChild(card);
+    });
+  }
+}
+
 // =========================================================== VIEW: clocks
 
 const CITY_ZONES = {
@@ -440,6 +496,88 @@ async function sendUpload(file) {
   }
 }
 
+// ============================================ PRESENTER: deliverable form
+
+const deliverableModal = document.getElementById('deliverableModal');
+const deliverableForm = document.getElementById('deliverableForm');
+const deliverableStatus = document.getElementById('deliverableStatus');
+const reviewerSelect = deliverableForm.elements.recipientEmail;
+const otherReviewerField = document.getElementById('otherReviewerField');
+const otherReviewerInput = deliverableForm.elements.otherReviewerEmail;
+
+function openModal(modal) { modal.classList.add('active'); modal.setAttribute('aria-hidden', 'false'); }
+function closeModal(modal) { modal.classList.remove('active'); modal.setAttribute('aria-hidden', 'true'); }
+
+reviewerSelect.addEventListener('change', () => {
+  const isOther = reviewerSelect.value === 'other';
+  otherReviewerField.hidden = !isOther;
+  otherReviewerInput.required = isOther;
+  if (!isOther) otherReviewerInput.value = '';
+});
+
+document.getElementById('openDeliverableForm').addEventListener('click', () => {
+  deliverableStatus.textContent = '';
+  openModal(deliverableModal);
+});
+
+document.getElementById('deliverableClose').addEventListener('click', () => closeModal(deliverableModal));
+
+deliverableModal.addEventListener('click', event => {
+  if (event.target === deliverableModal) closeModal(deliverableModal);
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') document.querySelectorAll('.modal.active').forEach(closeModal);
+});
+
+deliverableForm.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  if (!window.ulfSubmitConfigured()) {
+    deliverableStatus.textContent = t('msg.notConfigured');
+    return;
+  }
+
+  const data = new FormData(deliverableForm);
+  const file = data.get('deliverableFile');
+  if (!(file instanceof File) || !file.size) {
+    deliverableStatus.textContent = t('msg.chooseFile');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    deliverableStatus.textContent = t('msg.tooLarge');
+    return;
+  }
+
+  const payload = Object.fromEntries(data);
+  delete payload.deliverableFile;
+  payload.fileName = file.name;
+  payload.fileType = file.type || 'application/octet-stream';
+  payload.language = window.ulfI18n.current;
+  payload.fileBase64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1]);
+    reader.onerror = () => reject(new Error('Unable to read the selected file'));
+    reader.readAsDataURL(file);
+  });
+
+  const button = deliverableForm.querySelector('button[type="submit"]');
+  if (button) button.disabled = true;
+  deliverableStatus.textContent = t('msg.sending');
+
+  try {
+    await window.ulfSubmit('deliverable', payload);
+    deliverableStatus.textContent = t('msg.sent');
+    deliverableForm.reset();
+    otherReviewerField.hidden = true;
+    otherReviewerInput.required = false;
+  } catch (error) {
+    deliverableStatus.textContent = error.message;
+  } finally {
+    if (button) button.disabled = false;
+  }
+});
+
 // ===================================================================== boot
 
 function renderAll() {
@@ -452,6 +590,7 @@ function renderAll() {
   renderLinks();
   renderTeam();
   renderMinutes();
+  renderPortal();
   renderClocks();
 }
 

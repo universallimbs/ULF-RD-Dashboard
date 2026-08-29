@@ -40,6 +40,7 @@ lower-left card changes.
 | Links | Quick links grid |
 | Team | Roles and team members |
 | Mins | Meeting minutes |
+| University collaboration | Partner deck, test-rig architecture, student build brief, deliverable submission |
 
 The header carries a dual-timezone clock (São Paulo fixed, second city
 selectable). Offsets are derived with `Intl.DateTimeFormat` rather than
@@ -113,6 +114,18 @@ browser  ->  Apps Script web app  ->  Drive file + Sheet row + email
 
 Until that endpoint is set, the Upload panel and the survey both say so plainly
 rather than failing silently.
+
+### University collaboration
+
+The partner-facing panel: the Canva scope deck, the automated test-rig
+architecture (process list, labelled parts, system chain), the four-part student
+build brief, and **Submit deliverable**.
+
+The deliverable form posts a `deliverable` submission. The browser sends a
+reviewer **id** (`saja-amro`, `walid`, …), never an address; Apps Script resolves
+it against `REVIEWERS_JSON` on its own side, so the endpoint can only mail people
+on that allowlist. "Other" and any unknown id route to `FALLBACK_REVIEWER_EMAIL`,
+with whatever the submitter typed recorded in the Sheet rather than mailed.
 
 ### Upload
 

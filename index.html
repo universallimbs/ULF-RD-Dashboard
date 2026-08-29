@@ -61,6 +61,7 @@
     <button type="button" data-panel="links"    data-i18n="tabLinks">Links</button>
     <button type="button" data-panel="team"     data-i18n="tabTeam">Team</button>
     <button type="button" data-panel="mins"     data-i18n="tabTasks">Mins</button>
+    <button type="button" data-panel="portal"   data-i18n="tabPortal">University collaboration</button>
   </nav>
 
   <div class="layout">
@@ -151,6 +152,59 @@
         <div id="minsList"></div>
       </section>
 
+      <!-- University collaboration -->
+      <section class="panel" id="panel-portal">
+        <div class="portal-actions">
+          <button class="btn-dark" id="openDeliverableForm" type="button" data-i18n="portal.submit">Submit deliverable</button>
+          <span class="info-dot" tabindex="0">i<span class="info-tip" data-i18n="portal.flowTip"></span></span>
+        </div>
+
+        <section class="card">
+          <div class="card-head"><h2 class="card-title" data-i18n="portal.deck">University collaboration presentation</h2></div>
+          <div class="video-frame">
+            <iframe src="https://www.canva.com/design/DAHTNfcZ7mY/-mLW3MtJCuIdiUuWD4xeDQ/view?embed"
+              data-i18n-attr="title:portal.deck" title="University collaboration presentation"
+              allow="autoplay; fullscreen" allowfullscreen loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <div class="eyebrow" data-i18n="portal.processFlow">Process flow</div>
+              <h2 class="card-title" style="margin-top:4px" data-i18n="portal.rigTitle">Automated test rig architecture</h2>
+            </div>
+          </div>
+
+          <div class="rig-layout">
+            <div class="process-list" id="processList"></div>
+            <div>
+              <div class="rig-frame">
+                <img class="rig-image" src="testbench-architecture.webp" data-i18n-attr="alt:portal.rigAlt" alt="">
+              </div>
+              <div class="rig-help" data-i18n="portal.hoverHelp"></div>
+            </div>
+          </div>
+
+          <div class="mini-row">
+            <div class="mini-panel">
+              <h3 class="mini-title" data-i18n="portal.parts">Parts labelled</h3>
+              <div class="parts-grid" id="partsGrid"></div>
+            </div>
+            <div class="mini-panel">
+              <h3 class="mini-title" data-i18n="portal.system">System overview</h3>
+              <div class="flow" id="systemFlow"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><h2 class="card-title" data-i18n="brief.heading">Student build brief</h2></div>
+          <div class="brief-grid" id="briefGrid"></div>
+        </section>
+      </section>
+
     </div>
 
     <!-- =================================================== right column -->
@@ -184,6 +238,63 @@
       </section>
 
     </div>
+  </div>
+</div>
+
+<div class="modal" id="deliverableModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-top">
+      <strong data-i18n="form.deliverable">Submit deliverable</strong>
+      <button class="modal-close" type="button" id="deliverableClose" data-i18n-attr="aria-label:form.close">×</button>
+    </div>
+    <form id="deliverableForm" class="submission-form">
+      <label><span data-i18n="form.name">Your name</span><input name="submitterName" required></label>
+      <label><span data-i18n="form.email">Your email</span><input name="submitterEmail" type="email" required data-i18n-attr="placeholder:form.emailPlaceholder"><small data-i18n="form.emailHelp"></small></label>
+      <label><span data-i18n="form.org">University / organization</span><input name="organization" required></label>
+      <label><span data-i18n="form.task">Task name</span><input name="taskName" required></label>
+      <label><span data-i18n="form.what">What are you submitting?</span>
+        <select name="submissionType" required>
+          <option value="" data-i18n="form.choose">Choose</option>
+          <option value="Concept" data-i18n="form.concept">Concept</option>
+          <option value="Working file" data-i18n="form.working">Working file</option>
+          <option value="Final file" data-i18n="form.final">Final file</option>
+          <option value="Research or validation result" data-i18n="form.research">Research or validation result</option>
+          <option value="Other" data-i18n="form.other">Other</option>
+        </select>
+      </label>
+      <label><span data-i18n="form.version">Version</span><input name="version" required data-i18n-attr="placeholder:form.versionPlaceholder"></label>
+      <label><span data-i18n="form.changed">What changed?</span><textarea name="changes" rows="3" required></textarea></label>
+      <label><span data-i18n="form.reviewer">Send to reviewer</span>
+        <select name="recipientEmail" required>
+          <option value="" data-i18n="form.selectReviewer">Select a reviewer</option>
+          <option value="saja-amro">Saja Amro — Prosthetist</option>
+          <option value="nadine-arar">Nadine Arar — Test Lead / Mentor</option>
+          <option value="maria">Maria — University Collaboration Lead</option>
+          <option value="walid">Walid — 3D CAD designer</option>
+          <option value="ganesh">Ganesh — 3D validator &amp; simulator</option>
+          <option value="nili">Nili — Product Success</option>
+          <option value="abhay">Abhay — Researcher</option>
+          <option value="matthew">Matthew — Concept artist</option>
+          <option value="other" data-i18n="form.other">Other</option>
+        </select>
+      </label>
+      <label id="otherReviewerField" hidden><span data-i18n="form.otherReviewer">Other reviewer email</span><input name="otherReviewerEmail" type="email" placeholder="reviewer@universallimbs.com"></label>
+      <label><span data-i18n="form.nextSteps">Expected next steps</span>
+        <select name="nextSteps" required>
+          <option value="" data-i18n="form.choose">Choose</option>
+          <option value="Review" data-i18n="form.review">Review</option>
+          <option value="Revision required" data-i18n="form.revision">Revision required</option>
+          <option value="Approve" data-i18n="form.approve">Approve</option>
+          <option value="Testing" data-i18n="form.testing">Testing</option>
+          <option value="Other" data-i18n="form.other">Other</option>
+        </select>
+      </label>
+      <label><span data-i18n="form.upload">Upload your deliverable file</span><input name="deliverableFile" type="file" required accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.stl,.step,.stp,.png,.jpg,.jpeg"><small data-i18n="form.uploadHelp"></small></label>
+      <label><span data-i18n="form.notes">Notes</span><textarea name="notes" rows="4"></textarea></label>
+      <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+      <p class="form-status" id="deliverableStatus" role="status"></p>
+      <div class="modal-actions"><button class="btn-dark" type="submit" data-i18n="form.send">Send deliverable</button></div>
+    </form>
   </div>
 </div>
 
