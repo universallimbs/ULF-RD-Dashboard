@@ -58,6 +58,7 @@ const P_ACK           = 'ACK_SUBMITTERS';
 const P_FORM_ID       = 'FORM_ID';
 
 const MAX_FILE_BYTES    = 10 * 1024 * 1024;   // matches the 10 MB limit in the UI
+const UPLOAD_MAX_BYTES  = 20 * 1024 * 1024;   // the Upload panel advertises 20 MB
 const DEFAULT_DAILY_CAP = 200;
 const PER_MINUTE_CAP    = 10;
 const DEFAULT_DOMAINS   = 'universallimbs.com';
@@ -85,6 +86,7 @@ function doPost(event) {
     if (request.type === 'deliverable') return json({ ok: true, result: handleDeliverable(request.payload) });
     if (request.type === 'survey')      return json({ ok: true, result: handleSurvey(request.payload) });
     if (request.type === 'download')    return json({ ok: true, result: handleDownload(request.payload) });
+    if (request.type === 'upload')      return json({ ok: true, result: handleUpload(request.payload) });
     throw new PublicError('Unsupported submission type.');
   } catch (error) {
     logFailure(error, event);
@@ -153,6 +155,39 @@ function handleDeliverable(payload) {
   if (acknowledgementsEnabled() && record.submitterEmail) mailSubmitterReceipt(record);
 
   return { reviewer: reviewer.name, fileUrl: saved.url };
+}
+
+/**
+ * A bare file drop from the hub's Upload panel.
+ *
+ * Deliberately thin: no reviewer routing and no required metadata, because the
+ * panel asks for none. The file lands in Uploads/<yyyy-MM>/ and the coordinator
+ * is told it arrived. The 20 MB ceiling here is the real one — the client-side
+ * check in app.js is only there to fail fast.
+ */
+function handleUpload(payload) {
+  if (!payload.fileBase64 || !payload.fileName) throw new PublicError('No file was received.');
+
+  const bytes = Utilities.base64Decode(payload.fileBase64);
+  if (bytes.length > UPLOAD_MAX_BYTES) throw new PublicError('The file is larger than the 20 MB limit.');
+
+  const blob = Utilities.newBlob(bytes, payload.fileType || 'application/octet-stream',
+    Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') + '_' + payload.fileName);
+  const file = submissionFolder('Uploads').createFile(blob);
+
+  const coordinator = PROPS.getProperty(P_FALLBACK);
+  if (coordinator && MailApp.getRemainingDailyQuota() > 1) {
+    const html = '<p>A file was uploaded from the R&amp;D hub.</p>'
+      + '<table cellpadding="4" style="border-collapse:collapse">'
+      + rowRaw('File', '<a href="' + encodeURI(file.getUrl()) + '">' + escapeHtml(file.getName()) + '</a>')
+      + row('Size', Math.round(bytes.length / 1024) + ' KB')
+      + row('Language', payload.language || '')
+      + '</table>';
+    MailApp.sendEmail(coordinator, '[ULF upload] ' + file.getName(), htmlToText(html),
+                      { htmlBody: html, name: 'ULF R&D Hub' });
+  }
+
+  return { fileUrl: file.getUrl() };
 }
 
 /**

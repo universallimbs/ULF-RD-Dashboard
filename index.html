@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Universal Limbs — R&D Dashboard</title>
+<title>ULF | R&D internal hub — Universal Limbs</title>
 
-<link rel="stylesheet" href="assets/css/dashboard.css?v=20260829">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/css/dashboard.css?v=20260830">
 <script src="assets/js/config.js"></script>
 <script src="assets/js/submit.js"></script>
 <script src="assets/js/i18n.js"></script>
@@ -13,533 +15,175 @@
 
 <body>
 <div class="shell">
+
   <header class="top">
     <div class="brand">
-      <img class="logo" src="ul-logo.png" data-i18n-attr="alt:brand.logoAlt" alt="Universal Limbs logo">
-      <span class="brand-word">ULF</span>
-      <span class="sub" data-i18n="brand.sub">R&amp;D dashboard</span>
+      <div class="brand-eyebrow" data-i18n="brandEyebrow">ULF | R&amp;D - internal hub</div>
+      <div class="brand-title" data-i18n="brandTitle">Universal Limbs</div>
     </div>
 
-    <div class="years">
-      <button class="year active" type="button" data-year="1" data-i18n="top.year1">Year 1</button>
-      <button class="year" type="button" data-year="2" data-i18n="top.year2">Year 2</button>
+    <div class="clocks">
+      <div class="clock">
+        <div class="clock-city" data-i18n="clkBrazil">Brazil</div>
+        <div class="clock-time" id="clockA">—</div>
+        <div class="clock-zone" id="zoneA">GMT-3</div>
+      </div>
+      <div class="clock">
+        <div class="clock-city">
+          <select class="clock-select" id="citySelect" data-i18n-attr="aria-label:clkToronto">
+            <option value="America/Toronto" selected>Toronto</option>
+            <option value="Europe/London">London</option>
+            <option value="Europe/Lisbon">Lisbon</option>
+            <option value="Asia/Kolkata">Bengaluru</option>
+            <option value="Asia/Amman">Amman</option>
+          </select>
+        </div>
+        <div class="clock-time" id="clockB">—</div>
+        <div class="clock-zone" id="zoneB">GMT-4</div>
+      </div>
     </div>
 
-    <div class="top-year">2026</div>
-
-    <div class="lang-toggle" role="group" data-i18n-attr="aria-label:lang.label" aria-label="Language">
-      <button class="lang-btn active" type="button" data-lang="en" aria-pressed="true">EN</button>
-      <button class="lang-btn" type="button" data-lang="pt" aria-pressed="false">PT</button>
+    <div class="top-right">
+      <div class="lang-toggle" role="group" data-i18n-attr="aria-label:langLabel">
+        <button class="lang-btn active" type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button class="lang-btn" type="button" data-lang="pt" aria-pressed="false">PT</button>
+      </div>
+      <a class="cta" href="https://drive.google.com/drive/folders/14iGYmt91YZmHAzsnil6HtJv8Nu5YTF6X" target="_blank" rel="noopener">
+        <span data-i18n="cta">Anqido</span> <span aria-hidden="true">↗</span>
+      </a>
     </div>
-
-    <a class="icon-btn" href="mailto:elizabeth@universallimbs.com?cc=ana@universallimbs.com,saja@universallimbs.com,maria@universallimbs.com,nicole@universallimbs.com,sahitya@universallimbs.com&subject=R&D%20Dashboard%20Feedback&body=Hi%20team,%0D%0A%0D%0AFeedback%20for%20the%20R%26D%20dashboard:%0D%0A%0D%0APage/section:%0D%0AIssue%20or%20suggestion:%0D%0APriority:%0D%0A%0D%0AThank%20you." data-i18n-attr="title:top.feedback;aria-label:top.feedback" title="Send feedback" aria-label="Send feedback">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 17H9m9-2V10a6 6 0 0 0-12 0v5l-2 2h16l-2-2Zm-5 5a2 2 0 0 1-2 0"/></svg>
-    </a>
-
-    <a class="icon-btn" href="https://drive.google.com/drive/folders/14iGYmt91YZmHAzsnil6HtJv8Nu5YTF6X" target="_blank" rel="noopener" data-i18n-attr="title:top.drive;aria-label:top.drive" title="Open the shared drive" aria-label="Open the shared drive">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    </a>
   </header>
 
-  <section class="layout">
-    <aside class="side">
-      <nav class="nav" data-i18n-attr="aria-label:nav.aria" aria-label="R&D sections">
-        <button class="active" type="button" data-view="dashboard"><span data-i18n="nav.dashboard">Dashboard</span></button>
-        <button type="button" data-view="goal"><span data-i18n="nav.goal">Goal</span></button>
-        <button type="button" data-view="resources"><span data-i18n="nav.resources">Resources</span></button>
-        <button type="button" data-view="portal"><span data-i18n="nav.portal">University collaboration</span></button>
-        <button type="button" data-view="downloads"><span data-i18n="nav.downloads">Downloads</span></button>
-      </nav>
+  <nav class="tabbar" id="tabbar">
+    <button class="active" type="button" data-panel="overview" data-i18n="tabOverview">Dashboard</button>
+    <button type="button" data-panel="upload"   data-i18n="tabUpload">Upload</button>
+    <button type="button" data-panel="download" data-i18n="tabDownload">Download</button>
+    <button type="button" data-panel="links"    data-i18n="tabLinks">Links</button>
+    <button type="button" data-panel="team"     data-i18n="tabTeam">Team</button>
+    <button type="button" data-panel="mins"     data-i18n="tabTasks">Mins</button>
+  </nav>
 
-      <div class="side-team">
-        <div class="side-team-title" data-i18n="side.team">Team</div>
-        <div class="side-team-row">
-          <span class="side-initial">R</span><span>Rasna</span>
-          <a class="side-bell" href="mailto:rasna@universallimbs.com?subject=Friendly%20R%26D%20reminder&cc=sahitya%40universallimbs.com" data-i18n-attr="title:side.remind;aria-label:side.remind" title="Send friendly reminder">🔔</a>
-        </div>
-        <div class="side-team-row">
-          <span class="side-initial">S</span><span>Sahitya</span>
-          <a class="side-bell" href="mailto:sahitya@universallimbs.com?subject=Friendly%20R%26D%20reminder&cc=sahitya%40universallimbs.com" data-i18n-attr="title:side.remind;aria-label:side.remind" title="Send friendly reminder">🔔</a>
-        </div>
-        <div class="side-team-row">
-          <span class="side-initial">S</span><span>Saja</span>
-          <a class="side-bell" href="mailto:saja@universallimbs.com?subject=Friendly%20R%26D%20reminder&cc=sahitya%40universallimbs.com" data-i18n-attr="title:side.remind;aria-label:side.remind" title="Send friendly reminder">🔔</a>
-        </div>
-        <div class="side-team-row">
-          <span class="side-initial">A</span><span>Ana</span>
-          <a class="side-bell" href="mailto:ana@universallimbs.com?subject=Friendly%20R%26D%20reminder&cc=sahitya%40universallimbs.com" data-i18n-attr="title:side.remind;aria-label:side.remind" title="Send friendly reminder">🔔</a>
-        </div>
-        <div class="side-team-row">
-          <span class="side-initial">M</span><span>Maria</span>
-          <a class="side-bell" href="mailto:maria@universallimbs.com?subject=Friendly%20R%26D%20reminder&cc=sahitya%40universallimbs.com" data-i18n-attr="title:side.remind;aria-label:side.remind" title="Send friendly reminder">🔔</a>
-        </div>
-      </div>
-    </aside>
+  <div class="layout">
 
-    <main class="stage" aria-live="polite">
+    <!-- ==================================================== left column -->
+    <div class="col">
 
-      <!-- ============================================================ dashboard -->
-      <section id="dashboard" class="view active">
-        <section class="hero">
+      <section class="card">
+        <div class="card-head">
+          <h2 class="card-title" data-i18n="updates">Priority board</h2>
+          <div class="carousel-nav">
+            <button class="round-btn" type="button" id="prioPrev" data-i18n-attr="aria-label:prevItem">‹</button>
+            <div class="dots" id="prioDots"></div>
+            <button class="round-btn" type="button" id="prioNext" data-i18n-attr="aria-label:nextItem">›</button>
+          </div>
+        </div>
+        <div class="priority-grid" id="prioGrid"></div>
+      </section>
+
+      <!-- Dashboard -->
+      <section class="card panel active" id="panel-overview">
+        <div class="card-head"><h2 class="card-title" data-i18n="hTitle">Overview</h2></div>
+        <p class="overview-lead" data-i18n="hSub"></p>
+
+        <div class="overview-grid">
           <div>
-            <div class="hero-greet" id="heroGreeting">Good afternoon, ULF</div>
-            <div class="hero-sub" data-i18n="hero.sub">Pediatric prosthetic hand programme — here is where the work stands today.</div>
+            <img class="shot" src="ulf-prosthetic-render.webp" data-i18n-attr="alt:shotAlt" alt="">
+            <a class="shot-link" href="https://www.waacs.nl/" target="_blank" rel="noopener" data-i18n="shotLink"></a>
+            <p class="overview-caption" data-i18n="hCaption"></p>
           </div>
-          <div class="hero-actions">
-            <button class="pill" type="button" data-jump="downloads" data-i18n="nav.downloads">Downloads</button>
-            <button class="pill primary" type="button" data-jump="portal" data-i18n="nav.portal">University collaboration</button>
-          </div>
-        </section>
 
-        <div class="stat-row">
-          <section class="stat-card">
-            <span class="kicker" data-i18n="stats.progress">Project progress</span>
-            <div class="donut-wrap">
-              <div class="donut" style="--pct:63%" role="img" aria-label="63%">
-                <div class="donut-value"><strong>63%</strong><span data-i18n="stats.overall">Overall</span></div>
-              </div>
-              <div class="donut-legend">
-                <div class="legend-row"><span class="legend-dot done"></span><span data-i18n="stats.completed">Completed</span> <b>24</b></div>
-                <div class="legend-row"><span class="legend-dot wip"></span><span data-i18n="stats.inProgress">In progress</span> <b>18</b></div>
-                <div class="legend-row"><span class="legend-dot"></span><span data-i18n="stats.todo">To do</span> <b>12</b></div>
-              </div>
-            </div>
-          </section>
-
-          <section class="stat-card">
-            <span class="kicker" data-i18n="stats.focus">Today's focus</span>
-            <div class="focus-list">
-              <div class="focus-item"><span data-i18n="focus.bowden">Review Bowden routing</span><span class="focus-badge due" data-i18n="focus.dueToday">Due today</span></div>
-              <div class="focus-item"><span data-i18n="focus.results">Upload test results</span><span class="focus-badge due" data-i18n="focus.dueToday">Due today</span></div>
-              <div class="focus-item"><span data-i18n="focus.tracker">Update requirements tracker</span><span class="focus-badge" data-i18n="focus.tomorrow">Tomorrow</span></div>
-              <div class="focus-item"><span data-i18n="focus.finger">Prototype finger v2</span><span class="focus-badge" data-i18n="focus.aug30">Aug 30</span></div>
-            </div>
-          </section>
-        </div>
-
-        <section class="meeting-card">
-          <div class="meeting-date"><small data-i18n="meeting.month">Aug</small><strong>27</strong></div>
-          <div class="meeting-body">
-            <strong data-i18n="meeting.title">ULF R&amp;D weekly meeting</strong>
-            <span data-i18n="meeting.when">Wednesday, Aug 27 · 11:00 AM PT</span>
-          </div>
-          <a class="pill primary" href="https://meet.google.com/" target="_blank" rel="noopener" data-i18n="meeting.join">Join meeting</a>
-        </section>
-
-        <section class="dashboard-section">
-          <h1 class="section-heading" data-i18n="summary.heading">Project summary</h1>
-          <div class="section-rule"></div>
-          <section class="project-summary">
-            <p data-i18n="summary.p1"></p>
-            <p data-i18n="summary.p2"></p>
-            <p data-i18n="summary.p3"></p>
-            <p data-i18n="summary.p4"></p>
-            <div class="last-updated" data-i18n="summary.updated">Last updated on July 15th, 2026</div>
-          </section>
-        </section>
-
-        <section class="dashboard-section">
-          <h1 class="section-heading" data-i18n="team.heading">R&amp;D team</h1>
-          <div class="section-rule"></div>
-          <section class="team-strip">
-            <div class="team-grid" id="teamGrid"></div>
-          </section>
-        </section>
-
-        <section class="dashboard-section">
-          <h1 class="section-heading" data-i18n="updates.heading">Latest updates</h1>
-          <div class="section-rule"></div>
-          <div class="dashboard-grid">
-            <section class="carousel" data-i18n-attr="aria-label:updates.heading" aria-label="Latest updates">
-              <div class="carousel-head no-title">
-                <div class="carousel-controls">
-                  <button class="carousel-btn" type="button" id="prevUpdate" data-i18n-attr="aria-label:updates.prev" aria-label="Previous update">‹</button>
-                  <button class="carousel-btn" type="button" id="nextUpdate" data-i18n-attr="aria-label:updates.nextBtn" aria-label="Next update">›</button>
-                </div>
-              </div>
-
-              <article class="update-slide active">
-                <div class="update-title" data-i18n="upd.survey.title"></div>
-                <div class="update-line"><strong data-i18n="updates.current">Current</strong><span data-i18n="upd.survey.current"></span></div>
-                <div class="update-line"><strong data-i18n="updates.next">Next</strong><span data-i18n="upd.survey.next"></span></div>
-                <div class="update-line"><strong data-i18n="updates.link">Link</strong><span><a class="pill primary" href="prosthetic-user-survey.html" target="_blank" rel="noopener" data-i18n="upd.survey.cta"></a></span></div>
-              </article>
-
-              <article class="update-slide">
-                <div class="update-title" data-i18n="upd.deck.title"></div>
-                <div class="update-line"><strong data-i18n="updates.current">Current</strong><span data-i18n="upd.deck.current"></span></div>
-                <div class="update-line"><strong data-i18n="updates.next">Next</strong><span data-i18n="upd.deck.next"></span></div>
-                <div class="update-line"><strong data-i18n="updates.link">Link</strong><span><a class="pill primary" href="https://docs.google.com/presentation/d/1r0JcQKQnXlVC0-lzlxrTwiQEwjLhIUrXq-Rz3xRa6Tk/edit?usp=sharing" target="_blank" rel="noopener" data-i18n="upd.deck.cta"></a></span></div>
-              </article>
-
-              <article class="update-slide">
-                <div class="update-title" data-i18n="upd.base.title"></div>
-                <div class="update-line"><strong data-i18n="updates.current">Current</strong><span data-i18n="upd.base.current"></span></div>
-                <div class="update-line"><strong data-i18n="updates.next">Next</strong><span data-i18n="upd.base.next"></span></div>
-                <div class="update-line"><strong data-i18n="updates.link">Link</strong><span><a class="pill primary" href="https://docs.google.com/spreadsheets/d/1Cf-Qrm9P4SmOiynSsROKjqrrjdEQIn6SukNvNQSpMGU/edit?usp=sharing" target="_blank" rel="noopener" data-i18n="upd.base.cta"></a></span></div>
-              </article>
-
-              <article class="update-slide">
-                <div class="update-title" data-i18n="upd.hybrid.title"></div>
-                <div class="update-line"><strong data-i18n="updates.current">Current</strong><span data-i18n="upd.hybrid.current"></span></div>
-                <div class="update-line"><strong data-i18n="updates.next">Next</strong><span data-i18n="upd.hybrid.next"></span></div>
-                <div class="update-line"><strong data-i18n="updates.link">Link</strong><span><a class="pill primary" href="https://docs.google.com/spreadsheets/d/1Cf-Qrm9P4SmOiynSsROKjqrrjdEQIn6SukNvNQSpMGU/edit?usp=sharing" target="_blank" rel="noopener" data-i18n="upd.hybrid.cta"></a></span></div>
-              </article>
-
-              <div class="update-dots" id="updateDots"></div>
-            </section>
-          </div>
-        </section>
-
-        <section class="dashboard-section">
-          <h1 class="section-heading" data-i18n="docs.heading">Documents</h1>
-          <div class="section-rule"></div>
-          <section class="document-grid">
-            <article class="document-card">
-              <div class="folder-icon"></div>
-              <h2 data-i18n="docs.req.title"></h2><p data-i18n="docs.req.body"></p>
-              <div class="actions"><button class="pill primary" data-jump="goal" type="button" data-i18n="docs.open">Open</button></div>
-            </article>
-            <article class="document-card">
-              <div class="folder-icon"></div>
-              <h2 data-i18n="docs.survey.title"></h2><p data-i18n="docs.survey.body"></p>
-              <div class="actions"><a class="pill primary" href="prosthetic-user-survey.html" target="_blank" rel="noopener" data-i18n="docs.open">Open</a></div>
-            </article>
-            <article class="document-card">
-              <div class="folder-icon"></div>
-              <h2 data-i18n="docs.budget.title"></h2><p data-i18n="docs.budget.body"></p>
-              <div class="actions"><a class="pill primary" href="https://docs.google.com/spreadsheets/d/1GkG42z72UtrJ5_tYGXVXwijDe_5T6Ae6/edit?usp=drivesdk&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" data-i18n="docs.open">Open</a></div>
-            </article>
-            <article class="document-card">
-              <div class="folder-icon"></div>
-              <h2 data-i18n="docs.bench.title"></h2><p data-i18n="docs.bench.body"></p>
-              <div class="actions"><button class="pill primary" data-jump="portal" type="button" data-i18n="docs.open">Open</button></div>
-            </article>
-            <article class="document-card">
-              <div class="folder-icon"></div>
-              <h2 data-i18n="docs.tracker.title"></h2><p data-i18n="docs.tracker.body"></p>
-              <div class="actions"><a class="pill primary" href="https://docs.google.com/spreadsheets/d/1Cf-Qrm9P4SmOiynSsROKjqrrjdEQIn6SukNvNQSpMGU/edit?usp=sharing" target="_blank" rel="noopener" data-i18n="docs.open">Open</a></div>
-            </article>
-            <article class="document-card">
-              <div class="folder-icon"></div>
-              <h2 data-i18n="docs.visuals.title"></h2><p data-i18n="docs.visuals.body"></p>
-              <div class="actions"><button class="pill primary" data-jump="goal" type="button" data-i18n="docs.open">Open</button></div>
-            </article>
-          </section>
-        </section>
-      </section>
-
-      <!-- ================================================================= goal -->
-      <section id="goal" class="view">
-        <div class="goal-top">
           <div>
-            <h1 class="title" data-i18n="goal.title">Design direction</h1>
-            <div class="owner-tag" data-i18n="goal.owner">Owner: Rasna Mantha</div>
-            <div class="rule"></div>
-          </div>
-          <div class="goal-top-actions">
-            <button class="edit-milestones-btn" id="editMilestonesBtn" type="button" data-i18n="goal.edit">Edit milestones</button>
-            <div class="time-tabs">
-              <button class="time-tab" data-goal="week" type="button" data-i18n="goal.week">This week</button>
-              <button class="time-tab" data-goal="month" type="button" data-i18n="goal.month">This month</button>
-              <button class="time-tab active" data-goal="year" type="button" data-i18n="goal.year">The year</button>
+            <div class="eyebrow" data-i18n="hRefs">References</div>
+            <div id="refSlot" style="margin-top:12px">
+              <img class="shot" src="yale-multigrasp.png" data-i18n-attr="alt:refAlt" alt="">
+              <div class="ref-name" data-i18n="hRefName">Yale Hand</div>
+              <div class="ref-sub" data-i18n="hRefSub">Multigrasp mechanism</div>
+              <a class="shot-link" href="https://www.eng.yale.edu/grablab/" target="_blank" rel="noopener" data-i18n="refLink"></a>
+            </div>
+            <div class="ref-nav">
+              <button class="round-btn" type="button" id="refPrev" data-i18n-attr="aria-label:prevItem">‹</button>
+              <div class="dots" id="refDots"></div>
+              <button class="round-btn" type="button" id="refNext" data-i18n-attr="aria-label:nextItem">›</button>
             </div>
           </div>
         </div>
 
-        <div id="goal-week" class="goal-panel">
-          <div class="goal-summary" data-i18n="goal.weekSummary"></div>
-          <div id="gantt-week" class="timeline-container" aria-live="polite"></div>
-        </div>
-        <div id="goal-month" class="goal-panel">
-          <div class="goal-summary" data-i18n="goal.monthSummary"></div>
-          <div id="gantt-month" class="timeline-container" aria-live="polite"></div>
-        </div>
-        <div id="goal-year" class="goal-panel active">
-          <div class="goal-summary" data-i18n="goal.yearSummary"></div>
-          <div id="gantt-year" class="timeline-container" aria-live="polite"></div>
-          <div class="visual-hint" data-i18n="goal.hint"></div>
-        </div>
-
-        <div class="folder-strip">
-          <article class="simple-folder">
-            <div class="folder-icon"></div>
-            <h3 data-i18n="goal.survey">Survey</h3>
-            <div class="actions"><a class="pill primary" href="prosthetic-user-survey.html" target="_blank" rel="noopener" data-i18n="docs.open">Open</a></div>
-          </article>
-          <article class="simple-folder">
-            <div class="folder-icon"></div>
-            <h3 data-i18n="goal.budget">Budget</h3>
-            <div class="actions"><a class="pill primary" href="https://docs.google.com/spreadsheets/d/1GkG42z72UtrJ5_tYGXVXwijDe_5T6Ae6/edit?usp=drivesdk&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" data-i18n="docs.open">Open</a></div>
-          </article>
-        </div>
+        <div class="rail"><div class="rail-track" id="railTrack"></div></div>
       </section>
 
-      <!-- ============================================================ resources -->
-      <section id="resources" class="view">
-        <section class="resource-simple-section">
-          <h1 class="section-heading" data-i18n="res.playbooks">Playbooks</h1>
-          <div class="section-rule"></div>
-          <div class="resource-list">
-            <div class="resource-row"><strong data-i18n="res.rd.title"></strong><span data-i18n="res.rd.body"></span><a class="pill" href="#" data-i18n="res.addLink">Add link</a></div>
-            <div class="resource-row"><strong data-i18n="res.testing.title"></strong><span data-i18n="res.testing.body"></span><a class="pill" href="#" data-i18n="res.addLink">Add link</a></div>
+      <!-- Upload -->
+      <section class="card panel" id="panel-upload">
+        <div class="card-head"><h2 class="card-title" data-i18n="upload">Upload from this site</h2></div>
+        <form id="uploadForm">
+          <div class="drop" id="dropZone">
+            <div class="drop-title" data-i18n="drop">Drop files here</div>
+            <div class="drop-sub" data-i18n="dropSub"></div>
+            <input type="file" name="uploadFile" id="uploadInput" hidden>
+            <button class="btn-dark" type="button" id="uploadPick" data-i18n="uploadBtn">Upload</button>
+            <a class="drop-link" href="https://drive.google.com/drive/folders/14iGYmt91YZmHAzsnil6HtJv8Nu5YTF6X" target="_blank" rel="noopener" data-i18n="uploadFolder"></a>
           </div>
-        </section>
-
-        <section class="resource-simple-section">
-          <h1 class="section-heading" data-i18n="res.sops">SOPs</h1>
-          <div class="section-rule"></div>
-          <div class="resource-list">
-            <div class="resource-row"><strong data-i18n="res.intake.title"></strong><span data-i18n="res.intake.body"></span><a class="pill" href="#" data-i18n="res.addLink">Add link</a></div>
-            <div class="resource-row"><strong data-i18n="res.upload.title"></strong><span data-i18n="res.upload.body"></span><a class="pill" href="#" data-i18n="res.addLink">Add link</a></div>
-          </div>
-        </section>
-
-        <section class="resource-simple-section">
-          <h1 class="section-heading" data-i18n="res.links">Links</h1>
-          <div class="section-rule"></div>
-          <div class="resource-list">
-            <div class="resource-row"><strong data-i18n="res.software.title"></strong><span data-i18n="res.software.body"></span><a class="pill" href="#" data-i18n="res.addLink">Add link</a></div>
-            <div class="resource-row"><strong data-i18n="res.drive.title"></strong><span data-i18n="res.drive.body"></span><a class="pill primary" href="https://drive.google.com/drive/folders/14iGYmt91YZmHAzsnil6HtJv8Nu5YTF6X" target="_blank" rel="noopener" data-i18n="res.open">Open</a></div>
-          </div>
-        </section>
-
-        <section class="resource-simple-section">
-          <h1 class="section-heading" data-i18n="res.presentations">Presentations</h1>
-          <div class="section-rule"></div>
-          <div class="resource-list">
-            <div class="resource-row"><strong data-i18n="res.utfpr.title"></strong><span data-i18n="res.utfpr.body"></span><a class="pill primary" href="https://docs.google.com/presentation/d/1r0JcQKQnXlVC0-lzlxrTwiQEwjLhIUrXq-Rz3xRa6Tk/edit?usp=sharing" target="_blank" rel="noopener" data-i18n="res.open">Open</a></div>
-            <div class="resource-row"><strong data-i18n="res.overview.title"></strong><span data-i18n="res.overview.body"></span><a class="pill" href="#" data-i18n="res.addLink">Add link</a></div>
-          </div>
-        </section>
+          <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+          <p class="form-status" id="uploadStatus" role="status"></p>
+        </form>
       </section>
 
-      <!-- =============================================================== portal -->
-      <section id="portal" class="view">
-        <div class="portal-actions">
-          <button class="pill primary" id="openDeliverableForm" type="button" data-i18n="portal.submit">Submit deliverable</button>
-          <span class="info-dot">i<span class="info-tip" data-i18n="portal.flowTip"></span></span>
+      <!-- Download -->
+      <section class="card panel" id="panel-download">
+        <div class="card-head"><h2 class="card-title" data-i18n="download">Download to Google Drive</h2></div>
+        <div class="row-list" id="downloadList"></div>
+      </section>
+
+      <!-- Links -->
+      <section class="card panel links-card" id="panel-links">
+        <div class="card-head"><h2 class="card-title" data-i18n="links">Quick links</h2></div>
+        <div class="link-grid" id="linkGrid"></div>
+      </section>
+
+      <!-- Team -->
+      <section class="card panel" id="panel-team">
+        <div class="eyebrow" style="margin-bottom:18px" data-i18n="roles">Roles and team members</div>
+        <div class="team-grid" id="teamGrid"></div>
+      </section>
+
+      <!-- Mins -->
+      <section class="card panel" id="panel-mins">
+        <div class="card-head"><h2 class="card-title" data-i18n="minutes">Meeting minutes</h2></div>
+        <div id="minsList"></div>
+      </section>
+
+    </div>
+
+    <!-- =================================================== right column -->
+    <div class="col">
+
+      <section class="card">
+        <div class="card-head">
+          <h2 class="card-title" data-i18n="wTitle">Project stage</h2>
+          <div class="card-note"><b>718</b> <span data-i18n="wDaysRest">of 730 days remaining</span></div>
         </div>
 
-        <section class="portal-reference-section portal-video-section">
-          <div class="portal-topbar">
-            <div class="portal-top-center" data-i18n="portal.deck">University collaboration presentation</div>
-            <div class="portal-top-spacer"></div>
-          </div>
-          <div class="portal-video-body">
-            <div class="portal-video-frame">
-              <iframe src="https://www.canva.com/design/DAHTNfcZ7mY/-mLW3MtJCuIdiUuWD4xeDQ/view?embed"
-                data-i18n-attr="title:portal.deck" title="University collaboration presentation"
-                allow="autoplay; fullscreen" allowfullscreen loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"></iframe>
-            </div>
-          </div>
-        </section>
-
-        <section class="portal-reference-section">
-          <div class="portal-topbar">
-            <div class="portal-top-label" data-i18n="portal.processFlow">Process flow</div>
-            <div class="portal-top-center" data-i18n="portal.rigTitle">Automated test rig architecture</div>
-            <div class="portal-top-spacer"></div>
-          </div>
-
-          <div class="portal-rig-layout">
-            <aside class="portal-process-list" id="processList"></aside>
-            <div class="portal-image-panel">
-              <div class="portal-rig-image-wrap">
-                <img class="portal-rig-image" src="testbench-architecture.webp" data-i18n-attr="alt:portal.rigAlt" alt="Automated test rig architecture">
-              </div>
-              <div class="hover-help" data-i18n="portal.hoverHelp"></div>
-            </div>
-          </div>
-
-          <div class="portal-info-row">
-            <div class="portal-mini-panel">
-              <h3 data-i18n="portal.parts">Parts labelled</h3>
-              <div class="portal-label-grid" id="partsGrid"></div>
-            </div>
-            <div class="portal-mini-panel system-overview-panel">
-              <h3 data-i18n="portal.system">System overview</h3>
-              <div class="system-flow">
-                <div class="flow-row">
-                  <div class="flow-item" data-i18n="part.actuator"></div><div class="flow-arrow">→</div>
-                  <div class="flow-item" data-i18n="part.cableCell"></div><div class="flow-arrow">→</div>
-                  <div class="flow-item" data-i18n="part.tendon"></div>
-                </div>
-                <div class="flow-row">
-                  <div class="flow-item" data-i18n="part.hand"></div><div class="flow-arrow">→</div>
-                  <div class="flow-item" data-i18n="part.gripCell"></div><div class="flow-arrow">→</div>
-                  <div class="flow-item" data-i18n="part.daqLog"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <section class="student-brief">
-            <h3 data-i18n="brief.heading">Student build brief</h3>
-            <div class="brief-grid">
-              <article class="brief-card"><h4 data-i18n="brief.goal"></h4><p data-i18n="brief.goal.d"></p></article>
-              <article class="brief-card"><h4 data-i18n="brief.concept"></h4><p data-i18n="brief.concept.d"></p></article>
-              <article class="brief-card"><h4 data-i18n="brief.hardware"></h4><p data-i18n="brief.hardware.d"></p></article>
-              <article class="brief-card"><h4 data-i18n="brief.themes"></h4><p data-i18n="brief.themes.d"></p></article>
-            </div>
-          </section>
-        </section>
-      </section>
-
-      <!-- ============================================================ downloads -->
-      <section id="downloads" class="view">
-        <div class="goal-top">
-          <div>
-            <h1 class="title" data-i18n="dl.title">Downloads</h1>
-            <div class="owner-tag" data-i18n="dl.owner"></div>
-            <div class="rule"></div>
-          </div>
-          <div class="goal-top-actions">
-            <button class="pill primary" id="openDownloadResponse" type="button" data-i18n="dl.submit">Submit project response</button>
-            <span class="info-dot">i<span class="info-tip" data-i18n="dl.tip"></span></span>
-          </div>
+        <div class="stage-legend">
+          <span class="leg" data-i18n="viewBtn">Calendar</span>
+          <span class="leg done" data-i18n="lgDone">Done</span>
+          <span class="leg now" data-i18n="lgNow">Active</span>
+          <span class="leg late" data-i18n="lgLate">Late</span>
+          <span class="leg" data-i18n="lgOpen">Open</span>
         </div>
 
-        <section class="dashboard-section">
-          <h1 class="section-heading" data-i18n="dl.available">Available packages</h1>
-          <div class="section-rule"></div>
-          <div class="download-grid" id="downloadGrid"></div>
-        </section>
-
-        <section class="dashboard-section">
-          <h1 class="section-heading" data-i18n="dl.responses">Project responses</h1>
-          <div class="section-rule"></div>
-          <div class="table-scroll">
-            <div class="response-table">
-              <div class="resp-head">
-                <div data-i18n="dl.colPackage">Package</div>
-                <div data-i18n="dl.colTeam">Team</div>
-                <div data-i18n="dl.colDate">Last response</div>
-                <div data-i18n="dl.colStatus">Status</div>
-              </div>
-              <div id="responseRows"></div>
-            </div>
-          </div>
-          <p class="visual-hint" data-i18n="dl.note"></p>
-        </section>
+        <div class="phases" id="phaseList"></div>
       </section>
 
-    </main>
-  </section>
-</div>
+      <section class="card">
+        <div class="card-head"><h2 class="card-title" data-i18n="tasksCard">Tasks</h2></div>
+        <div class="seg" id="taskSeg">
+          <button class="active" type="button" data-range="today" data-i18n="rToday">Today</button>
+          <button type="button" data-range="week"  data-i18n="rWeek">This week</button>
+          <button type="button" data-range="month" data-i18n="rMonth">This Month</button>
+        </div>
+        <div id="taskPanels"></div>
+      </section>
 
-<footer class="feedback">
-  <span data-i18n="footer.text">feedback stays visible on every page</span>
-  <a href="mailto:elizabeth@universallimbs.com?cc=ana@universallimbs.com,saja@universallimbs.com,maria@universallimbs.com,nicole@universallimbs.com,sahitya@universallimbs.com&subject=R&D%20Dashboard%20Feedback" data-i18n="footer.link">send feedback</a>
-</footer>
-
-<div class="modal" id="visualModal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-top"><strong id="modalTitle" data-i18n="form.visual">Visual</strong><button class="modal-close" type="button" id="modalClose" data-i18n-attr="aria-label:form.close">×</button></div>
-    <img id="modalImg" src="" alt="">
-    <p id="modalText"></p>
-  </div>
-</div>
-
-<div class="modal" id="milestoneEditorModal" aria-hidden="true">
-  <div class="modal-card editor-card">
-    <div class="modal-top"><strong data-i18n="form.editMilestones">Edit milestones</strong><button class="modal-close" type="button" id="milestoneEditorClose" data-i18n-attr="aria-label:form.close">×</button></div>
-    <form id="milestoneEditorForm">
-      <div class="editor-tabs" id="milestoneEditorTabs"></div>
-      <div id="milestoneEditorFields"></div>
-      <div class="editor-actions">
-        <button class="pill" type="button" id="addMilestoneBtn" data-i18n="form.addMilestone">Add milestone</button>
-        <button class="pill primary" type="submit" data-i18n="form.saveChanges">Save changes</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div class="modal" id="deliverableModal" aria-hidden="true">
-  <div class="modal-card editor-card">
-    <div class="modal-top"><strong data-i18n="form.deliverable">Submit deliverable</strong><button class="modal-close" type="button" id="deliverableClose" data-i18n-attr="aria-label:form.close">×</button></div>
-    <form id="deliverableForm" class="submission-form">
-      <label><span data-i18n="form.name">Your name</span><input name="submitterName" required></label>
-      <label><span data-i18n="form.email">Your email</span><input name="submitterEmail" type="email" required data-i18n-attr="placeholder:form.emailPlaceholder" placeholder="you@university.edu"><small data-i18n="form.emailHelp"></small></label>
-      <label><span data-i18n="form.org">University / organization</span><input name="organization" required></label>
-      <label><span data-i18n="form.task">Task name</span><input name="taskName" required></label>
-      <label><span data-i18n="form.what">What are you submitting?</span>
-        <select name="submissionType" required>
-          <option value="" data-i18n="form.choose">Choose</option>
-          <option value="Concept" data-i18n="form.concept">Concept</option>
-          <option value="Working file" data-i18n="form.working">Working file</option>
-          <option value="Final file" data-i18n="form.final">Final file</option>
-          <option value="Research or validation result" data-i18n="form.research">Research or validation result</option>
-          <option value="Other" data-i18n="form.other">Other</option>
-        </select>
-      </label>
-      <label><span data-i18n="form.version">Version</span><input name="version" required data-i18n-attr="placeholder:form.versionPlaceholder" placeholder="For example: v1.2"></label>
-      <label><span data-i18n="form.changed">What changed?</span><textarea name="changes" rows="3" required></textarea></label>
-      <label><span data-i18n="form.reviewer">Send to reviewer</span>
-        <select name="recipientEmail" required>
-          <option value="" data-i18n="form.selectReviewer">Select a reviewer</option>
-          <option value="saja-amro">Saja Amro — Prosthetist</option>
-          <option value="nadine-arar">Nadine Arar — Test Lead / Mentor</option>
-          <option value="maria">Maria — University Collaboration Lead</option>
-          <option value="walid">Walid — 3D CAD designer</option>
-          <option value="ganesh">Ganesh — 3D validator &amp; simulator</option>
-          <option value="nili">Nili — Product Success</option>
-          <option value="abhay">Abhay — Researcher</option>
-          <option value="matthew">Matthew — Concept artist</option>
-          <option value="other" data-i18n="form.other">Other</option>
-        </select>
-      </label>
-      <label id="otherReviewerField" hidden><span data-i18n="form.otherReviewer">Other reviewer email</span><input name="otherReviewerEmail" type="email" placeholder="reviewer@universallimbs.com"></label>
-      <label><span data-i18n="form.nextSteps">Expected next steps</span>
-        <select name="nextSteps" required>
-          <option value="" data-i18n="form.choose">Choose</option>
-          <option value="Review" data-i18n="form.review">Review</option>
-          <option value="Revision required" data-i18n="form.revision">Revision required</option>
-          <option value="Approve" data-i18n="form.approve">Approve</option>
-          <option value="Testing" data-i18n="form.testing">Testing</option>
-          <option value="Other" data-i18n="form.other">Other</option>
-        </select>
-      </label>
-      <label><span data-i18n="form.upload">Upload your deliverable file</span><input name="deliverableFile" type="file" required accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.stl,.step,.stp,.png,.jpg,.jpeg"><small data-i18n="form.uploadHelp"></small></label>
-      <label><span data-i18n="form.notes">Notes</span><textarea name="notes" rows="4"></textarea></label>
-      <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
-      <p id="deliverableStatus" role="status"></p>
-      <div class="editor-actions"><button class="pill primary" type="submit" data-i18n="form.send">Send deliverable</button></div>
-    </form>
-  </div>
-</div>
-
-<div class="modal" id="downloadModal" aria-hidden="true">
-  <div class="modal-card editor-card">
-    <div class="modal-top"><strong data-i18n="form.response">Project response</strong><button class="modal-close" type="button" id="downloadClose" data-i18n-attr="aria-label:form.close">×</button></div>
-    <form id="downloadForm" class="submission-form">
-      <label><span data-i18n="form.package">Which download is this about?</span>
-        <select name="packageName" id="downloadPackage" required>
-          <option value="" data-i18n="form.choosePackage">Choose a package</option>
-        </select>
-      </label>
-      <label><span data-i18n="form.name">Your name</span><input name="submitterName" required></label>
-      <label><span data-i18n="form.email">Your email</span><input name="submitterEmail" type="email" required data-i18n-attr="placeholder:form.emailPlaceholder" placeholder="you@university.edu"><small data-i18n="form.teamReplies"></small></label>
-      <label><span data-i18n="form.team">University / team</span><input name="organization" required></label>
-      <label><span data-i18n="form.status">Status</span>
-        <select name="status" required>
-          <option value="" data-i18n="form.choose">Choose</option>
-          <option value="not-started" data-i18n="form.statusNotStarted">Downloaded — not started</option>
-          <option value="in-progress" data-i18n="form.statusProgress">In progress</option>
-          <option value="completed" data-i18n="form.statusDone">Completed</option>
-          <option value="blocked" data-i18n="form.statusBlocked">Blocked</option>
-          <option value="stopped" data-i18n="form.statusStopped">Not proceeding</option>
-        </select>
-      </label>
-      <label><span data-i18n="form.workDone">What did you do with it?</span><textarea name="workDone" rows="3" required data-i18n-attr="placeholder:form.workDonePlaceholder"></textarea></label>
-      <label><span data-i18n="form.findings">Findings or issues</span><textarea name="findings" rows="3" data-i18n-attr="placeholder:form.findingsPlaceholder"></textarea></label>
-      <label><span data-i18n="form.needs">What do you need from UL next?</span><textarea name="needs" rows="2" data-i18n-attr="placeholder:form.needsPlaceholder"></textarea></label>
-      <label><span data-i18n="form.supportFile">Supporting file (optional)</span><input name="responseFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.stl,.step,.stp,.png,.jpg,.jpeg"><small data-i18n="form.supportHelp"></small></label>
-      <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
-      <p id="downloadStatus" role="status"></p>
-      <div class="editor-actions"><button class="pill primary" type="submit" data-i18n="form.sendResponse">Send response</button></div>
-    </form>
+    </div>
   </div>
 </div>
 

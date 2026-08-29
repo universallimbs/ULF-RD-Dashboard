@@ -2,12 +2,12 @@
 
 ```text
 .
-├── index.html                  # Dashboard — markup only, all logic in assets/
+├── index.html                  # The hub — markup only, all logic in assets/
 ├── prosthetic-user-survey.html # User research instrument
 ├── google-apps-script.gs       # Workspace backend: Sheets + Drive + mail
 ├── assets/
 │   ├── css/
-│   │   └── dashboard.css       # The whole neumorphic design system, shared by both pages
+│   │   └── dashboard.css       # The whole glass design system, shared by both pages
 │   └── js/
 │       ├── i18n.js             # EN/PT strings + the swap engine
 │       ├── i18n-survey.js      # Survey-only strings, merged in via ulfI18n.extend()
@@ -47,14 +47,14 @@ first render.
 `assets/js/app.js` is a single file, internally organized into three commented
 sections that map to an MVP pattern:
 
-- **Model** — `defaultMilestones`, `getMilestones()`, `saveMilestones()`,
-  `getResponses()`, `saveResponse()` (all backed by `localStorage`), plus the
-  `TEAM`, `PARTS` and `PACKAGES` arrays.
-- **View** — `renderTeam()`, `renderParts()`, `renderDownloads()`,
-  `renderGantt()`, `renderResponses()`, `populateEditor()`, `renderGreeting()`.
-- **Presenter** — `activateView()`, nav/tab click handlers, the milestone editor
-  controller, the updates carousel, the visual-reference modal, and the
-  deliverable / download-response submission forms.
+- **Model** — the `PEOPLE`, `RAIL`, `PHASES`, `REFERENCES`, `DOWNLOADS`,
+  `LINKS`, `TEAM`, `MINUTES` and `TASKS` tables at the top of the file. Each
+  entry holds i18n *keys*, not text.
+- **View** — `renderPriority()`, `renderReference()`, `renderRail()`,
+  `renderPhases()`, `renderTasks()`, `renderDownloads()`, `renderLinks()`,
+  `renderTeam()`, `renderMinutes()`, `renderClocks()`.
+- **Presenter** — tab switching, the two carousels, the task range control, the
+  timezone picker, and the drag-and-drop upload.
 
 It is kept as one file (not split into `model.js` / `view.js` / `presenter.js`)
 so load order and shared DOM references stay simple for a static, no-build site.
@@ -62,7 +62,7 @@ If it grows significantly, splitting along those same section boundaries is the
 natural next step.
 
 Anything that renders text is driven by an i18n key and is re-run by
-`renderAll()` on the `ulf:languagechange` event. Two handlers are deliberately
-**delegated** on `document` — the bell animation and the download response
-buttons — because their elements are destroyed and rebuilt on every language
-change, so a directly-bound listener would be lost.
+`renderAll()` on the `ulf:languagechange` event. Listeners bound to
+JS-rendered nodes (carousel dots) are re-attached inside their render function
+for the same reason — those nodes are destroyed on every language change, so a
+one-time binding would be lost.

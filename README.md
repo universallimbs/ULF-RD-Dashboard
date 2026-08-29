@@ -1,6 +1,6 @@
 # ULF R&D Dashboard
 
-Static, bilingual (EN / PT-BR) R&D dashboard for the Universal Limbs Foundation
+Static, bilingual (EN / PT) internal R&D hub for the Universal Limbs Foundation
 pediatric prosthetic hand programme.
 
 No build step, no framework. Plain HTML, one stylesheet and a handful of classic
@@ -26,21 +26,35 @@ python3 -m http.server 8080
 # then open http://127.0.0.1:8080/index.html
 ```
 
-## Sections
+## Layout
 
-| View | What it is for |
+A persistent shell plus one swappable panel. The **Priority board** (left),
+**Project stage** and **Tasks** (right) stay on screen for every tab; only the
+lower-left card changes.
+
+| Tab | Lower-left panel |
 | --- | --- |
-| Dashboard | Greeting, progress, today's focus, next meeting, project summary, team, latest updates, documents |
-| Goal | Milestone timeline (week / month / year) with an inline milestone editor |
-| Resources | Playbooks, SOPs, links and presentations |
-| University collaboration | Partner deck, test-rig architecture, student build brief, deliverable submission |
-| Downloads | Reference packages for university teams, each paired with a project-response form |
+| Dashboard | Overview — programme summary, reference carousel, five-step delivery rail |
+| Upload | Drag-and-drop upload posting to the Apps Script endpoint |
+| Download | Programme pack, meeting minutes archive, team roster |
+| Links | Quick links grid |
+| Team | Roles and team members |
+| Mins | Meeting minutes |
+
+The header carries a dual-timezone clock (São Paulo fixed, second city
+selectable). Offsets are derived with `Intl.DateTimeFormat` rather than
+hardcoded, so daylight saving stays correct on both sides.
 
 ## Languages
 
 Every visible string lives in [assets/js/i18n.js](assets/js/i18n.js) as an
 `en` / `pt` pair; the survey's own vocabulary is in
-[assets/js/i18n-survey.js](assets/js/i18n-survey.js). Markup opts in per node:
+[assets/js/i18n-survey.js](assets/js/i18n-survey.js). The base dictionary is
+carried over from the reference build, so the Portuguese is **European
+Portuguese** ("ficheiro", "equipa", "Planeado"). If the primary audience is the
+Brazilian partner (UTFPR) this wants a pt-BR pass — the keys would not change.
+
+Markup opts in per node:
 
 ```html
 <h1 data-i18n="summary.heading">Project summary</h1>
@@ -48,8 +62,7 @@ Every visible string lives in [assets/js/i18n.js](assets/js/i18n.js) as an
 ```
 
 The EN/PT switch in the header writes the choice to `localStorage`, sets
-`<html lang>`, and fires `ulf:languagechange`. Anything rendered in JavaScript —
-the team cards, the download cards, the milestone timeline, the response table —
+`<html lang>`, and fires `ulf:languagechange`. Everything rendered in JavaScript
 listens for that event and re-renders, so no reload is needed.
 
 New visitors get Portuguese automatically when their browser language starts
@@ -59,14 +72,13 @@ with `pt`; otherwise English.
 markup at it. A key missing from `pt` falls back to English rather than
 rendering blank, so a partial translation degrades gracefully.
 
-**Milestones** are the one exception. The three built-in milestones carry an
-`i18n` prefix and follow the language. Once someone edits a milestone it stores
-literal text instead, because user-authored text cannot be auto-translated.
+Every list on the page — priority board, phases, tasks, links, team, minutes —
+is rendered from a key table in `app.js` rather than written into the markup, so
+one `renderAll()` rebuilds the page in the new language.
 
 ## Form submissions
 
-The survey, the University Collaboration deliverable form and the Downloads
-project-response form all post to a Google Apps Script web app. Everything runs
+The survey and the Upload panel post to a Google Apps Script web app. Everything runs
 on the Google Workspace for Nonprofits plan — Apps Script, Sheets, Drive and
 Gmail. There is no server to host and no Google Cloud project.
 
@@ -76,19 +88,19 @@ browser  ->  Apps Script web app  ->  Drive file + Sheet row + email
 
 ### Setup
 
-1. Create three Google Sheets: survey responses, deliverables, download responses.
+1. Create the Google Sheets you need — at minimum one for survey responses.
 2. Paste [google-apps-script.gs](google-apps-script.gs) into a new Apps Script
    project (script.google.com → New project).
 3. In **Project Settings → Script properties**, add:
 
    | Property | Value |
    | --- | --- |
-   | `DELIVERABLE_SHEET_ID` | id of the deliverables Sheet |
    | `SURVEY_SHEET_ID` | id of the survey Sheet |
+   | `DELIVERABLE_SHEET_ID` | id of the deliverables Sheet |
    | `DOWNLOAD_SHEET_ID` | id of the download-responses Sheet |
    | `DELIVERABLE_PARENT_FOLDER_ID` | Drive folder submissions are filed under |
    | `REVIEWERS_JSON` | reviewer id → name/email map; run `setup()` to print a template |
-   | `FALLBACK_REVIEWER_EMAIL` | receives "Other", misroutes, and every download response |
+   | `FALLBACK_REVIEWER_EMAIL` | receives anything misrouted |
 
    Optional: `ALLOWED_MAIL_DOMAINS` (default `universallimbs.com`),
    `DAILY_SUBMISSION_CAP` (default 200), `ACK_SUBMITTERS` (default true).
@@ -99,29 +111,18 @@ browser  ->  Apps Script web app  ->  Drive file + Sheet row + email
    **Anyone**. Copy the `/exec` URL into `submissionEndpoint` in
    [assets/js/config.js](assets/js/config.js).
 
-Until that endpoint is set, both forms say so plainly rather than failing
-silently.
+Until that endpoint is set, the Upload panel and the survey both say so plainly
+rather than failing silently.
 
-The reviewer ids in `REVIEWERS_JSON` must match the `<option value>` entries in
-the reviewer dropdown in [index.html](index.html).
+### Upload
 
-### Downloads and project responses
+The Upload panel accepts a drag-and-drop or picked file and posts it as an
+`upload` submission with the submitter's UI language recorded alongside. The
+20 MB ceiling in the copy is enforced client-side before the file is read.
 
-Each Downloads card pairs its download with a **Submit response** action. A
-response records the package, team, status, what the team did, what they found
-and what they need from UL next; a supporting file is optional.
-
-Responses land in `DOWNLOAD_SHEET_ID` and email the collaboration coordinator
-(`FALLBACK_REVIEWER_EMAIL`) — the goal is programme-level tracking rather than
-per-reviewer routing. Attachments file under `Responses/<yyyy-MM>/`.
-
-Package and status reach the sheet as **English** text regardless of the
-submitter's language, and the chosen language is recorded in its own column, so
-one spreadsheet stays sortable across both languages.
-
-The submitting device also keeps `localStorage` receipts, which is what the
-*Project responses* table shows. That table is a convenience for the student —
-the Sheet is the record of truth.
+`handleUpload` files it under `Uploads/<yyyy-MM>/` in the Drive parent folder
+and emails `FALLBACK_REVIEWER_EMAIL` that it arrived. No reviewer routing and no
+required metadata, because the panel asks for none.
 
 ### Why there is no shared secret
 
@@ -154,7 +155,7 @@ a honeypot field, and a 10 MB file ceiling.
 - flags Google Docs/Drive/Forms links not scoped to a `universallimbs.com`
   account, so shared documents stay restricted to UL team members.
 
-## Contact / feedback
+## Contact
 
-Every page has a persistent feedback bar that opens a pre-filled email to the
-R&D team.
+The **Links** panel carries an *Email research team* link; team members' Gmail
+links are on the **Team** panel.

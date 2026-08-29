@@ -1,79 +1,88 @@
 # UI/UX Documentation
 
+Tokens here were read off the reference build at
+`rasna-spec.github.io/ULF-RD-Dashboard` so the two stay in step.
+
 ## Design principles
 
-- **One surface colour.** The whole page is a single tone. Depth comes only from
-  a paired shadow — dark bottom-right, light top-left. Never give a card its own
-  background colour; it breaks the illusion immediately.
-- **Raised vs. pressed.** Interactive things are raised (`--sh-1`/`--sh-2`).
-  Selected states, active tabs and input fields are pressed (`--sh-in`). That
-  contrast is the entire state language, so apply it consistently.
-- **Accent sparingly.** Lime marks the one thing that matters in a view — the
-  primary action, the active year, the current milestone. More than a few lime
-  elements per screen and none of them read as important. Placeholder actions
-  (an "Add link" pointing at `#`) stay neutral.
-- **Actionable.** Every card leads to a clear next step: Open, Download,
-  Submit response.
-- **Visual feedback.** Animate user actions (the ringing bell, pressed pills).
+- **Frosted glass, not solid cards.** Surfaces are translucent white over a flat
+  `#eceff4` ground — `rgba(255,255,255,.55)` with a `1px solid #e2e7ec` hairline,
+  a barely-there shadow, and `backdrop-filter: blur(8px)`. Depth comes from the
+  border and the blur, never from a heavier fill.
+- **Two surface weights.** Outer cards use `--card` (.55). Anything nested
+  inside one — a person card, a link pill, a table row — steps up to
+  `--card-solid` (.78) or `--card-strong` (.86) so it reads as *on* the card
+  rather than beside it.
+- **Accent sparingly.** Lime marks live state only: the current phase, the `1`
+  in a priority list, the active rail step. The active tab is violet, not lime,
+  precisely so navigation never competes with status.
+- **Red is reserved.** `--red` is due-dates and blockers. Nothing else.
 
 ## Colour palette
 
-- **Canvas** `#eceff4` — background *and* every surface
-- **Primary ink** `#1a1d21`
-- **Muted / quiet text** `#5b636d` / `#8d959f`
-- **Accent** `#d6f84c` (lime), deepened to `#b6d92f` for text on the canvas
-- **Shadow pair** `#c6cbd3` (low) and `#ffffff` (high)
+| Token | Value | Use |
+| --- | --- | --- |
+| `--bg` | `#eceff4` | page ground |
+| `--ink` | `#1a1d21` | primary text, dark buttons |
+| `--muted` | `#9ba3ab` | secondary text, labels |
+| `--line` | `#e2e7ec` | every hairline border |
+| `--rule` | `#dedede` | dividers, inactive dots |
+| `--lime` | `#d6f84c` | live/active state |
+| `--lime-tint` | `#f8fcea` | lime glow, focus ring |
+| `--red` / `--red-tint` | `#c0392b` / `#fdecea` | due dates, blockers |
+| `--violet` / `--violet-tint` | `#6b5bd6` / `#eeebff` | active tab |
+| `--green` / `--blue` (+ tints) | | legend chips |
 
-## Depth tokens
+Radii: `--r-pill` 999px, then 8 / 10 / 14 / 18 / 22 / 28px. Cards are 28px,
+nested cards 22px, rows and pills 14px.
 
-| Token | Use |
-| --- | --- |
-| `--sh-1` | Buttons, chips, avatars |
-| `--sh-2` | Cards, panels, header, sidebar |
-| `--sh-3` | Hero, modals, hover lift on cards |
-| `--sh-in` | Inputs, segmented-control tracks, selected nav, inner wells |
-| `--sh-in-deep` | Focused inputs, pressed primary buttons |
+Type is **Urbanist** (Google Fonts). Body is 13px; card titles 22px; the page
+title 34px at `-.025em`. Micro-labels are 11px, `600`, `.14em` tracking, upper.
 
-Radii run `--r-xs` 10px through `--r-xl` 36px; pills use `999px`.
+## Layout
 
-## Views
+A persistent shell plus one swappable panel:
 
-`Dashboard`, `Goal`, `Resources`, `University collaboration`, `Downloads`.
-Only one `.view` carries `.active` at a time; `activateView()` in `app.js` owns
-that switch.
+- **Left column** — Priority board (always), then the active tab's panel.
+- **Right column** — Project stage, then Tasks. Both always visible.
+
+Only the lower-left card changes between tabs, which is why the tab bar reads as
+navigation within one screen rather than six separate pages.
 
 ## Bilingual behaviour
 
 Every visible string is a key in `assets/js/i18n.js` (survey strings in
-`assets/js/i18n-survey.js`), with an `en` and a `pt` entry. Markup opts in with
-`data-i18n` / `data-i18n-attr`; JS reads through `window.ulfI18n.t()`.
+`assets/js/i18n-survey.js`). Markup opts in with `data-i18n` /
+`data-i18n-attr`; JS reads through `window.ulfI18n.t()`.
 
-Switching language writes to `localStorage`, updates `<html lang>` and fires
-`ulf:languagechange`. Every JS-rendered block re-renders on that event.
+Switching writes to `localStorage`, sets `<html lang>` and fires
+`ulf:languagechange`; `renderAll()` rebuilds every list.
 
 **Two rules when adding UI:**
-1. No literal user-visible text in markup or JS — add a key to both tables.
-2. If you render it in JavaScript, make sure it is rebuilt by `renderAll()`,
-   otherwise it will keep the old language after a switch.
+1. No literal user-visible text — add a key to both tables.
+2. If you render it in JavaScript, add it to `renderAll()`, or it will keep the
+   old language after a switch.
 
-Portuguese is roughly 15–25% longer than English. Buttons, nav items and table
-headers must wrap or shrink gracefully rather than being sized to the English
-string — check the PT view before considering a layout done.
+`ulfI18n.en()` resolves against the English table whatever the UI shows. Use it
+for any value leaving the browser, so a Sheet column holds one language.
 
-## MVP architecture
+Portuguese runs 15–25% longer than English, and some strings much more —
+"Waiting" becomes "À espera de validação". Chips and table rows must wrap or
+grow rather than being sized to the English string. Check the PT view before
+calling a layout done.
 
-- **Model** — milestone data and download-response receipts in `localStorage`;
-  the team, parts and package lists as plain arrays at the top of `app.js`.
-- **View** — `renderTeam()`, `renderParts()`, `renderDownloads()`,
-  `renderGantt()`, `renderResponses()`, `populateEditor()`.
-- **Presenter** — `activateView()`, nav/tab handlers, the milestone editor, the
-  carousel, and the deliverable / download-response forms.
+## Compatibility aliases
+
+`:root` carries a small block of aliases (`--accent`, `--sh-1`, `--quiet`, …)
+mapping the previous neumorphic token names onto this system, because
+`prosthetic-user-survey.html` was authored against them. They exist so the
+survey inherits this theme instead of breaking. **Do not use them in new work.**
 
 ## Accessibility notes
 
-- Every interactive control keeps a visible `:focus-visible` ring — do not
-  remove it to tidy up the soft-UI look.
-- Neumorphic edges are low-contrast by nature, so text and icons must stay on
-  the ink/muted tokens rather than being lightened to match the borders.
-- Modals close on `Escape` and on backdrop click.
-- `prefers-reduced-motion` disables view and modal transitions.
+- Every control keeps a visible `:focus-visible` ring.
+- The glass borders are low-contrast by design, so text must stay on `--ink` or
+  `--muted` — never lightened to match the hairlines.
+- Clock offsets come from `Intl.DateTimeFormat` with `timeZoneName: 'longOffset'`
+  rather than being hardcoded, so they stay correct across DST on both sides.
+- `prefers-reduced-motion` disables the panel transition.
