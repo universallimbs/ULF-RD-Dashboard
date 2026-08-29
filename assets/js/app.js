@@ -753,11 +753,12 @@ downloadForm.addEventListener('submit', async event => {
   }
 
   // Send readable English to the sheet regardless of the UI language, so one
-  // spreadsheet stays sortable across both languages.
+  // spreadsheet stays sortable across both. `.en()` and not `.t()`: `t()` would
+  // resolve in whatever language the submitter happens to be reading.
   const packageKey = payload.packageName;
   const statusKey = payload.status;
-  payload.packageName = window.ulfI18n.t('dl.' + packageKey + '.title');
-  payload.status = window.ulfI18n.t(STATUS_KEYS[statusKey] || 'form.choose');
+  payload.packageName = window.ulfI18n.en('dl.' + packageKey + '.title');
+  payload.status = window.ulfI18n.en(STATUS_KEYS[statusKey] || 'form.choose');
   payload.language = window.ulfI18n.current;
 
   const button = downloadForm.querySelector('button[type="submit"]');

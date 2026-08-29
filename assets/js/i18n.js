@@ -740,6 +740,17 @@
     return key;
   }
 
+  /**
+   * Always resolves in English, whatever the UI is showing.
+   *
+   * Use this for values leaving the browser — a Sheet column has to hold one
+   * language or it stops being sortable and filterable. `t()` would hand you
+   * whatever the submitter happened to be reading.
+   */
+  function tEnglish(key) {
+    return Object.prototype.hasOwnProperty.call(STRINGS[DEFAULT], key) ? STRINGS[DEFAULT][key] : key;
+  }
+
   /** Rewrites every marked node in `root` into the active language. */
   function apply(root) {
     const scope = root || document;
@@ -807,6 +818,7 @@
 
   window.ulfI18n = {
     t: t,
+    en: tEnglish,
     apply: apply,
     extend: extend,
     set: setLanguage,
