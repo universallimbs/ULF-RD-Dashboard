@@ -181,6 +181,7 @@ function handleDownload(payload) {
     workDone:       payload.workDone,
     findings:       payload.findings || '',
     needs:          payload.needs || '',
+    language:       payload.language || '',
     fileName:       saved ? saved.name : '',
     fileUrl:        saved ? saved.url : ''
   };

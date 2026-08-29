@@ -661,6 +661,8 @@ h1, h2, h3, h4 { margin:0; font-weight:650; letter-spacing:-.01em; }
 
 .team-member {
   position:relative;
+  display:flex;
+  flex-direction:column;
   padding:20px;
   border-radius:var(--r-md);
   box-shadow:var(--sh-in);
@@ -718,7 +720,7 @@ h1, h2, h3, h4 { margin:0; font-weight:650; letter-spacing:-.01em; }
 .team-role { font-size:12px; color:var(--accent-deep); font-weight:650; margin-bottom:9px; }
 .team-experience { font-size:12.5px; color:var(--muted); line-height:1.5; }
 .team-experience strong { color:var(--ink); }
-.team-actions { display:flex; gap:8px; margin-top:14px; }
+.team-actions { display:flex; gap:8px; margin-top:auto; padding-top:14px; }
 
 /* info dot + tooltip */
 .info-dot {
@@ -1213,7 +1215,7 @@ h1, h2, h3, h4 { margin:0; font-weight:650; letter-spacing:-.01em; }
   box-shadow:var(--sh-in);
 }
 
-.dl-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:16px; }
+.dl-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:auto; padding-top:16px; }
 
 /* response tracker table */
 .response-table {
@@ -1267,7 +1269,12 @@ h1, h2, h3, h4 { margin:0; font-weight:650; letter-spacing:-.01em; }
 
 /* ================================================================== portal */
 
-.portal-actions { margin-bottom:22px; }
+.portal-actions {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:22px;
+}
 
 .portal-reference-section { margin-bottom:22px; }
 
