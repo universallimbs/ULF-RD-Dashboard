@@ -34,7 +34,8 @@ document.querySelectorAll('.year').forEach(button => {
     if (isYear2) {
       document.querySelectorAll('.nav button').forEach(item => item.classList.remove('active'));
       document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
-      document.getElementById('year2-empty').classList.add('active');
+      const placeholder = document.getElementById('year2-empty');
+      if (placeholder) placeholder.classList.add('active');
       window.scrollTo(0, 0);
     } else {
       activateView('dashboard');
@@ -138,6 +139,7 @@ function renderGantt(period) {
 
     const label = document.createElement('div');
     label.className = 'milestone-label';
+    label.style.gridArea = '1 / 1';
     const labelTitle = document.createElement('strong');
     labelTitle.textContent = milestone.label;
     const labelRange = document.createElement('span');
@@ -145,9 +147,12 @@ function renderGantt(period) {
     label.append(labelTitle, labelRange);
     row.appendChild(label);
 
+    // Every cell is placed explicitly on row 1. Left to auto-placement they would
+    // flow around the bar (which is explicitly placed) and spill onto a second row.
     for (let i = 0; i < config.columns.length; i += 1) {
       const cell = document.createElement('div');
       cell.className = 'month-cell';
+      cell.style.gridArea = '1 / ' + (i + 2);
       row.appendChild(cell);
     }
 
@@ -495,4 +500,174 @@ deliverableForm.addEventListener('submit', async event => {
   } finally {
     if (submitButton) submitButton.disabled = false;
   }
+});
+
+// ===== VIEW: time-of-day greeting =====
+const heroGreeting = document.getElementById('heroGreeting');
+if (heroGreeting) {
+  const hour = new Date().getHours();
+  const partOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  heroGreeting.textContent = 'Good ' + partOfDay + ', ULF';
+}
+
+// ===== MODEL: download responses (local receipts) =====
+// The authoritative copy lives in the Workspace sheet. This is only the
+// submitting device's own history, so a student can see what they already sent.
+const RESPONSE_KEY = 'ulf-download-responses';
+
+function getResponses() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(RESPONSE_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveResponse(entry) {
+  const list = getResponses();
+  // One row per package + team, so a resubmission updates rather than duplicates.
+  const index = list.findIndex(item =>
+    item.packageName === entry.packageName && item.organization === entry.organization);
+  if (index >= 0) list[index] = entry; else list.push(entry);
+  localStorage.setItem(RESPONSE_KEY, JSON.stringify(list));
+}
+
+function statusClass(status) {
+  if (/completed/i.test(status)) return 'done';
+  if (/in progress/i.test(status)) return 'progress';
+  return 'open';
+}
+
+// ===== VIEW: response tracker table =====
+function renderResponses() {
+  const host = document.getElementById('responseRows');
+  if (!host) return;
+
+  const list = getResponses();
+  host.innerHTML = '';
+
+  if (!list.length) {
+    const empty = document.createElement('div');
+    empty.className = 'resp-row';
+    empty.innerHTML = '<span style="grid-column:1/-1">No responses submitted from this device yet.</span>';
+    host.appendChild(empty);
+    return;
+  }
+
+  list.forEach(entry => {
+    const row = document.createElement('div');
+    row.className = 'resp-row';
+
+    const name = document.createElement('strong');
+    name.textContent = entry.packageName;
+
+    const team = document.createElement('span');
+    team.textContent = entry.organization;
+
+    const when = document.createElement('span');
+    when.textContent = new Date(entry.submittedAt).toLocaleDateString(undefined,
+      { year: 'numeric', month: 'short', day: 'numeric' });
+
+    const status = document.createElement('span');
+    status.className = 'resp-status ' + statusClass(entry.status);
+    status.textContent = entry.status;
+
+    row.append(name, team, when, status);
+    host.appendChild(row);
+  });
+}
+
+renderResponses();
+
+// ===== PRESENTER: download response controller =====
+const downloadModal = document.getElementById('downloadModal');
+
+if (downloadModal) {
+  const downloadForm = document.getElementById('downloadForm');
+  const downloadStatus = document.getElementById('downloadStatus');
+  const packageSelect = document.getElementById('downloadPackage');
+
+  function openDownloadForm(packageName) {
+    downloadStatus.textContent = '';
+    if (packageName) packageSelect.value = packageName;
+    downloadModal.classList.add('active');
+    downloadModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeDownloadForm() {
+    downloadModal.classList.remove('active');
+    downloadModal.setAttribute('aria-hidden', 'true');
+  }
+
+  document.getElementById('openDownloadResponse').addEventListener('click', () => openDownloadForm(''));
+
+  document.querySelectorAll('[data-response]').forEach(button => {
+    button.addEventListener('click', () => openDownloadForm(button.dataset.response));
+  });
+
+  document.getElementById('downloadClose').addEventListener('click', closeDownloadForm);
+  downloadModal.addEventListener('click', event => {
+    if (event.target === downloadModal) closeDownloadForm();
+  });
+
+  downloadForm.addEventListener('submit', async event => {
+    event.preventDefault();
+
+    if (!window.ulfSubmitConfigured()) {
+      downloadStatus.textContent = 'Submissions are not configured yet. Set submissionEndpoint in assets/js/config.js.';
+      return;
+    }
+
+    const submittedForm = new FormData(downloadForm);
+    const payload = Object.fromEntries(submittedForm);
+    const file = submittedForm.get('responseFile');
+    delete payload.responseFile;
+
+    // The supporting file is optional here, unlike the deliverable form.
+    if (file instanceof File && file.size) {
+      if (file.size > 10 * 1024 * 1024) {
+        downloadStatus.textContent = 'The selected file is larger than the 10 MB limit.';
+        return;
+      }
+      payload.fileName = file.name;
+      payload.fileType = file.type || 'application/octet-stream';
+      payload.fileBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1]);
+        reader.onerror = () => reject(new Error('Unable to read the selected file'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const submitButton = downloadForm.querySelector('button[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    downloadStatus.textContent = 'Sending response...';
+
+    try {
+      await window.ulfSubmit('download', payload);
+      saveResponse({
+        packageName:  payload.packageName,
+        organization: payload.organization,
+        status:       payload.status,
+        submittedAt:  new Date().toISOString()
+      });
+      renderResponses();
+      downloadStatus.textContent = 'Response recorded. The R&D team has been notified.';
+      downloadForm.reset();
+    } catch (error) {
+      downloadStatus.textContent = error.message;
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+}
+
+// ===== PRESENTER: close any open modal on Escape =====
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape') return;
+  document.querySelectorAll('.modal.active').forEach(open => {
+    open.classList.remove('active');
+    open.setAttribute('aria-hidden', 'true');
+  });
 });

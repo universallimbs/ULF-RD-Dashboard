@@ -18,6 +18,7 @@
  *   2. Project Settings -> Script properties. Add:
  *        DELIVERABLE_SHEET_ID          id of the deliverables Google Sheet
  *        SURVEY_SHEET_ID               id of the survey Google Sheet
+ *        DOWNLOAD_SHEET_ID             id of the download-responses Google Sheet
  *        DELIVERABLE_PARENT_FOLDER_ID  Drive folder submissions are filed under
  *                                      (the R&D folder works: 14iGYmt91YZmHAzsnil6HtJv8Nu5YTF6X)
  *        REVIEWERS_JSON                see reviewerTemplate() at the bottom
@@ -47,6 +48,7 @@ const PROPS = PropertiesService.getScriptProperties();
 
 const P_SURVEY_SHEET  = 'SURVEY_SHEET_ID';
 const P_DELIV_SHEET   = 'DELIVERABLE_SHEET_ID';
+const P_DOWNLOAD_SHEET = 'DOWNLOAD_SHEET_ID';
 const P_DRIVE_PARENT  = 'DELIVERABLE_PARENT_FOLDER_ID';
 const P_REVIEWERS     = 'REVIEWERS_JSON';
 const P_FALLBACK      = 'FALLBACK_REVIEWER_EMAIL';
@@ -82,6 +84,7 @@ function doPost(event) {
 
     if (request.type === 'deliverable') return json({ ok: true, result: handleDeliverable(request.payload) });
     if (request.type === 'survey')      return json({ ok: true, result: handleSurvey(request.payload) });
+    if (request.type === 'download')    return json({ ok: true, result: handleDownload(request.payload) });
     throw new PublicError('Unsupported submission type.');
   } catch (error) {
     logFailure(error, event);
@@ -150,6 +153,42 @@ function handleDeliverable(payload) {
   if (acknowledgementsEnabled() && record.submitterEmail) mailSubmitterReceipt(record);
 
   return { reviewer: reviewer.name, fileUrl: saved.url };
+}
+
+/**
+ * A university team reporting back on a package they downloaded.
+ *
+ * Differs from a deliverable in two ways: the file is optional (most responses
+ * are status text only), and there is no reviewer picker — these always go to
+ * the collaboration coordinator, because the point is programme-level tracking.
+ */
+function handleDownload(payload) {
+  const required = ['packageName', 'submitterName', 'organization', 'status', 'workDone'];
+  const missing = required.filter(field => !String(payload[field] || '').trim());
+  if (missing.length) throw new PublicError('Please complete every required field.');
+
+  const saved = payload.fileBase64
+    ? saveSubmissionFile(payload, 'Responses', [payload.organization, payload.packageName])
+    : null;
+
+  const record = {
+    submittedAt:    new Date(),
+    packageName:    payload.packageName,
+    submitterName:  payload.submitterName,
+    submitterEmail: payload.submitterEmail || '',
+    organization:   payload.organization,
+    status:         payload.status,
+    workDone:       payload.workDone,
+    findings:       payload.findings || '',
+    needs:          payload.needs || '',
+    fileName:       saved ? saved.name : '',
+    fileUrl:        saved ? saved.url : ''
+  };
+
+  appendKeyedRow(sheetFor(P_DOWNLOAD_SHEET, 'Download responses'), record);
+  mailDownloadResponse(record);
+
+  return { recorded: true, fileUrl: record.fileUrl };
 }
 
 function handleSurvey(payload) {
@@ -244,6 +283,34 @@ function mailSubmitterReceipt(record) {
   MailApp.sendEmail(record.submitterEmail, subject, htmlToText(html), { htmlBody: html, name: 'ULF R&D Dashboard' });
 }
 
+function mailDownloadResponse(record) {
+  requireMailQuota();
+  const coordinator = PROPS.getProperty(P_FALLBACK);
+  if (!coordinator) return;   // nothing to notify; the sheet row is still the record
+
+  const subject = '[ULF response] ' + record.packageName + ' — ' + record.status + ' (' + record.organization + ')';
+  const lines = [
+    row('Package', record.packageName),
+    row('Team', record.organization),
+    row('Submitter', record.submitterName + (record.submitterEmail ? ' <' + record.submitterEmail + '>' : '')),
+    row('Status', record.status)
+  ];
+  if (record.fileUrl) {
+    lines.push(rowRaw('File', '<a href="' + encodeURI(record.fileUrl) + '">' + escapeHtml(record.fileName) + '</a>'));
+  }
+
+  const html = '<p>A university team reported back on a download package.</p>'
+    + '<table cellpadding="4" style="border-collapse:collapse">' + lines.join('') + '</table>'
+    + '<p><strong>What they did</strong><br>' + escapeHtml(record.workDone).replace(/\n/g, '<br>') + '</p>'
+    + (record.findings ? '<p><strong>Findings</strong><br>' + escapeHtml(record.findings).replace(/\n/g, '<br>') + '</p>' : '')
+    + (record.needs ? '<p><strong>What they need next</strong><br>' + escapeHtml(record.needs).replace(/\n/g, '<br>') + '</p>' : '')
+    + '<p style="color:#666;font-size:12px">Sent by the ULF R&amp;D dashboard.</p>';
+
+  const options = { htmlBody: html, name: 'ULF R&D Dashboard' };
+  if (record.submitterEmail) options.replyTo = record.submitterEmail;
+  MailApp.sendEmail(coordinator, subject, htmlToText(html), options);
+}
+
 function requireMailQuota() {
   if (MailApp.getRemainingDailyQuota() < 2) {
     throw new PublicError('The R&D mailbox has reached today’s sending limit. Please email the team directly.');
@@ -273,40 +340,52 @@ function htmlToText(html) {
 // ----------------------------------------------------------------- drive files
 
 function saveDeliverableFile(payload) {
+  const saved = saveSubmissionFile(payload, 'Deliverables',
+    [payload.organization, payload.taskName, payload.version]);
+  saved.file.setDescription([payload.organization, payload.taskName, payload.version,
+                             'submitted by ' + payload.submitterName].join(' | '));
+  return saved;
+}
+
+/**
+ * Writes one uploaded file into <parent>/<kind>/<yyyy-MM>/ and returns its handles.
+ * `slugParts` only shapes the filename, so each submission type can name its own
+ * files without needing its own copy of the decode / size / folder logic.
+ */
+function saveSubmissionFile(payload, kind, slugParts) {
   const bytes = Utilities.base64Decode(payload.fileBase64);
   if (bytes.length > MAX_FILE_BYTES) throw new PublicError('The file is larger than the 10 MB limit.');
 
-  const blob = Utilities.newBlob(bytes, payload.fileType || 'application/octet-stream', buildFileName(payload));
-  const folder = deliverableFolder();
+  const blob = Utilities.newBlob(bytes, payload.fileType || 'application/octet-stream',
+                                 buildFileName(payload, slugParts, kind));
+  const folder = submissionFolder(kind);
   const file = folder.createFile(blob);
-  file.setDescription([payload.organization, payload.taskName, payload.version,
-                       'submitted by ' + payload.submitterName].join(' | '));
 
   return {
     file: file,
     name: file.getName(),
     url: file.getUrl(),
-    folderPath: 'Deliverables/' + folder.getName()
+    folderPath: kind + '/' + folder.getName()
   };
 }
 
 /** Keeps Drive sortable and collision-free: 2026-08-22_uni_task_v1.2.pdf */
-function buildFileName(payload) {
+function buildFileName(payload, slugParts, kind) {
   const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
   const original = String(payload.fileName);
   const dot = original.lastIndexOf('.');
   const extension = dot > 0 ? original.slice(dot) : '';
-  const slug = [payload.organization, payload.taskName, payload.version]
+  const slug = (slugParts || [])
     .map(part => String(part || '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, ''))
     .filter(Boolean).join('_').slice(0, 90);
-  return stamp + '_' + (slug || 'deliverable') + extension;
+  return stamp + '_' + (slug || String(kind || 'submission').toLowerCase()) + extension;
 }
 
-function deliverableFolder() {
+function submissionFolder(kind) {
   const parentId = PROPS.getProperty(P_DRIVE_PARENT);
   if (!parentId) throw new PublicError('File storage is not configured yet. Please contact the R&D team.');
   const month = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM');
-  return childFolder(childFolder(DriveApp.getFolderById(parentId), 'Deliverables'), month);
+  return childFolder(childFolder(DriveApp.getFolderById(parentId), kind), month);
 }
 
 function childFolder(parent, name) {
@@ -580,6 +659,7 @@ function configReport() {
   const domains = allowedDomains();
 
   [[P_DELIV_SHEET, 'deliverable sheet'], [P_SURVEY_SHEET, 'survey sheet'],
+   [P_DOWNLOAD_SHEET, 'download responses sheet'],
    [P_DRIVE_PARENT, 'Drive parent folder']].forEach(function (pair) {
     if (!PROPS.getProperty(pair[0])) problems.push('Missing script property ' + pair[0] + ' (' + pair[1] + ').');
   });

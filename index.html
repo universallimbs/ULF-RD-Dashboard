@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Universal Limbs — R&D Dashboard</title>
 
-<link rel="stylesheet" href="assets/css/dashboard.css?v=20260824">
+<link rel="stylesheet" href="assets/css/dashboard.css?v=20260829">
 <script src="assets/js/config.js"></script>
 <script src="assets/js/submit.js"></script>
 </head>
@@ -25,6 +25,14 @@
     </div>
 
     <div class="top-year">2026</div>
+
+    <a class="icon-btn" href="mailto:elizabeth@universallimbs.com?cc=ana@universallimbs.com,saja@universallimbs.com,maria@universallimbs.com,nicole@universallimbs.com,sahitya@universallimbs.com&subject=R&D%20Dashboard%20Feedback&body=Hi%20team,%0D%0A%0D%0AFeedback%20for%20the%20R%26D%20dashboard:%0D%0A%0D%0APage/section:%0D%0AIssue%20or%20suggestion:%0D%0APriority:%0D%0A%0D%0AThank%20you." title="Send feedback" aria-label="Send feedback">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 17H9m9-2V10a6 6 0 0 0-12 0v5l-2 2h16l-2-2Zm-5 5a2 2 0 0 1-2 0"/></svg>
+    </a>
+
+    <a class="icon-btn" href="https://drive.google.com/drive/folders/14iGYmt91YZmHAzsnil6HtJv8Nu5YTF6X" target="_blank" rel="noopener" title="Open the shared drive" aria-label="Open the shared drive">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </a>
   </header>
 
   <section class="layout">
@@ -34,6 +42,7 @@
         <button type="button" data-view="goal"><span>Goal</span></button>
         <button type="button" data-view="resources"><span>Resources</span></button>
         <button type="button" data-view="portal"><span>University collaboration</span></button>
+        <button type="button" data-view="downloads"><span>Downloads</span></button>
       </nav>
         <div class="side-team"><div class="side-team-title">Team</div>
           <div class="side-team-row">
@@ -66,6 +75,52 @@
 
     <main class="stage" aria-live="polite">
       <section id="dashboard" class="view active">
+        <section class="hero">
+          <div>
+            <div class="hero-greet" id="heroGreeting">Good afternoon, ULF</div>
+            <div class="hero-sub">Pediatric prosthetic hand programme — here is where the work stands today.</div>
+          </div>
+          <div class="hero-actions">
+            <button class="pill" type="button" data-jump="downloads">Downloads</button>
+            <button class="pill primary" type="button" data-jump="portal">University collaboration</button>
+          </div>
+        </section>
+
+        <div class="stat-row">
+          <section class="stat-card">
+            <span class="kicker">Project progress</span>
+            <div class="donut-wrap">
+              <div class="donut" style="--pct:63%" role="img" aria-label="Overall progress 63 percent">
+                <div class="donut-value"><strong>63%</strong><span>Overall</span></div>
+              </div>
+              <div class="donut-legend">
+                <div class="legend-row"><span class="legend-dot done"></span>Completed <b>24</b></div>
+                <div class="legend-row"><span class="legend-dot wip"></span>In progress <b>18</b></div>
+                <div class="legend-row"><span class="legend-dot"></span>To do <b>12</b></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="stat-card">
+            <span class="kicker">Today's focus</span>
+            <div class="focus-list">
+              <div class="focus-item">Review Bowden routing<span class="focus-badge due">Due today</span></div>
+              <div class="focus-item">Upload test results<span class="focus-badge due">Due today</span></div>
+              <div class="focus-item">Update requirements tracker<span class="focus-badge">Tomorrow</span></div>
+              <div class="focus-item">Prototype finger v2<span class="focus-badge">Aug 30</span></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="meeting-card">
+          <div class="meeting-date"><small>Aug</small><strong>27</strong></div>
+          <div class="meeting-body">
+            <strong>ULF R&amp;D weekly meeting</strong>
+            <span>Wednesday, Aug 27 · 11:00 AM PT</span>
+          </div>
+          <a class="pill primary" href="https://meet.google.com/" target="_blank" rel="noopener">Join meeting</a>
+        </section>
+
         <section class="dashboard-section">
           <h1 class="section-heading">Project summary</h1>
           <div class="section-rule"></div>
@@ -301,9 +356,9 @@
         <div id="goal-month" class="goal-panel"><div class="goal-summary">This month: lock the design requirement package, confirm survey review, and define what the university students should build first.</div><div id="gantt-month" class="timeline-container" aria-live="polite"></div></div>
 
         <div id="goal-year" class="goal-panel active">
-          <div class="goal-summary">Click the yellow milestone dots to view the inspiration visual. Visuals are references only.</div>
+          <div class="goal-summary">Click the lime milestone dots to view the inspiration visual. Visuals are references only.</div>
           <div id="gantt-year" class="timeline-container" aria-live="polite"></div>
-          <div class="visual-hint">● yellow dot = click to see visual</div>
+          <div class="visual-hint">● lime dot = click to see the reference visual</div>
         </div>
 
         <div class="folder-strip">
@@ -326,8 +381,8 @@
           <h1 class="section-heading">Playbooks</h1>
           <div class="section-rule"></div>
           <div class="resource-list">
-            <div class="resource-row"><strong>R&amp;D Playbook</strong><span>Team process and decision rules placeholder.</span><a class="pill primary" href="#">Add link</a></div>
-            <div class="resource-row"><strong>Testing Playbook</strong><span>Test setup, logging, and review method placeholder.</span><a class="pill primary" href="#">Add link</a></div>
+            <div class="resource-row"><strong>R&amp;D Playbook</strong><span>Team process and decision rules placeholder.</span><a class="pill" href="#">Add link</a></div>
+            <div class="resource-row"><strong>Testing Playbook</strong><span>Test setup, logging, and review method placeholder.</span><a class="pill" href="#">Add link</a></div>
           </div>
         </section>
 
@@ -335,8 +390,8 @@
           <h1 class="section-heading">SOPs</h1>
           <div class="section-rule"></div>
           <div class="resource-list">
-            <div class="resource-row"><strong>Design Intake SOP</strong><span>Requesting concept, CAD, and design work.</span><a class="pill primary" href="#">Add link</a></div>
-            <div class="resource-row"><strong>Document Upload SOP</strong><span>Naming, versioning, and handoff process.</span><a class="pill primary" href="#">Add link</a></div>
+            <div class="resource-row"><strong>Design Intake SOP</strong><span>Requesting concept, CAD, and design work.</span><a class="pill" href="#">Add link</a></div>
+            <div class="resource-row"><strong>Document Upload SOP</strong><span>Naming, versioning, and handoff process.</span><a class="pill" href="#">Add link</a></div>
           </div>
         </section>
 
@@ -354,7 +409,7 @@
           <div class="section-rule"></div>
           <div class="resource-list">
             <div class="resource-row"><strong>UTFPR Presentation</strong><span>Partner-facing presentation placeholder.</span><a class="pill primary" href="https://docs.google.com/presentation/d/1r0JcQKQnXlVC0-lzlxrTwiQEwjLhIUrXq-Rz3xRa6Tk/edit?usp=sharing" target="_blank" rel="noopener">Open</a></div>
-            <div class="resource-row"><strong>Project Overview Deck</strong><span>General R&amp;D overview presentation placeholder.</span><a class="pill primary" href="#">Add link</a></div>
+            <div class="resource-row"><strong>Project Overview Deck</strong><span>General R&amp;D overview presentation placeholder.</span><a class="pill" href="#">Add link</a></div>
           </div>
         </section>
       </section>
@@ -485,6 +540,131 @@
         </section>
       </section>
 
+      <section id="downloads" class="view">
+        <div class="goal-top">
+          <div>
+            <h1 class="title">Downloads</h1>
+            <div class="owner-tag">Reference packages for university teams — download, build, then report back.</div>
+            <div class="rule"></div>
+          </div>
+
+          <div class="goal-top-actions">
+            <button class="pill primary" id="openDownloadResponse" type="button">Submit project response</button>
+            <span class="info-dot" style="position:relative; display:inline-grid; place-items:center;">i
+              <span class="info-tip">Every download expects a response. Download the package → build or review it → submit a project response so UL knows the status, findings and what you need next.</span>
+            </span>
+          </div>
+        </div>
+
+        <section class="dashboard-section">
+          <h1 class="section-heading">Available packages</h1>
+          <div class="section-rule"></div>
+
+          <div class="download-grid" id="downloadGrid">
+            <article class="download-card" data-download="Test bench architecture package">
+              <div class="dl-top">
+                <div class="dl-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5M12 22V12"/></svg></div>
+                <span class="dl-tag">Build brief</span>
+              </div>
+              <h3>Test bench architecture package</h3>
+              <p>Full rig architecture diagram, labelled parts list, and the student build brief for the benchtop force-testing rig.</p>
+              <div class="dl-meta"><span>WEBP + brief</span><span>Priority 1</span></div>
+              <div class="dl-actions">
+                <a class="pill primary" href="testbench-architecture.webp" download>Download</a>
+                <button class="pill" type="button" data-response="Test bench architecture package">Submit response</button>
+              </div>
+            </article>
+
+            <article class="download-card" data-download="Base printable hand design">
+              <div class="dl-top">
+                <div class="dl-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v6m0 0 3-3m-3 3L9 5"/><rect x="3" y="12" width="18" height="9" rx="2"/><path d="M7 16h.01M11 16h6"/></svg></div>
+                <span class="dl-tag">CAD basis</span>
+              </div>
+              <h3>Base printable hand design</h3>
+              <p>The WAACS / e-NABLE-style base geometry that the MVP starts from. Use it as the printable reference before proposing changes.</p>
+              <div class="dl-meta"><span>Reference image</span><span>Priority 1</span></div>
+              <div class="dl-actions">
+                <a class="pill primary" href="waacs-basis.png" download>Download</a>
+                <button class="pill" type="button" data-response="Base printable hand design">Submit response</button>
+              </div>
+            </article>
+
+            <article class="download-card" data-download="Design requirements tracker">
+              <div class="dl-top">
+                <div class="dl-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                <span class="dl-tag">Spreadsheet</span>
+              </div>
+              <h3>Design requirements tracker</h3>
+              <p>Live requirement list with owners and status. Read it before starting so your work maps onto an existing requirement ID.</p>
+              <div class="dl-meta"><span>Google Sheet</span><span>Read first</span></div>
+              <div class="dl-actions">
+                <a class="pill primary" href="https://docs.google.com/spreadsheets/d/1Cf-Qrm9P4SmOiynSsROKjqrrjdEQIn6SukNvNQSpMGU/edit?usp=sharing" target="_blank" rel="noopener">Open</a>
+                <button class="pill" type="button" data-response="Design requirements tracker">Submit response</button>
+              </div>
+            </article>
+
+            <article class="download-card" data-download="Prosthetic user survey">
+              <div class="dl-top">
+                <div class="dl-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 15h6M9 11h2"/></svg></div>
+                <span class="dl-tag">Survey</span>
+              </div>
+              <h3>Prosthetic user survey</h3>
+              <p>The user-research instrument behind the design requirements. Run it locally with consenting participants and report your findings.</p>
+              <div class="dl-meta"><span>Web form</span><span>Ethics required</span></div>
+              <div class="dl-actions">
+                <a class="pill primary" href="prosthetic-user-survey.html" target="_blank" rel="noopener">Open</a>
+                <button class="pill" type="button" data-response="Prosthetic user survey">Submit response</button>
+              </div>
+            </article>
+
+            <article class="download-card" data-download="Collaboration presentation">
+              <div class="dl-top">
+                <div class="dl-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg></div>
+                <span class="dl-tag">Deck</span>
+              </div>
+              <h3>University collaboration presentation</h3>
+              <p>Scope, expectations and the handoff process for partner universities. Start here if you are new to the programme.</p>
+              <div class="dl-meta"><span>Canva</span><span>Start here</span></div>
+              <div class="dl-actions">
+                <a class="pill primary" href="https://www.canva.com/design/DAHTNfcZ7mY/-mLW3MtJCuIdiUuWD4xeDQ/view" target="_blank" rel="noopener">Open</a>
+                <button class="pill" type="button" data-response="Collaboration presentation">Submit response</button>
+              </div>
+            </article>
+
+            <article class="download-card" data-download="Reference visuals bundle">
+              <div class="dl-top">
+                <div class="dl-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>
+                <span class="dl-tag">Visuals</span>
+              </div>
+              <h3>Reference visuals bundle</h3>
+              <p>Yale multigrasp and SoftFoot Pro milestone references. Inspiration only — do not copy the mechanism directly.</p>
+              <div class="dl-meta"><span>PNG / JPG</span><span>Inspiration</span></div>
+              <div class="dl-actions">
+                <a class="pill primary" href="yale-multigrasp.png" download>Download</a>
+                <button class="pill" type="button" data-response="Reference visuals bundle">Submit response</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="dashboard-section">
+          <h1 class="section-heading">Project responses</h1>
+          <div class="section-rule"></div>
+          <div class="table-scroll">
+            <div class="response-table">
+              <div class="resp-head">
+                <div>Package</div>
+                <div>Team</div>
+                <div>Last response</div>
+                <div>Status</div>
+              </div>
+              <div id="responseRows"></div>
+            </div>
+          </div>
+          <p class="visual-hint">Responses you submit from this device are listed here immediately. The reviewer copy is recorded centrally and emailed to the R&amp;D team.</p>
+        </section>
+      </section>
+
     </main>
   </section>
 </div>
@@ -550,6 +730,45 @@
       <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
       <p id="deliverableStatus" role="status"></p>
       <div class="editor-actions"><button class="pill primary" type="submit">Send deliverable</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="downloadModal" aria-hidden="true">
+  <div class="modal-card editor-card">
+    <div class="modal-top"><strong>Project response</strong><button class="modal-close" type="button" id="downloadClose">×</button></div>
+    <form id="downloadForm" class="submission-form">
+      <label><span>Which download is this about?</span>
+        <select name="packageName" id="downloadPackage" required>
+          <option value="">Choose a package</option>
+          <option>Test bench architecture package</option>
+          <option>Base printable hand design</option>
+          <option>Design requirements tracker</option>
+          <option>Prosthetic user survey</option>
+          <option>Collaboration presentation</option>
+          <option>Reference visuals bundle</option>
+        </select>
+      </label>
+      <label><span>Your name</span><input name="submitterName" required></label>
+      <label><span>Your email</span><input name="submitterEmail" type="email" required placeholder="you@university.edu" aria-describedby="dlEmailHelp"><small id="dlEmailHelp">The R&amp;D team replies to this address.</small></label>
+      <label><span>University / team</span><input name="organization" required></label>
+      <label><span>Status</span>
+        <select name="status" required>
+          <option value="">Choose</option>
+          <option>Downloaded — not started</option>
+          <option>In progress</option>
+          <option>Completed</option>
+          <option>Blocked</option>
+          <option>Not proceeding</option>
+        </select>
+      </label>
+      <label><span>What did you do with it?</span><textarea name="workDone" rows="3" required placeholder="What you built, tested, reviewed or changed."></textarea></label>
+      <label><span>Findings or issues</span><textarea name="findings" rows="3" placeholder="What worked, what did not, and anything that blocked you."></textarea></label>
+      <label><span>What do you need from UL next?</span><textarea name="needs" rows="2" placeholder="Files, decisions, review, or a call."></textarea></label>
+      <label><span>Supporting file (optional)</span><input name="responseFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.stl,.step,.stp,.png,.jpg,.jpeg" aria-describedby="dlFileHelp"><small id="dlFileHelp">Photos, data logs, CAD or a short report. Maximum 10 MB.</small></label>
+      <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+      <p id="downloadStatus" role="status"></p>
+      <div class="editor-actions"><button class="pill primary" type="submit">Send response</button></div>
     </form>
   </div>
 </div>

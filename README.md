@@ -42,8 +42,8 @@ server works too.
 
 ## Form Submissions
 
-The prosthetic-user survey and the University Collaboration deliverable form post
-directly to a Google Apps Script web app. Everything runs on the Google Workspace
+The prosthetic-user survey, the University Collaboration deliverable form and the
+Downloads project-response form all post directly to a Google Apps Script web app. Everything runs on the Google Workspace
 for Nonprofits plan — Apps Script, Sheets, Drive and Gmail. There is no server to
 host and no Google Cloud project, so the dashboard stays a static site and keeps
 working on GitHub Pages.
@@ -54,7 +54,8 @@ browser  ->  Apps Script web app  ->  Drive file + Sheet row + email to the revi
 
 ### Setup
 
-1. Create two Google Sheets: one for survey responses, one for deliverables.
+1. Create three Google Sheets: one for survey responses, one for deliverables, and
+   one for download responses.
 2. Open [google-apps-script.gs](google-apps-script.gs) in a new Apps Script project
    (script.google.com → New project) and paste the file in.
 3. In **Project Settings → Script properties**, add:
@@ -63,6 +64,7 @@ browser  ->  Apps Script web app  ->  Drive file + Sheet row + email to the revi
    | --- | --- |
    | `DELIVERABLE_SHEET_ID` | id of the deliverables Sheet |
    | `SURVEY_SHEET_ID` | id of the survey Sheet |
+   | `DOWNLOAD_SHEET_ID` | id of the download-responses Sheet |
    | `DELIVERABLE_PARENT_FOLDER_ID` | Drive folder to file submissions under |
    | `REVIEWERS_JSON` | reviewer id → name/email map; run `setup()` to print a template |
    | `FALLBACK_REVIEWER_EMAIL` | receives "Other" and any misrouted submission |
@@ -80,6 +82,23 @@ browser  ->  Apps Script web app  ->  Drive file + Sheet row + email to the revi
 The reviewer ids in `REVIEWERS_JSON` must match the `<option value>` entries in the
 reviewer dropdown in [index.html](index.html).
 
+### Downloads and project responses
+
+The **Downloads** tab publishes the reference packages university teams build
+from, and every card pairs its download with a **Submit response** action. A
+response records which package it is about, the team, a status
+(`Downloaded — not started` → `Completed` / `Blocked`), what the team did,
+what they found, and what they need from UL next; a supporting file is optional.
+
+Responses land in the `DOWNLOAD_SHEET_ID` Sheet and email
+`FALLBACK_REVIEWER_EMAIL` — the collaboration coordinator — because the point is
+programme-level tracking rather than per-reviewer routing. Any attached file is
+filed under `Responses/<yyyy-MM>/` in the Drive parent folder.
+
+The submitting device also keeps its own receipts in `localStorage`, which is what
+the *Project responses* table on the tab lists. That table is a convenience for
+the student, not the record of truth — the Sheet is.
+
 ### How reviewer routing is protected
 
 The browser sends a reviewer **id** (`saja-amro`, `walid`, …), never an email
@@ -95,7 +114,10 @@ would sit in readable JavaScript. The endpoint is public and rate-limited
 
 ## Project structure
 
-See [project_structure.md](project_structure.md) for the full file layout and the [MVP architecture](UI_UX_doc.md#mvp-architecture) the dashboard follows (state in `assets/js/model.js`, rendering in `assets/js/view.js`, event/interaction logic in `assets/js/presenter.js`).
+See [project_structure.md](project_structure.md) for the full file layout and the
+[MVP architecture](UI_UX_doc.md#mvp-architecture) the dashboard follows. Model,
+view and presenter live in the one `assets/js/app.js` file, sectioned by comment
+banners, so a static page keeps a single predictable load order.
 
 ## Documentation
 
@@ -103,7 +125,8 @@ See [project_structure.md](project_structure.md) for the full file layout and th
 - [workflow.md](workflow.md) — operational workflow
 - [implementation.md](implementation.md) — R&D implementation strategy
 - [bugtracking.md](bugtracking.md) — how bugs/issues are tracked
-- [UI_UX_doc.md](UI_UX_doc.md) — design principles, color palette, MVP architecture
+- [UI_UX_doc.md](UI_UX_doc.md) — design principles, the neumorphic colour and depth
+  tokens, and the MVP architecture
 - [project_structure.md](project_structure.md) — repository layout
 - [generate.mdc](generate.mdc) — rules for generating new components/docs
 
