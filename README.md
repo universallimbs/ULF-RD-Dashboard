@@ -1,5 +1,7 @@
 # ULF R&D Dashboard
 
+### ▶ [View the site](https://universallimbs.github.io/ULF-RD-Dashboard/)
+
 Internal R&D hub for the Universal Limbs Foundation pediatric prosthetic hand
 programme, plus a standalone prosthetic-user survey.
 
@@ -12,11 +14,9 @@ python3 -m http.server 8080
 
 ## ⚠️ index.html is a vendored build artifact
 
-`index.html` is the published bundle from
-**https://rasna-spec.github.io/ULF-RD-Dashboard/**, copied verbatim so this repo
-serves exactly that site. It is a ~1.2 MB self-contained page: a design-tool
-export whose markup, styles, fonts and images are all inlined, unpacked at
-runtime by a loader.
+`index.html` is a design-tool export, vendored into this repo verbatim. It is a
+~1.2 MB self-contained page whose markup, styles, fonts and images are all
+inlined and unpacked at runtime by a loader.
 
 **It is not editable source.** There are no classes to target, no stylesheet to
 change; styles are inline and element ids are generated. Do not hand-edit it —
@@ -25,46 +25,48 @@ edit can break the loader and leave the page stuck on "Unpacking…".
 
 ### Refreshing it
 
+Re-export or re-download the published bundle over `index.html`, then re-apply
+the local patches below. The publish URL is not recorded here — ask the R&D
+lead for the current one.
+
 ```bash
-curl -sL https://rasna-spec.github.io/ULF-RD-Dashboard/ -o index.html
+curl -sL "<published bundle URL>" -o index.html
 # then re-apply the local patches below
 ```
 
 ### The local patches
 
-Two, both reverted by a plain re-fetch. Re-apply after every refresh:
+Three, all reverted by a plain re-fetch. Re-apply after every refresh:
 
-1. **Anqido buttons** — upstream points all five at `anqido.app/social`; this
+1. **Anqido buttons** — the export points all five at `anqido.app/social`; this
    repo uses the team workspace.
-2. **GitHub link** — upstream points at `github.com/rasna-spec/…`; this repo is
+2. **GitHub link** — the export ships someone else's repo URL; this repo is
    published from the `universallimbs` org.
-3. **Teams roster** — upstream ships four tiles; this repo carries all 21 people
+3. **Teams roster** — the export ships four tiles; this repo carries all 21 people
    from the R&D org chart, with `r5`–`r21` / `x5`–`x21` added to both language
    tables. Not expressible as a find-and-replace; see
    `git show <this commit> -- index.html` to re-derive it.
 
 ```bash
 python3 - <<'EOF'
+import re
 s = open('index.html', encoding='utf-8').read()
 s = s.replace('anqido.app/social', 'anqido.app/work/universal-limbs/my-desk')
-s = s.replace('github.com/rasna-spec/ULF-RD-Dashboard',
-              'github.com/universallimbs/ULF-RD-Dashboard')
+s = re.sub(r'github\.com/[\w.-]+/ULF-RD-Dashboard',
+           'github.com/universallimbs/ULF-RD-Dashboard', s)
 open('index.html', 'w', encoding='utf-8').write(s)
 EOF
 ```
 
-Note the *fetch* URL stays `rasna-spec.github.io` — that is genuinely where the
-bundle is published, and is unrelated to the repo link shown inside the page.
-
-### What upstream currently ships
+### What the export currently ships
 
 Tabs: **Overview · Upload · Download · Teams · Mins**. A dual-timezone clock
 (Brazil fixed, second city selectable), an EN/PT switch, a dark-mode toggle, and
 an Overview built around *Current projects* (MVP 1 terminal hand, MVP 2 silicone
 glove), *Unassigned tasks* and *Blockers*.
 
-Upstream changes without notice — it was a different layout a week before this
-was written — so treat any description here as a snapshot, not a contract.
+The export is re-cut without notice — it was a different layout a week before
+this was written — so treat any description here as a snapshot, not a contract.
 
 ## The survey is hand-authored
 
@@ -86,7 +88,7 @@ Strings opt in with `data-i18n` / `data-i18n-attr`; JS reads through
 `window.ulfI18n.t()`. `ulfI18n.en()` always resolves English — use it for values
 leaving the browser so a Sheet column stays in one language.
 
-The Portuguese in `i18n.js` is mixed: the base came from the upstream bundle and
+The Portuguese in `i18n.js` is mixed: the base came from the vendored bundle and
 is European (`ficheiro`, `equipa`), while the survey strings are Brazilian
 (`arquivo`). Both are correct Portuguese; picking one is an open decision.
 

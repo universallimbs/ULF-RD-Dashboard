@@ -2,12 +2,11 @@
 
 **Scope: `prosthetic-user-survey.html` only.**
 
-`index.html` is now the vendored upstream bundle — its styling is inlined and
+`index.html` is now a vendored design-tool export — its styling is inlined and
 generated, and none of the tokens below apply to it. Everything here describes
 `assets/css/dashboard.css`, which the survey is the only remaining consumer of.
 
-Tokens were originally read off the reference build at
-`rasna-spec.github.io/ULF-RD-Dashboard`, so the survey still looks like a
+Tokens were originally matched to that export, so the survey still looks like a
 sibling of the hub even though they no longer share code.
 
 ## Design principles

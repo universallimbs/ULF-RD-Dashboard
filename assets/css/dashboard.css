@@ -1,5 +1,5 @@
-/* ULF R&D internal hub — glass/frosted theme
-   Tokens read off the reference build at rasna-spec.github.io/ULF-RD-Dashboard.
+/* ULF survey — glass/frosted theme
+   Tokens matched to the vendored hub export so the two look like siblings.
    Surfaces are translucent white over a flat #eceff4 ground, separated by a
    hairline border and a very soft shadow — not by colour. Keep it that way. */
 
