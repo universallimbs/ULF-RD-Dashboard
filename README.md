@@ -38,6 +38,10 @@ Two, both reverted by a plain re-fetch. Re-apply after every refresh:
    repo uses the team workspace.
 2. **GitHub link** — upstream points at `github.com/rasna-spec/…`; this repo is
    published from the `universallimbs` org.
+3. **Teams roster** — upstream ships four tiles; this repo carries all 21 people
+   from the R&D org chart, with `r5`–`r21` / `x5`–`x21` added to both language
+   tables. Not expressible as a find-and-replace; see
+   `git show <this commit> -- index.html` to re-derive it.
 
 ```bash
 python3 - <<'EOF'
