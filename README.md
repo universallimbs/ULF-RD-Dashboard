@@ -27,23 +27,30 @@ edit can break the loader and leave the page stuck on "Unpacking…".
 
 ```bash
 curl -sL https://rasna-spec.github.io/ULF-RD-Dashboard/ -o index.html
-# then re-apply the local patch below
+# then re-apply the local patches below
 ```
 
-### The one local patch
+### The local patches
 
-The upstream bundle points its five Anqido buttons at `anqido.app/social`. This
-repo repoints them:
+Two, both reverted by a plain re-fetch. Re-apply after every refresh:
+
+1. **Anqido buttons** — upstream points all five at `anqido.app/social`; this
+   repo uses the team workspace.
+2. **GitHub link** — upstream points at `github.com/rasna-spec/…`; this repo is
+   published from the `universallimbs` org.
 
 ```bash
 python3 - <<'EOF'
 s = open('index.html', encoding='utf-8').read()
-open('index.html','w',encoding='utf-8').write(
-    s.replace('anqido.app/social', 'anqido.app/work/universal-limbs/my-desk'))
+s = s.replace('anqido.app/social', 'anqido.app/work/universal-limbs/my-desk')
+s = s.replace('github.com/rasna-spec/ULF-RD-Dashboard',
+              'github.com/universallimbs/ULF-RD-Dashboard')
+open('index.html', 'w', encoding='utf-8').write(s)
 EOF
 ```
 
-Re-apply that after every refresh, or the buttons revert.
+Note the *fetch* URL stays `rasna-spec.github.io` — that is genuinely where the
+bundle is published, and is unrelated to the repo link shown inside the page.
 
 ### What upstream currently ships
 
