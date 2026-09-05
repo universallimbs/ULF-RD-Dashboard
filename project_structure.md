@@ -2,9 +2,8 @@
 
 ```text
 .
-├── index.html                  # VENDORED — the published bundle from
-│                               # rasna-spec.github.io/ULF-RD-Dashboard.
-│                               # ~1.2 MB, self-contained, not editable source.
+├── index.html                  # VENDORED — a design-tool export, ~1.2 MB,
+│                               # self-contained, not editable source.
 │                               # See README before touching it.
 ├── prosthetic-user-survey.html # Hand-authored. The page you actually edit.
 ├── google-apps-script.gs       # Workspace backend: Sheets + Drive + mail
@@ -31,11 +30,11 @@
 
 This repo now holds two things that share almost nothing:
 
-**1. The hub (`index.html`)** is a build artifact copied from upstream. Its
-markup, CSS, fonts and images are inlined and unpacked at runtime. There is no
-source to edit here; changes belong upstream. The only local modification is the
-Anqido URL patch documented in the README, which must be re-applied after every
-refresh.
+**1. The hub (`index.html`)** is a vendored design-tool export. Its markup, CSS,
+fonts and images are inlined and unpacked at runtime. There is no source to edit
+here — changes belong in the design tool. The local modifications (Anqido URL,
+GitHub URL, Teams roster) are documented in the README and must be re-applied
+after every refresh.
 
 **2. The survey** is ordinary hand-written source with a small shared runtime
 (`dashboard.css`, `i18n.js`, `i18n-survey.js`, `config.js`, `submit.js`).
