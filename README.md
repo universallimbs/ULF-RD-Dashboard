@@ -1,174 +1,151 @@
 # ULF R&D Dashboard
 
-Static, bilingual (EN / PT) internal R&D hub for the Universal Limbs Foundation
-pediatric prosthetic hand programme.
+Internal R&D hub for the Universal Limbs Foundation pediatric prosthetic hand
+programme, plus a standalone prosthetic-user survey.
 
-No build step, no framework. Plain HTML, one stylesheet and a handful of classic
-scripts, so it can be served by GitHub Pages or any static file server.
-
-## Live pages
-
-| Branch | Purpose | URL |
-| --- | --- | --- |
-| `main` | Production, published via GitHub Pages | https://universallimbs.github.io/ULF-RD-Dashboard/ |
-| `develop` | Working branch — everything lands here first | run locally |
-
-Direct pages:
-- Dashboard: `/index.html`
-- Prosthetic user survey: `/prosthetic-user-survey.html`
-
-## Run it locally
-
-Any static server works, because there is nothing to compile:
+Static — no build step. Any file server will do.
 
 ```bash
 python3 -m http.server 8080
-# then open http://127.0.0.1:8080/index.html
+# http://127.0.0.1:8080/index.html
 ```
 
-## Layout
+## ⚠️ index.html is a vendored build artifact
 
-A persistent shell plus one swappable panel. The **Priority board** (left),
-**Project stage** and **Tasks** (right) stay on screen for every tab; only the
-lower-left card changes.
+`index.html` is the published bundle from
+**https://rasna-spec.github.io/ULF-RD-Dashboard/**, copied verbatim so this repo
+serves exactly that site. It is a ~1.2 MB self-contained page: a design-tool
+export whose markup, styles, fonts and images are all inlined, unpacked at
+runtime by a loader.
 
-| Tab | Lower-left panel |
+**It is not editable source.** There are no classes to target, no stylesheet to
+change; styles are inline and element ids are generated. Do not hand-edit it —
+any change will be lost the next time the bundle is refreshed, and a careless
+edit can break the loader and leave the page stuck on "Unpacking…".
+
+### Refreshing it
+
+```bash
+curl -sL https://rasna-spec.github.io/ULF-RD-Dashboard/ -o index.html
+# then re-apply the local patch below
+```
+
+### The one local patch
+
+The upstream bundle points its five Anqido buttons at `anqido.app/social`. This
+repo repoints them:
+
+```bash
+python3 - <<'EOF'
+s = open('index.html', encoding='utf-8').read()
+open('index.html','w',encoding='utf-8').write(
+    s.replace('anqido.app/social', 'anqido.app/work/universal-limbs/my-desk'))
+EOF
+```
+
+Re-apply that after every refresh, or the buttons revert.
+
+### What upstream currently ships
+
+Tabs: **Overview · Upload · Download · Teams · Mins**. A dual-timezone clock
+(Brazil fixed, second city selectable), an EN/PT switch, a dark-mode toggle, and
+an Overview built around *Current projects* (MVP 1 terminal hand, MVP 2 silicone
+glove), *Unassigned tasks* and *Blockers*.
+
+Upstream changes without notice — it was a different layout a week before this
+was written — so treat any description here as a snapshot, not a contract.
+
+## The survey is hand-authored
+
+`prosthetic-user-survey.html` is real source and the only page you edit
+normally. It uses:
+
+| File | Role |
 | --- | --- |
-| Dashboard | Overview — programme summary, reference carousel, five-step delivery rail |
-| Upload | Drag-and-drop upload posting to the Apps Script endpoint |
-| Download | Programme pack, meeting minutes archive, team roster |
-| Links | Quick links grid |
-| Team | Roles and team members |
-| Mins | Meeting minutes |
-| University collaboration | Partner deck, test-rig architecture, student build brief, deliverable submission |
+| `assets/css/dashboard.css` | Glass design system — now used **only** by the survey |
+| `assets/js/i18n.js` | EN/PT strings + the swap engine |
+| `assets/js/i18n-survey.js` | Survey-only strings, merged via `ulfI18n.extend()` |
+| `assets/js/config.js` | `submissionEndpoint` for the Apps Script web app |
+| `assets/js/submit.js` | Shared POST transport |
 
-The header carries a dual-timezone clock (São Paulo fixed, second city
-selectable). Offsets are derived with `Intl.DateTimeFormat` rather than
-hardcoded, so daylight saving stays correct on both sides.
+Script order matters: `config.js → submit.js → i18n.js → i18n-survey.js`, then
+the page's own inline script calls `ulfI18n.init()`.
 
-## Languages
+Strings opt in with `data-i18n` / `data-i18n-attr`; JS reads through
+`window.ulfI18n.t()`. `ulfI18n.en()` always resolves English — use it for values
+leaving the browser so a Sheet column stays in one language.
 
-Every visible string lives in [assets/js/i18n.js](assets/js/i18n.js) as an
-`en` / `pt` pair; the survey's own vocabulary is in
-[assets/js/i18n-survey.js](assets/js/i18n-survey.js). The base dictionary is
-carried over from the reference build, so the Portuguese is **European
-Portuguese** ("ficheiro", "equipa", "Planeado"). If the primary audience is the
-Brazilian partner (UTFPR) this wants a pt-BR pass — the keys would not change.
-
-Markup opts in per node:
-
-```html
-<h1 data-i18n="summary.heading">Project summary</h1>
-<input data-i18n-attr="placeholder:form.emailPlaceholder">
-```
-
-The EN/PT switch in the header writes the choice to `localStorage`, sets
-`<html lang>`, and fires `ulf:languagechange`. Everything rendered in JavaScript
-listens for that event and re-renders, so no reload is needed.
-
-New visitors get Portuguese automatically when their browser language starts
-with `pt`; otherwise English.
-
-**Adding a string:** add the key to *both* `en` and `pt` in `i18n.js`, then point
-markup at it. A key missing from `pt` falls back to English rather than
-rendering blank, so a partial translation degrades gracefully.
-
-Every list on the page — priority board, phases, tasks, links, team, minutes —
-is rendered from a key table in `app.js` rather than written into the markup, so
-one `renderAll()` rebuilds the page in the new language.
+The Portuguese in `i18n.js` is mixed: the base came from the upstream bundle and
+is European (`ficheiro`, `equipa`), while the survey strings are Brazilian
+(`arquivo`). Both are correct Portuguese; picking one is an open decision.
 
 ## Form submissions
 
-The survey and the Upload panel post to a Google Apps Script web app. Everything runs
-on the Google Workspace for Nonprofits plan — Apps Script, Sheets, Drive and
-Gmail. There is no server to host and no Google Cloud project.
+The survey posts to a Google Apps Script web app — Apps Script, Sheets, Drive
+and Gmail, all on the Workspace for Nonprofits plan. No server, no Cloud project.
 
 ```
 browser  ->  Apps Script web app  ->  Drive file + Sheet row + email
 ```
 
+`google-apps-script.gs` also still carries handlers for `deliverable`,
+`download` and `upload` submissions. Those were used by the previous
+hand-built dashboard; **nothing in the vendored bundle calls them.** They are
+kept because they are working, tested code and the Sheets exist, but they are
+currently unreachable from the UI.
+
 ### Setup
 
-1. Create the Google Sheets you need — at minimum one for survey responses.
-2. Paste [google-apps-script.gs](google-apps-script.gs) into a new Apps Script
-   project (script.google.com → New project).
-3. In **Project Settings → Script properties**, add:
+1. Create the Sheets you need — at minimum one for survey responses.
+2. Paste `google-apps-script.gs` into a new Apps Script project.
+3. **Project Settings → Script properties**:
 
    | Property | Value |
    | --- | --- |
    | `SURVEY_SHEET_ID` | id of the survey Sheet |
-   | `DELIVERABLE_SHEET_ID` | id of the deliverables Sheet |
-   | `DOWNLOAD_SHEET_ID` | id of the download-responses Sheet |
-   | `DELIVERABLE_PARENT_FOLDER_ID` | Drive folder submissions are filed under |
-   | `REVIEWERS_JSON` | reviewer id → name/email map; run `setup()` to print a template |
+   | `DELIVERABLE_SHEET_ID` | deliverables Sheet (only if you re-expose that form) |
+   | `DOWNLOAD_SHEET_ID` | download-responses Sheet (likewise) |
+   | `DELIVERABLE_PARENT_FOLDER_ID` | Drive folder submissions file under |
+   | `REVIEWERS_JSON` | reviewer id → name/email map; `setup()` prints a template |
    | `FALLBACK_REVIEWER_EMAIL` | receives anything misrouted |
 
    Optional: `ALLOWED_MAIL_DOMAINS` (default `universallimbs.com`),
    `DAILY_SUBMISSION_CAP` (default 200), `ACK_SUBMITTERS` (default true).
 
-4. Run `setup()` once and read the execution log — it lists anything still
-   missing instead of letting submissions fail later.
+4. Run `setup()` and read the log — it lists what is still missing.
 5. **Deploy → New deployment → Web app**, *Execute as* **Me**, *Who has access*
-   **Anyone**. Copy the `/exec` URL into `submissionEndpoint` in
-   [assets/js/config.js](assets/js/config.js).
+   **Anyone**. Put the `/exec` URL in `assets/js/config.js`.
 
-Until that endpoint is set, the Upload panel and the survey both say so plainly
-rather than failing silently.
-
-### University collaboration
-
-The partner-facing panel: the Canva scope deck, the automated test-rig
-architecture (process list, labelled parts, system chain), the four-part student
-build brief, and **Submit deliverable**.
-
-The deliverable form posts a `deliverable` submission. The browser sends a
-reviewer **id** (`saja-amro`, `walid`, …), never an address; Apps Script resolves
-it against `REVIEWERS_JSON` on its own side, so the endpoint can only mail people
-on that allowlist. "Other" and any unknown id route to `FALLBACK_REVIEWER_EMAIL`,
-with whatever the submitter typed recorded in the Sheet rather than mailed.
-
-### Upload
-
-The Upload panel accepts a drag-and-drop or picked file and posts it as an
-`upload` submission with the submitter's UI language recorded alongside. The
-20 MB ceiling in the copy is enforced client-side before the file is read.
-
-`handleUpload` files it under `Uploads/<yyyy-MM>/` in the Drive parent folder
-and emails `FALLBACK_REVIEWER_EMAIL` that it arrived. No reviewer routing and no
-required metadata, because the panel asks for none.
+Until that is set the survey says so plainly rather than failing silently.
 
 ### Why there is no shared secret
 
-A static site cannot keep one; it would sit in readable JavaScript. The browser
-sends a reviewer **id**, never an address, and Apps Script resolves it against
+A static site cannot keep one — it would sit in readable JavaScript. The browser
+sends a reviewer **id**, never an address; Apps Script resolves it against
 `REVIEWERS_JSON` on its own side, so the endpoint can only mail people on that
-allowlist. The endpoint is public and rate-limited: per-minute and per-day caps,
-a honeypot field, and a 10 MB file ceiling.
+allowlist. It is public and rate-limited: per-minute and per-day caps, a
+honeypot field, and a file-size ceiling.
+
+## Unreferenced assets
+
+`testbench-architecture.webp`, `yale-multigrasp.png`, `waacs-basis.png`,
+`softfoot-pro.jpg`, `ulf-prosthetic-render.*`, `ulf-product-demo-poster.jpg` are
+no longer referenced by any page — the bundle inlines its own images. They are
+kept because they are original programme artifacts, not regenerable.
+`ul-logo.png` is still used by the survey.
 
 ## Documentation
 
-- [UI_UX_doc.md](UI_UX_doc.md) — design principles, colour and depth tokens, MVP architecture
+- [UI_UX_doc.md](UI_UX_doc.md) — design tokens (survey/`dashboard.css` only)
 - [project_structure.md](project_structure.md) — repository layout
-- [rules.md](rules.md) — R&D collaboration rules
-- [workflow.md](workflow.md) — operational workflow
-- [implementation.md](implementation.md) — R&D implementation strategy
-- [bugtracking.md](bugtracking.md) — how bugs and issues are tracked
-- [generate.mdc](generate.mdc) — rules for generating new components/docs
+- [rules.md](rules.md) · [workflow.md](workflow.md) · [implementation.md](implementation.md) · [bugtracking.md](bugtracking.md) · [generate.mdc](generate.mdc)
 
 ## Branching
 
-- `main` — production, deploys on every push.
-- `develop` — the working branch. Open a PR into `main` when a change is ready.
+- `main` — production, published via GitHub Pages, deploys on every push.
+- `develop` — working branch; PR into `main` when ready.
 
 ## Continuous checks
 
-`.github/workflows/link-checker.yml` runs on every push/PR to `main` and
-`develop` and:
-- flags internal links pointing at files that do not exist in the repo,
-- flags Google Docs/Drive/Forms links not scoped to a `universallimbs.com`
-  account, so shared documents stay restricted to UL team members.
-
-## Contact
-
-The **Links** panel carries an *Email research team* link; team members' Gmail
-links are on the **Team** panel.
+`.github/workflows/link-checker.yml` flags internal links to missing files and
+Google Docs/Drive/Forms links not scoped to a `universallimbs.com` account.

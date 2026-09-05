@@ -1,7 +1,14 @@
 # UI/UX Documentation
 
-Tokens here were read off the reference build at
-`rasna-spec.github.io/ULF-RD-Dashboard` so the two stay in step.
+**Scope: `prosthetic-user-survey.html` only.**
+
+`index.html` is now the vendored upstream bundle — its styling is inlined and
+generated, and none of the tokens below apply to it. Everything here describes
+`assets/css/dashboard.css`, which the survey is the only remaining consumer of.
+
+Tokens were originally read off the reference build at
+`rasna-spec.github.io/ULF-RD-Dashboard`, so the survey still looks like a
+sibling of the hub even though they no longer share code.
 
 ## Design principles
 
@@ -39,16 +46,6 @@ nested cards 22px, rows and pills 14px.
 Type is **Urbanist** (Google Fonts). Body is 13px; card titles 22px; the page
 title 34px at `-.025em`. Micro-labels are 11px, `600`, `.14em` tracking, upper.
 
-## Layout
-
-A persistent shell plus one swappable panel:
-
-- **Left column** — Priority board (always), then the active tab's panel.
-- **Right column** — Project stage, then Tasks. Both always visible.
-
-Only the lower-left card changes between tabs, which is why the tab bar reads as
-navigation within one screen rather than six separate pages.
-
 ## Bilingual behaviour
 
 Every visible string is a key in `assets/js/i18n.js` (survey strings in
@@ -56,12 +53,13 @@ Every visible string is a key in `assets/js/i18n.js` (survey strings in
 `data-i18n-attr`; JS reads through `window.ulfI18n.t()`.
 
 Switching writes to `localStorage`, sets `<html lang>` and fires
-`ulf:languagechange`; `renderAll()` rebuilds every list.
+`ulf:languagechange`; the survey rebuilds its rating/scale blocks on that event,
+snapshotting and restoring the answers so a mid-survey switch loses nothing.
 
 **Two rules when adding UI:**
 1. No literal user-visible text — add a key to both tables.
-2. If you render it in JavaScript, add it to `renderAll()`, or it will keep the
-   old language after a switch.
+2. If you render it in JavaScript, rebuild it on `ulf:languagechange`, or it
+   will keep the old language after a switch.
 
 `ulfI18n.en()` resolves against the English table whatever the UI shows. Use it
 for any value leaving the browser, so a Sheet column holds one language.
