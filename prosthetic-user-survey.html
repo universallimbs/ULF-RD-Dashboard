@@ -4,86 +4,566 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Prosthetic User Survey | Universal Limbs</title>
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=20260829">
+
+  <!-- Classic scripts, in dependency order: config -> transport -> engine -> strings. -->
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/submit.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/i18n-survey.js"></script>
+
   <style>
-    :root { color:#1b3b33; background:#f4f0e8; font-family:"Helvetica Neue",Helvetica,sans-serif; }
-    body { margin:0; padding:32px 16px 64px; }
-    main { max-width:760px; margin:auto; padding:36px; background:#fbf9f4; border:1px solid #ddd6c6; border-radius:8px; box-sizing:border-box; }
-    header { display:flex; align-items:center; gap:16px; margin-bottom:24px; }
-    header img { width:52px; height:52px; object-fit:contain; } h1 { margin:0; font-size:28px; } header p,.hint { margin:6px 0 0; color:#607069; line-height:1.5; }
-    .notice { margin:24px 0; padding:20px; background:#efeae0; border-radius:6px; line-height:1.6; }
-    fieldset { margin:32px 0; padding:0; border:0; } legend { width:100%; padding-bottom:8px; border-bottom:1px solid #ddd6c6; font-weight:700; font-size:18px; }
-    label { display:block; margin-top:18px; font-weight:600; } label > span { display:block; margin-bottom:7px; }
-    input:not([type=radio]):not([type=checkbox]),select,textarea { width:100%; padding:10px; box-sizing:border-box; border:1px solid #b9b0a1; border-radius:4px; background:#fff; color:inherit; font:inherit; }
-    textarea { resize:vertical; } .choice-row,.scale { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-    .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
-    .choice-row label,.consent { display:flex; align-items:start; gap:8px; margin:0; font-weight:400; }.choice-row input,.consent input { margin-top:3px; }
-    .scale label { display:grid; place-items:center; width:32px; height:32px; margin:0; border:1px solid #1b3b33; border-radius:50%; cursor:pointer; font-size:12px; }.scale input { position:absolute; opacity:0; }.scale label:has(input:checked) { background:#1b3b33; color:#fff; }
-    .scale-note { display:flex; justify-content:space-between; max-width:420px; margin-top:6px; color:#607069; font-size:12px; }
-    .rank-grid { display:grid; grid-template-columns:70px 1fr; gap:12px; align-items:center; margin-top:12px; }.rank-grid label { margin:0; }
-    button { margin-top:28px; padding:12px 20px; border:0; border-radius:4px; background:#1b3b33; color:#fff; cursor:pointer; font:inherit; font-weight:700; }button:disabled { opacity:.55; cursor:wait; } #status { min-height:24px; margin:16px 0 0; font-weight:600; }
-    @media(max-width:560px) { main { padding:24px; }.rank-grid { grid-template-columns:1fr; gap:4px; } }
+    /* Survey-only layout on top of the shared neumorphic system.
+       Every colour, shadow, radius and easing below comes from dashboard.css
+       tokens — nothing new is invented here. */
+    body { padding:34px 16px 72px; }
+
+    main {
+      max-width:780px;
+      margin:auto;
+      padding:38px 40px;
+      border-radius:var(--r-xl);
+      background:var(--bg);
+      box-shadow:var(--sh-3);
+    }
+
+    header { display:flex; align-items:center; gap:18px; margin-bottom:26px; }
+
+    header img {
+      width:54px; height:54px; padding:9px;
+      flex:0 0 auto;
+      object-fit:contain; border-radius:50%;
+      background:var(--bg); box-shadow:var(--sh-1);
+    }
+
+    .head-text { min-width:0; }
+    h1 { font-size:27px; letter-spacing:-.02em; }
+    header p { margin:5px 0 0; color:var(--muted); font-size:13.5px; }
+
+    /* .lang-toggle / .lang-btn are styled in dashboard.css — only placed here. */
+    header .lang-toggle { margin-left:auto; flex:0 0 auto; }
+
+    .notice { margin:26px 0; line-height:1.6; }
+    .notice strong { display:block; margin-bottom:7px; color:var(--ink); font-size:14px; }
+    .notice p { margin:0 0 14px; }
+
+    fieldset { margin:34px 0; padding:0; border:0; }
+
+    legend {
+      width:100%;
+      padding-bottom:12px;
+      margin-bottom:6px;
+      border-bottom:1px solid var(--line);
+      font-size:16px;
+      font-weight:700;
+      letter-spacing:-.01em;
+    }
+
+    /* Only the question-level blocks get the gap; the chips inside them must not. */
+    fieldset > label,
+    fieldset > .rating,
+    fieldset > .multi { margin-top:20px; }
+
+    /* A rating / multi block is a question, not a chip, so undo the pill styling
+       dashboard.css applies to every label inside .rating and .multi. */
+    .rating,
+    .multi { display:block; }
+
+    .rating > label,
+    .multi > label,
+    .rating > label:hover,
+    .multi > label:hover {
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:9px;
+      padding:0;
+      border-radius:0;
+      box-shadow:none;
+      font-size:inherit;
+      font-weight:inherit;
+      cursor:default;
+    }
+
+    /* radio scale rendered as neumorphic circles */
+    .scale { align-items:center; }
+
+    .scale label {
+      display:grid; place-items:center;
+      width:38px; height:38px;
+      padding:0; margin:0;
+      border-radius:50%;
+      box-shadow:var(--sh-1);
+      font-size:12.5px; font-weight:650;
+      cursor:pointer;
+      transition:all .2s var(--ease);
+    }
+
+    .scale input { position:absolute; opacity:0; width:0; height:0; }
+    .scale label:has(input:checked) { background:var(--accent); color:var(--accent-ink); box-shadow:var(--sh-in); }
+    /* The real radio is invisible, so the circle has to carry the focus ring. */
+    .scale label:has(input:focus-visible) { outline:2px solid var(--accent-deep); outline-offset:3px; }
+
+    .scale-note {
+      display:flex; justify-content:space-between;
+      width:100%; max-width:440px; margin-top:9px;
+      padding:0; box-shadow:none;
+      font-size:11.5px; color:var(--quiet);
+    }
+
+    .rank-grid { grid-template-columns:82px 1fr; align-items:center; gap:12px; margin-top:14px; }
+    .rank-grid > label { margin:0; font-size:12.5px; font-weight:650; color:var(--muted); }
+
+    button[type=submit] {
+      margin-top:30px;
+      padding:13px 26px;
+      border:0; cursor:pointer;
+      border-radius:999px;
+      background:var(--accent);
+      color:var(--accent-ink);
+      box-shadow:var(--sh-1);
+      font:inherit; font-size:14px; font-weight:700;
+      transition:all .2s var(--ease);
+    }
+
+    button[type=submit]:hover { box-shadow:var(--sh-2); transform:translateY(-1px); }
+    button[type=submit]:active { box-shadow:var(--sh-in); transform:none; }
+    button[type=submit]:disabled { opacity:.55; cursor:wait; transform:none; }
+
+    #status { min-height:24px; margin:18px 0 0; font-size:13px; font-weight:650; color:var(--muted); }
+
+    @media (max-width:560px) {
+      main { padding:26px 20px; }
+      header { flex-wrap:wrap; }
+      header .lang-toggle { margin-left:0; }
+      .rank-grid { grid-template-columns:1fr; gap:5px; }
+    }
   </style>
 </head>
 <body>
   <main>
-    <header><img src="ul-logo.png" alt="Universal Limbs logo"><div><h1>Prosthetic User Survey</h1><p>This survey will help us design better, low-cost, body-powered upper-limb prosthetic devices.</p></div></header>
+    <header>
+      <img src="ul-logo.png" alt="Universal Limbs logo" data-i18n-attr="alt:sv.logoAlt">
+      <div class="head-text">
+        <h1 data-i18n="sv.h1">Prosthetic User Survey</h1>
+        <p data-i18n="sv.intro">This survey will help us design better, low-cost, body-powered upper-limb prosthetic devices.</p>
+      </div>
+      <div class="lang-toggle" role="group" data-i18n-attr="aria-label:lang.label" aria-label="Language">
+        <button class="lang-btn active" type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button class="lang-btn" type="button" data-lang="pt" aria-pressed="false">PT</button>
+      </div>
+    </header>
+
     <form id="surveyForm">
-      <section class="notice"><strong>Before you start</strong><p>This survey is voluntary and anonymous — we do not collect your name or any identifying information unless you choose to share it. Your answers will only be used by Universal Limbs Foundation, a non-profit, to guide the design of an open-source pediatric prosthetic hand. Answers may be shared in aggregate (never individually) with our engineering and research partners. You can skip any question or stop at any time. This is not a medical service and does not replace advice from a clinician.</p><label class="consent"><input name="consent" type="checkbox" required><span>I understand how my information will be used and I agree to take part in this survey.</span></label></section>
-      <fieldset><legend>1. Basic Information</legend>
-        <label><span>What is your age range?</span><select name="ageRange"><option value="">Prefer not to say</option><option>0-5</option><option>6-12</option><option>13-18</option><option>19-31</option><option>32-40</option><option>41-50</option><option>51-60</option><option>61+</option></select></label>
-        <label><span>Which arm is affected?</span><select name="affectedArm"><option value="">Prefer not to say</option><option>Left</option><option>Right</option><option>Both</option></select></label>
-        <label><span>Is your amputation below the elbow / transradial?</span><select name="transradial"><option value="">Prefer not to say</option><option>Yes</option><option>No</option></select></label>
-        <label><span>How long have you had your amputation?</span><input name="amputationDuration"></label><label><span>What country or region do you live in?</span><input name="region" autocomplete="country-name"></label>
+      <section class="notice">
+        <strong data-i18n="sv.notice.title">Before you start</strong>
+        <p data-i18n="sv.notice.body">This survey is voluntary and anonymous — we do not collect your name or any identifying information unless you choose to share it. Your answers will only be used by Universal Limbs Foundation, a non-profit, to guide the design of an open-source pediatric prosthetic hand. Answers may be shared in aggregate (never individually) with our engineering and research partners. You can skip any question or stop at any time. This is not a medical service and does not replace advice from a clinician.</p>
+        <label class="consent">
+          <input name="consent" type="checkbox" required>
+          <span data-i18n="sv.consent">I understand how my information will be used and I agree to take part in this survey.</span>
+        </label>
+      </section>
+
+      <fieldset>
+        <legend data-i18n="sv.s1">1. Basic Information</legend>
+
+        <label>
+          <span data-i18n="sv.q.ageRange">What is your age range?</span>
+          <select name="ageRange">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="0-5">0-5</option>
+            <option value="6-12">6-12</option>
+            <option value="13-18">13-18</option>
+            <option value="19-31">19-31</option>
+            <option value="32-40">32-40</option>
+            <option value="41-50">41-50</option>
+            <option value="51-60">51-60</option>
+            <option value="61+">61+</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.affectedArm">Which arm is affected?</span>
+          <select name="affectedArm">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Left" data-i18n="sv.opt.arm.left">Left</option>
+            <option value="Right" data-i18n="sv.opt.arm.right">Right</option>
+            <option value="Both" data-i18n="sv.opt.arm.both">Both</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.transradial">Is your amputation below the elbow / transradial?</span>
+          <select name="transradial">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Yes" data-i18n="sv.opt.yes">Yes</option>
+            <option value="No" data-i18n="sv.opt.no">No</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.amputationDuration">How long have you had your amputation?</span>
+          <input name="amputationDuration">
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.region">What country or region do you live in?</span>
+          <input name="region" autocomplete="country-name">
+        </label>
       </fieldset>
-      <fieldset><legend>2. Current Prosthetic Use</legend>
-        <label><span>Do you currently use a prosthetic?</span><select name="currentlyUses"><option value="">Prefer not to say</option><option>Yes</option><option>No</option></select></label><label><span>What type do you use?</span><select name="prostheticType"><option value="">Prefer not to say</option><option>Cosmetic</option><option>Body-powered</option><option>Myoelectric</option><option>3D-printed</option><option>Other</option></select></label>
-        <div class="rating" data-name="controlEase" data-question="How easy is it to control movements with the prosthetic?" data-low="Very difficult" data-high="Very easy"></div>
-        <label><span>How often do you use it?</span><select name="useFrequency"><option value="">Prefer not to say</option><option>Daily</option><option>Weekly</option><option>Occasionally</option><option>Rarely</option><option>Never</option></select></label><label><span>Where do you use it most?</span><select name="useLocation"><option value="">Prefer not to say</option><option>Home</option><option>Work</option><option>Public / social settings</option><option>Specific activities only</option></select></label>
+
+      <fieldset>
+        <legend data-i18n="sv.s2">2. Current Prosthetic Use</legend>
+
+        <label>
+          <span data-i18n="sv.q.currentlyUses">Do you currently use a prosthetic?</span>
+          <select name="currentlyUses">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Yes" data-i18n="sv.opt.yes">Yes</option>
+            <option value="No" data-i18n="sv.opt.no">No</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.prostheticType">What type do you use?</span>
+          <select name="prostheticType">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Cosmetic" data-i18n="sv.opt.type.cosmetic">Cosmetic</option>
+            <option value="Body-powered" data-i18n="sv.opt.type.bodyPowered">Body-powered</option>
+            <option value="Myoelectric" data-i18n="sv.opt.type.myoelectric">Myoelectric</option>
+            <option value="3D-printed" data-i18n="sv.opt.type.printed">3D-printed</option>
+            <option value="Other" data-i18n="sv.opt.other">Other</option>
+          </select>
+        </label>
+
+        <div class="rating" data-name="controlEase" data-question="sv.q.controlEase" data-low="sv.scale.veryDifficult" data-high="sv.scale.veryEasy"></div>
+
+        <label>
+          <span data-i18n="sv.q.useFrequency">How often do you use it?</span>
+          <select name="useFrequency">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Daily" data-i18n="sv.opt.freq.daily">Daily</option>
+            <option value="Weekly" data-i18n="sv.opt.freq.weekly">Weekly</option>
+            <option value="Occasionally" data-i18n="sv.opt.freq.occasionally">Occasionally</option>
+            <option value="Rarely" data-i18n="sv.opt.freq.rarely">Rarely</option>
+            <option value="Never" data-i18n="sv.opt.freq.never">Never</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.useLocation">Where do you use it most?</span>
+          <select name="useLocation">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Home" data-i18n="sv.opt.where.home">Home</option>
+            <option value="Work" data-i18n="sv.opt.where.work">Work</option>
+            <option value="Public / social settings" data-i18n="sv.opt.where.public">Public / social settings</option>
+            <option value="Specific activities only" data-i18n="sv.opt.where.specific">Specific activities only</option>
+          </select>
+        </label>
       </fieldset>
-      <fieldset><legend>3. Cost &amp; Decision-Making</legend>
-        <label><span>How was your current prosthetic (or previous devices) paid for?</span><select name="paymentSource"><option value="">Prefer not to say</option><option>Free / donated</option><option>Government or public healthcare</option><option>Insurance</option><option>Paid out of pocket</option><option>NGO / charity</option><option>Prefer not to say</option></select></label><label><span>Roughly how much could your family realistically afford to pay for a prosthetic hand (one-time cost)?</span><input name="affordableAmount"></label><label><span>What is the single biggest barrier to getting (or keeping) a prosthetic?</span><select name="biggestBarrier"><option value="">Prefer not to say</option><option>Cost</option><option>Access to a clinic/provider</option><option>Awareness that options exist</option><option>Fit / comfort concerns</option><option>Appearance concerns</option><option>Other</option></select></label>
+
+      <fieldset>
+        <legend data-i18n="sv.s3">3. Cost &amp; Decision-Making</legend>
+
+        <label>
+          <span data-i18n="sv.q.paymentSource">How was your current prosthetic (or previous devices) paid for?</span>
+          <select name="paymentSource">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Free / donated" data-i18n="sv.opt.pay.free">Free / donated</option>
+            <option value="Government or public healthcare" data-i18n="sv.opt.pay.government">Government or public healthcare</option>
+            <option value="Insurance" data-i18n="sv.opt.pay.insurance">Insurance</option>
+            <option value="Paid out of pocket" data-i18n="sv.opt.pay.pocket">Paid out of pocket</option>
+            <option value="NGO / charity" data-i18n="sv.opt.pay.ngo">NGO / charity</option>
+            <option value="Prefer not to say" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.affordableAmount">Roughly how much could your family realistically afford to pay for a prosthetic hand (one-time cost)?</span>
+          <input name="affordableAmount">
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.biggestBarrier">What is the single biggest barrier to getting (or keeping) a prosthetic?</span>
+          <select name="biggestBarrier">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Cost" data-i18n="sv.opt.barrier.cost">Cost</option>
+            <option value="Access to a clinic/provider" data-i18n="sv.opt.barrier.access">Access to a clinic/provider</option>
+            <option value="Awareness that options exist" data-i18n="sv.opt.barrier.awareness">Awareness that options exist</option>
+            <option value="Fit / comfort concerns" data-i18n="sv.opt.barrier.fit">Fit / comfort concerns</option>
+            <option value="Appearance concerns" data-i18n="sv.opt.barrier.appearance">Appearance concerns</option>
+            <option value="Other" data-i18n="sv.opt.other">Other</option>
+          </select>
+        </label>
       </fieldset>
-      <fieldset><legend>4. Reasons for Use or Non-Use</legend><label><span>If you use your prosthetic, what do you like about it?</span><textarea name="likes" rows="3"></textarea></label><label><span>If you do not use it often, why not?</span><textarea name="whyNotOften" rows="3"></textarea></label><label><span>What is one reason you would stop using your prosthetic entirely?</span><textarea name="stopReason" rows="3"></textarea></label></fieldset>
-      <fieldset><legend>5. Comfort and Fit</legend>
-        <div class="rating" data-name="comfort" data-question="How comfortable is your current prosthetic?" data-low="Very uncomfortable" data-high="Very comfortable"></div>
-        <div class="multi" data-name="socketIssues" data-question="Does the socket cause any of the following? (select all that apply)" data-options="Pressure|Pain|Sweating|Slipping|Skin irritation|None of these"></div>
-        <label><span>If yes, when does the discomfort occur?</span><select name="discomfortTiming"><option value="">Prefer not to say</option><option>Continuously</option><option>Only during a certain activity</option></select></label><label><span>What would make the socket more comfortable?</span><textarea name="comfortImprovement" rows="3"></textarea></label><label><span>Are you able to put on/remove your prosthetic without assistance?</span><select name="donning"><option value="">Prefer not to say</option><option>Yes, independently</option><option>With some help</option><option>No, needs assistance</option></select></label><label><span>How long does it take you to put on or take off your prosthetic?</span><input name="donningTime"></label>
+
+      <fieldset>
+        <legend data-i18n="sv.s4">4. Reasons for Use or Non-Use</legend>
+
+        <label>
+          <span data-i18n="sv.q.likes">If you use your prosthetic, what do you like about it?</span>
+          <textarea name="likes" rows="3"></textarea>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.whyNotOften">If you do not use it often, why not?</span>
+          <textarea name="whyNotOften" rows="3"></textarea>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.stopReason">What is one reason you would stop using your prosthetic entirely?</span>
+          <textarea name="stopReason" rows="3"></textarea>
+        </label>
       </fieldset>
-      <fieldset><legend>6. Function and Daily Use</legend><div class="multi" data-name="activities" data-question="Which daily activities do you want the most help with? (select all that apply)" data-options="Eating|Drinking|Phone use|Writing / typing|Carrying objects|Opening doors|Dressing|Cooking|School / work tasks|Sports|Hobbies|Other"></div></fieldset>
-      <fieldset><legend>7. Appearance and Confidence</legend><div class="rating" data-name="appearanceImportance" data-question="How important is the appearance of the prosthetic to you?" data-low="Not important" data-high="Very important"></div><label><span>Which type of prosthetic do you prefer?</span><select name="appearancePreference"><option value="">Prefer not to say</option><option>Realistic-looking</option><option>Functional / robotic-looking</option><option>Custom design</option></select></label></fieldset>
-      <fieldset><legend>8. Durability and Maintenance</legend><label><span>Has your prosthetic ever broken?</span><select name="everBroke"><option value="">Prefer not to say</option><option>Yes</option><option>No</option></select></label><label><span>What part broke first?</span><input name="partBroke"></label><div class="rating" data-name="repairEase" data-question="How easy is it to repair or adjust?" data-low="Very difficult" data-high="Very easy"></div></fieldset>
-      <fieldset><legend>9. What Matters Most</legend><p class="hint">Pick your top 3 factors when deciding whether to get, or keep using, a prosthetic — ranked 1st to 3rd.</p><div id="rankFields"></div></fieldset>
-      <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div><button id="submitButton" type="submit">Submit survey</button><p id="status" role="status"></p>
+
+      <fieldset>
+        <legend data-i18n="sv.s5">5. Comfort and Fit</legend>
+
+        <div class="rating" data-name="comfort" data-question="sv.q.comfort" data-low="sv.scale.veryUncomfortable" data-high="sv.scale.veryComfortable"></div>
+
+        <div class="multi" data-name="socketIssues" data-question="sv.q.socketIssues"
+             data-options="Pressure|Pain|Sweating|Slipping|Skin irritation|None of these"
+             data-option-keys="sv.opt.socket.pressure|sv.opt.socket.pain|sv.opt.socket.sweating|sv.opt.socket.slipping|sv.opt.socket.irritation|sv.opt.socket.none"></div>
+
+        <label>
+          <span data-i18n="sv.q.discomfortTiming">If yes, when does the discomfort occur?</span>
+          <select name="discomfortTiming">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Continuously" data-i18n="sv.opt.timing.continuous">Continuously</option>
+            <option value="Only during a certain activity" data-i18n="sv.opt.timing.activity">Only during a certain activity</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.comfortImprovement">What would make the socket more comfortable?</span>
+          <textarea name="comfortImprovement" rows="3"></textarea>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.donning">Are you able to put on/remove your prosthetic without assistance?</span>
+          <select name="donning">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Yes, independently" data-i18n="sv.opt.donning.independent">Yes, independently</option>
+            <option value="With some help" data-i18n="sv.opt.donning.someHelp">With some help</option>
+            <option value="No, needs assistance" data-i18n="sv.opt.donning.assisted">No, needs assistance</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.donningTime">How long does it take you to put on or take off your prosthetic?</span>
+          <input name="donningTime">
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend data-i18n="sv.s6">6. Function and Daily Use</legend>
+
+        <div class="multi" data-name="activities" data-question="sv.q.activities"
+             data-options="Eating|Drinking|Phone use|Writing / typing|Carrying objects|Opening doors|Dressing|Cooking|School / work tasks|Sports|Hobbies|Other"
+             data-option-keys="sv.opt.act.eating|sv.opt.act.drinking|sv.opt.act.phone|sv.opt.act.writing|sv.opt.act.carrying|sv.opt.act.doors|sv.opt.act.dressing|sv.opt.act.cooking|sv.opt.act.schoolWork|sv.opt.act.sports|sv.opt.act.hobbies|sv.opt.other"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend data-i18n="sv.s7">7. Appearance and Confidence</legend>
+
+        <div class="rating" data-name="appearanceImportance" data-question="sv.q.appearanceImportance" data-low="sv.scale.notImportant" data-high="sv.scale.veryImportant"></div>
+
+        <label>
+          <span data-i18n="sv.q.appearancePreference">Which type of prosthetic do you prefer?</span>
+          <select name="appearancePreference">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Realistic-looking" data-i18n="sv.opt.look.realistic">Realistic-looking</option>
+            <option value="Functional / robotic-looking" data-i18n="sv.opt.look.robotic">Functional / robotic-looking</option>
+            <option value="Custom design" data-i18n="sv.opt.look.custom">Custom design</option>
+          </select>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend data-i18n="sv.s8">8. Durability and Maintenance</legend>
+
+        <label>
+          <span data-i18n="sv.q.everBroke">Has your prosthetic ever broken?</span>
+          <select name="everBroke">
+            <option value="" data-i18n="sv.opt.preferNot">Prefer not to say</option>
+            <option value="Yes" data-i18n="sv.opt.yes">Yes</option>
+            <option value="No" data-i18n="sv.opt.no">No</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="sv.q.partBroke">What part broke first?</span>
+          <input name="partBroke">
+        </label>
+
+        <div class="rating" data-name="repairEase" data-question="sv.q.repairEase" data-low="sv.scale.veryDifficult" data-high="sv.scale.veryEasy"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend data-i18n="sv.s9">9. What Matters Most</legend>
+        <p class="hint" data-i18n="sv.q.rank">Pick your top 3 factors when deciding whether to get, or keep using, a prosthetic — ranked 1st to 3rd.</p>
+        <div id="rankFields"></div>
+      </fieldset>
+
+      <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+      <button id="submitButton" type="submit" data-i18n="sv.submit">Submit survey</button>
+      <p id="status" role="status"></p>
     </form>
   </main>
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/submit.js"></script>
+
   <script>
-    const factors = ['Cost','Comfort','Function / usefulness','Appearance','Durability','Ease of putting on/off','Availability of repair','Weight'];
-    document.querySelectorAll('.rating').forEach(node => { node.innerHTML = `<label><span>${node.dataset.question}</span><div class="scale">${Array.from({ length:10 }, (_, index) => `<label><input type="radio" name="${node.dataset.name}" value="${index + 1}">${index + 1}</label>`).join('')}</div><div class="scale-note"><span>${node.dataset.low}</span><span>Neutral</span><span>${node.dataset.high}</span></div></label>`; });
-    document.querySelectorAll('.multi').forEach(node => { node.innerHTML = `<label><span>${node.dataset.question}</span><div class="choice-row">${node.dataset.options.split('|').map(option => `<label><input type="checkbox" name="${node.dataset.name}" value="${option}">${option}</label>`).join('')}</div></label>`; });
-    document.getElementById('rankFields').innerHTML = [1,2,3].map(rank => `<div class="rank-grid"><label for="rank${rank}">${rank}${rank === 1 ? 'st' : rank === 2 ? 'nd' : 'rd'}</label><select id="rank${rank}" name="rank${rank}"><option value="">Choose a factor</option>${factors.map(factor => `<option>${factor}</option>`).join('')}</select></div>`).join('');
-    function serializeForm(form) { const payload = {}; new FormData(form).forEach((value, key) => { if (key in payload) payload[key] = [].concat(payload[key], value); else payload[key] = value; }); return payload; }
-    const surveyForm = document.getElementById('surveyForm'); const surveyStatus = document.getElementById('status'); const submitButton = document.getElementById('submitButton');
-    surveyForm.addEventListener('submit', async event => {
-      event.preventDefault();
-      const payload = serializeForm(surveyForm);
-      payload.consent = surveyForm.elements.consent.checked;
-      if (!payload.consent) { surveyStatus.textContent = 'Please confirm consent before submitting.'; return; }
-      const ranks = [payload.rank1, payload.rank2, payload.rank3].filter(Boolean);
-      if (new Set(ranks).size !== ranks.length) { surveyStatus.textContent = 'Please choose three different ranked factors.'; return; }
-      submitButton.disabled = true;
-      surveyStatus.textContent = 'Submitting survey...';
-      try {
-        await window.ulfSubmit('survey', payload);
-        surveyForm.reset();
-        surveyStatus.textContent = 'Thank you. Your response has been submitted.';
-      } catch (error) {
-        surveyStatus.textContent = error.message;
-      } finally {
-        submitButton.disabled = false;
+    (function () {
+      'use strict';
+
+      const i18n = window.ulfI18n;
+      const t = key => i18n.t(key);
+
+      // value = what the spreadsheet stores (English, never translated)
+      // key   = what the participant reads
+      const FACTORS = [
+        { value: 'Cost',                   key: 'sv.factor.cost' },
+        { value: 'Comfort',                key: 'sv.factor.comfort' },
+        { value: 'Function / usefulness',  key: 'sv.factor.function' },
+        { value: 'Appearance',             key: 'sv.factor.appearance' },
+        { value: 'Durability',             key: 'sv.factor.durability' },
+        { value: 'Ease of putting on/off', key: 'sv.factor.donning' },
+        { value: 'Availability of repair', key: 'sv.factor.repair' },
+        { value: 'Weight',                 key: 'sv.factor.weight' }
+      ];
+
+      // submit.js throws English Error objects; map the known ones back to keys
+      // so the participant reads the failure in their own language.
+      const ERROR_KEYS = {
+        'Submissions are not configured yet. Set submissionEndpoint in assets/js/config.js.': 'msg.notConfigured',
+        'No connection to the submission service. Please check your network and try again.': 'sv.msg.offline',
+        'The submission service returned an unreadable response. Please try again.': 'sv.msg.unreadable',
+        'The submission was not recorded. Please try again.': 'sv.msg.notRecorded'
+      };
+
+      const surveyForm = document.getElementById('surveyForm');
+      const surveyStatus = document.getElementById('status');
+      const submitButton = document.getElementById('submitButton');
+      const rankFields = document.getElementById('rankFields');
+
+      const escapeHtml = value => String(value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+      /* ------------------------------------------------------------ status */
+
+      // Remembered so a language switch re-renders the message that is showing.
+      let statusKey = '';
+      let statusLiteral = '';
+
+      function setStatus(key, literal) {
+        statusKey = key || '';
+        statusLiteral = literal || '';
+        surveyStatus.textContent = statusKey ? t(statusKey) : statusLiteral;
       }
-    });
+
+      /* ------------------------------------------- answer-preserving render */
+
+      function snapshot() {
+        const data = {};
+        new FormData(surveyForm).forEach((value, key) => {
+          (data[key] = data[key] || []).push(value);
+        });
+        return data;
+      }
+
+      function restore(data) {
+        Object.keys(data).forEach(name => {
+          const values = data[name].slice();
+          surveyForm.querySelectorAll('[name="' + name + '"]').forEach(field => {
+            if (field.type === 'radio' || field.type === 'checkbox') {
+              field.checked = values.indexOf(field.value) !== -1;
+            } else if (values.length) {
+              field.value = values.shift();
+            }
+          });
+        });
+      }
+
+      function renderDynamicBlocks() {
+        document.querySelectorAll('.rating').forEach(node => {
+          const name = escapeHtml(node.dataset.name);
+          const scale = Array.from({ length: 10 }, (_, index) =>
+            `<label><input type="radio" name="${name}" value="${index + 1}">${index + 1}</label>`).join('');
+          node.innerHTML = `<label><span>${escapeHtml(t(node.dataset.question))}</span>` +
+            `<div class="scale">${scale}</div>` +
+            `<div class="scale-note"><span>${escapeHtml(t(node.dataset.low))}</span>` +
+            `<span>${escapeHtml(t('sv.scale.neutral'))}</span>` +
+            `<span>${escapeHtml(t(node.dataset.high))}</span></div></label>`;
+        });
+
+        document.querySelectorAll('.multi').forEach(node => {
+          const name = escapeHtml(node.dataset.name);
+          const optionKeys = node.dataset.optionKeys.split('|');
+          const choices = node.dataset.options.split('|').map((value, index) =>
+            `<label><input type="checkbox" name="${name}" value="${escapeHtml(value)}">` +
+            `${escapeHtml(t(optionKeys[index]))}</label>`).join('');
+          node.innerHTML = `<label><span>${escapeHtml(t(node.dataset.question))}</span>` +
+            `<div class="choice-row">${choices}</div></label>`;
+        });
+
+        const factorOptions = FACTORS.map(factor =>
+          `<option value="${escapeHtml(factor.value)}">${escapeHtml(t(factor.key))}</option>`).join('');
+        rankFields.innerHTML = [1, 2, 3].map(rank =>
+          `<div class="rank-grid"><label for="rank${rank}">${escapeHtml(t('sv.rank.' + rank))}</label>` +
+          `<select id="rank${rank}" name="rank${rank}">` +
+          `<option value="">${escapeHtml(t('sv.rank.choose'))}</option>${factorOptions}</select></div>`).join('');
+      }
+
+      // Rebuilding wipes the inputs, so carry the answers across the swap.
+      function render() {
+        const answers = snapshot();
+        renderDynamicBlocks();
+        restore(answers);
+      }
+
+      /* ------------------------------------------------------------ submit */
+
+      function serializeForm(form) {
+        const payload = {};
+        new FormData(form).forEach((value, key) => {
+          if (key in payload) payload[key] = [].concat(payload[key], value);
+          else payload[key] = value;
+        });
+        return payload;
+      }
+
+      surveyForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        const payload = serializeForm(surveyForm);
+        payload.consent = surveyForm.elements.consent.checked;
+        payload.language = i18n.current;
+        if (!payload.consent) { setStatus('sv.msg.needConsent'); return; }
+        const ranks = [payload.rank1, payload.rank2, payload.rank3].filter(Boolean);
+        if (new Set(ranks).size !== ranks.length) { setStatus('sv.msg.rankDupes'); return; }
+        submitButton.disabled = true;
+        setStatus('sv.msg.sending');
+        try {
+          await window.ulfSubmit('survey', payload);
+          surveyForm.reset();
+          setStatus('sv.msg.thanks');
+        } catch (error) {
+          const key = ERROR_KEYS[error.message];
+          setStatus(key, key ? '' : error.message);
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+
+      /* -------------------------------------------------------------- boot */
+
+      i18n.init();
+      render();
+
+      document.addEventListener('ulf:languagechange', () => {
+        render();
+        setStatus(statusKey, statusLiteral);
+      });
+    }());
   </script>
 </body>
 </html>

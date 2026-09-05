@@ -10,7 +10,21 @@ This document defines the rules for generating new R&D components and documentat
 2. **Template Usage**:
    - Every new dashboard view must include a header, a rule, and a container with the `view` class.
    - All interactive elements must support keyboard navigation (`tabindex`, `focus-visible`).
+   - Surfaces get their depth from the `--sh-*` shadow tokens, never from a new
+     background colour. See [UI_UX_doc.md](UI_UX_doc.md).
 
-3. **Data Integrity**:
+3. **Translation**:
+   - No literal user-visible text. Every string is a key in `assets/js/i18n.js`
+     with both an `en` and a `pt` entry; markup points at it with `data-i18n`
+     or `data-i18n-attr`, and JS reads it through `window.ulfI18n.t()`.
+   - Anything rendered in JavaScript must be rebuilt by `renderAll()`, which runs
+     on the `ulf:languagechange` event — otherwise it keeps the old language
+     after a switch.
+   - Listeners on JS-rendered elements must be delegated on `document`, because
+     those elements are destroyed and rebuilt on every language change.
+   - Values sent to a Sheet stay English regardless of UI language, so one
+     spreadsheet remains sortable across both.
+
+4. **Data Integrity**:
    - Milestone/state data lives in the `getMilestones()` / `saveMilestones()` helpers in `assets/js/app.js` and persists via `localStorage` (`ulf-milestones` key).
    - Any new persisted state should follow the same get/save pair pattern rather than scattering `localStorage` calls throughout the code.

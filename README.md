@@ -1,125 +1,162 @@
 # ULF R&D Dashboard
 
-React and Vite R&D dashboard for the Universal Limbs Foundation prosthetic hand program.
+Internal R&D hub for the Universal Limbs Foundation pediatric prosthetic hand
+programme, plus a standalone prosthetic-user survey.
 
-## Live pages
-
-| Branch | Purpose | URL |
-| --- | --- | --- |
-| `main` | Production (published via GitHub Pages) | https://universallimbs.github.io/ULF-RD-Dashboard/ |
-| `develop` | Active development — all work happens here | Run locally (see below); open a PR into `main` to publish |
-
-Repository: https://github.com/universallimbs/ULF-RD-Dashboard
-
-Direct pages:
-- Dashboard: `/`
-- Prosthetic user survey: `/survey`
-
-## Quick start (local preview)
-
-Install Node.js 20 or later, then run from the repository root:
+Static — no build step. Any file server will do.
 
 ```bash
-npm install
-npm run dev
+python3 -m http.server 8080
+# http://127.0.0.1:8080/index.html
 ```
 
-Then open:
-- http://localhost:8000/
-- http://localhost:8000/survey
+## ⚠️ index.html is a vendored build artifact
 
-Build and preview the production bundle:
+`index.html` is the published bundle from
+**https://rasna-spec.github.io/ULF-RD-Dashboard/**, copied verbatim so this repo
+serves exactly that site. It is a ~1.2 MB self-contained page: a design-tool
+export whose markup, styles, fonts and images are all inlined, unpacked at
+runtime by a loader.
+
+**It is not editable source.** There are no classes to target, no stylesheet to
+change; styles are inline and element ids are generated. Do not hand-edit it —
+any change will be lost the next time the bundle is refreshed, and a careless
+edit can break the loader and leave the page stuck on "Unpacking…".
+
+### Refreshing it
 
 ```bash
-npm run build
-npm run preview
+curl -sL https://rasna-spec.github.io/ULF-RD-Dashboard/ -o index.html
+# then re-apply the local patches below
 ```
 
+### The local patches
 
-`npm start` runs the same files through Express on port 8000 with the production
-URLs (`/` and `/survey`). The site is plain static HTML/CSS/JS, so any static file
-server works too.
+Two, both reverted by a plain re-fetch. Re-apply after every refresh:
 
-## Form Submissions
+1. **Anqido buttons** — upstream points all five at `anqido.app/social`; this
+   repo uses the team workspace.
+2. **GitHub link** — upstream points at `github.com/rasna-spec/…`; this repo is
+   published from the `universallimbs` org.
+3. **Teams roster** — upstream ships four tiles; this repo carries all 21 people
+   from the R&D org chart, with `r5`–`r21` / `x5`–`x21` added to both language
+   tables. Not expressible as a find-and-replace; see
+   `git show <this commit> -- index.html` to re-derive it.
 
-The prosthetic-user survey and the University Collaboration deliverable form post
-directly to a Google Apps Script web app. Everything runs on the Google Workspace
-for Nonprofits plan — Apps Script, Sheets, Drive and Gmail. There is no server to
-host and no Google Cloud project, so the dashboard stays a static site and keeps
-working on GitHub Pages.
+```bash
+python3 - <<'EOF'
+s = open('index.html', encoding='utf-8').read()
+s = s.replace('anqido.app/social', 'anqido.app/work/universal-limbs/my-desk')
+s = s.replace('github.com/rasna-spec/ULF-RD-Dashboard',
+              'github.com/universallimbs/ULF-RD-Dashboard')
+open('index.html', 'w', encoding='utf-8').write(s)
+EOF
+```
+
+Note the *fetch* URL stays `rasna-spec.github.io` — that is genuinely where the
+bundle is published, and is unrelated to the repo link shown inside the page.
+
+### What upstream currently ships
+
+Tabs: **Overview · Upload · Download · Teams · Mins**. A dual-timezone clock
+(Brazil fixed, second city selectable), an EN/PT switch, a dark-mode toggle, and
+an Overview built around *Current projects* (MVP 1 terminal hand, MVP 2 silicone
+glove), *Unassigned tasks* and *Blockers*.
+
+Upstream changes without notice — it was a different layout a week before this
+was written — so treat any description here as a snapshot, not a contract.
+
+## The survey is hand-authored
+
+`prosthetic-user-survey.html` is real source and the only page you edit
+normally. It uses:
+
+| File | Role |
+| --- | --- |
+| `assets/css/dashboard.css` | Glass design system — now used **only** by the survey |
+| `assets/js/i18n.js` | EN/PT strings + the swap engine |
+| `assets/js/i18n-survey.js` | Survey-only strings, merged via `ulfI18n.extend()` |
+| `assets/js/config.js` | `submissionEndpoint` for the Apps Script web app |
+| `assets/js/submit.js` | Shared POST transport |
+
+Script order matters: `config.js → submit.js → i18n.js → i18n-survey.js`, then
+the page's own inline script calls `ulfI18n.init()`.
+
+Strings opt in with `data-i18n` / `data-i18n-attr`; JS reads through
+`window.ulfI18n.t()`. `ulfI18n.en()` always resolves English — use it for values
+leaving the browser so a Sheet column stays in one language.
+
+The Portuguese in `i18n.js` is mixed: the base came from the upstream bundle and
+is European (`ficheiro`, `equipa`), while the survey strings are Brazilian
+(`arquivo`). Both are correct Portuguese; picking one is an open decision.
+
+## Form submissions
+
+The survey posts to a Google Apps Script web app — Apps Script, Sheets, Drive
+and Gmail, all on the Workspace for Nonprofits plan. No server, no Cloud project.
 
 ```
-browser  ->  Apps Script web app  ->  Drive file + Sheet row + email to the reviewer
+browser  ->  Apps Script web app  ->  Drive file + Sheet row + email
 ```
+
+`google-apps-script.gs` also still carries handlers for `deliverable`,
+`download` and `upload` submissions. Those were used by the previous
+hand-built dashboard; **nothing in the vendored bundle calls them.** They are
+kept because they are working, tested code and the Sheets exist, but they are
+currently unreachable from the UI.
 
 ### Setup
 
-1. Create two Google Sheets: one for survey responses, one for deliverables.
-2. Open [google-apps-script.gs](google-apps-script.gs) in a new Apps Script project
-   (script.google.com → New project) and paste the file in.
-3. In **Project Settings → Script properties**, add:
+1. Create the Sheets you need — at minimum one for survey responses.
+2. Paste `google-apps-script.gs` into a new Apps Script project.
+3. **Project Settings → Script properties**:
 
    | Property | Value |
    | --- | --- |
-   | `DELIVERABLE_SHEET_ID` | id of the deliverables Sheet |
    | `SURVEY_SHEET_ID` | id of the survey Sheet |
-   | `DELIVERABLE_PARENT_FOLDER_ID` | Drive folder to file submissions under |
-   | `REVIEWERS_JSON` | reviewer id → name/email map; run `setup()` to print a template |
-   | `FALLBACK_REVIEWER_EMAIL` | receives "Other" and any misrouted submission |
+   | `DELIVERABLE_SHEET_ID` | deliverables Sheet (only if you re-expose that form) |
+   | `DOWNLOAD_SHEET_ID` | download-responses Sheet (likewise) |
+   | `DELIVERABLE_PARENT_FOLDER_ID` | Drive folder submissions file under |
+   | `REVIEWERS_JSON` | reviewer id → name/email map; `setup()` prints a template |
+   | `FALLBACK_REVIEWER_EMAIL` | receives anything misrouted |
 
    Optional: `ALLOWED_MAIL_DOMAINS` (default `universallimbs.com`),
    `DAILY_SUBMISSION_CAP` (default 200), `ACK_SUBMITTERS` (default true).
 
-4. Run `setup()` once and read the execution log — it lists anything still missing
-   instead of letting submissions fail later. `selfTest()` files a throwaway
-   deliverable end to end so you can confirm Drive, Sheets and mail all work.
-5. **Deploy → New deployment → Web app**, with *Execute as* **Me** and
-   *Who has access* **Anyone**. Copy the `/exec` URL into
-   `submissionEndpoint` in [assets/js/config.js](assets/js/config.js).
+4. Run `setup()` and read the log — it lists what is still missing.
+5. **Deploy → New deployment → Web app**, *Execute as* **Me**, *Who has access*
+   **Anyone**. Put the `/exec` URL in `assets/js/config.js`.
 
-The reviewer ids in `REVIEWERS_JSON` must match the `<option value>` entries in the
-reviewer dropdown in [index.html](index.html).
+Until that is set the survey says so plainly rather than failing silently.
 
-### How reviewer routing is protected
+### Why there is no shared secret
 
-The browser sends a reviewer **id** (`saja-amro`, `walid`, …), never an email
-address. Apps Script resolves that id against `REVIEWERS_JSON` on its own side, so
-the endpoint can only ever mail people on that allowlist — it cannot be used to
-send mail to arbitrary addresses. The "Other" option, and any id that is missing or
-misconfigured, routes to `FALLBACK_REVIEWER_EMAIL`; whatever the submitter typed is
-recorded in the Sheet rather than mailed.
+A static site cannot keep one — it would sit in readable JavaScript. The browser
+sends a reviewer **id**, never an address; Apps Script resolves it against
+`REVIEWERS_JSON` on its own side, so the endpoint can only mail people on that
+allowlist. It is public and rate-limited: per-minute and per-day caps, a
+honeypot field, and a file-size ceiling.
 
-There is deliberately **no shared secret**. A static site cannot keep one — it
-would sit in readable JavaScript. The endpoint is public and rate-limited
-(per-minute and per-day caps, a honeypot field, and a 10 MB file ceiling).
+## Unreferenced assets
 
-## Project structure
-
-See [project_structure.md](project_structure.md) for the full file layout and the [MVP architecture](UI_UX_doc.md#mvp-architecture) the dashboard follows (state in `assets/js/model.js`, rendering in `assets/js/view.js`, event/interaction logic in `assets/js/presenter.js`).
+`testbench-architecture.webp`, `yale-multigrasp.png`, `waacs-basis.png`,
+`softfoot-pro.jpg`, `ulf-prosthetic-render.*`, `ulf-product-demo-poster.jpg` are
+no longer referenced by any page — the bundle inlines its own images. They are
+kept because they are original programme artifacts, not regenerable.
+`ul-logo.png` is still used by the survey.
 
 ## Documentation
 
-- [rules.md](rules.md) — R&D collaboration rules
-- [workflow.md](workflow.md) — operational workflow
-- [implementation.md](implementation.md) — R&D implementation strategy
-- [bugtracking.md](bugtracking.md) — how bugs/issues are tracked
-- [UI_UX_doc.md](UI_UX_doc.md) — design principles, color palette, MVP architecture
+- [UI_UX_doc.md](UI_UX_doc.md) — design tokens (survey/`dashboard.css` only)
 - [project_structure.md](project_structure.md) — repository layout
-- [generate.mdc](generate.mdc) — rules for generating new components/docs
+- [rules.md](rules.md) · [workflow.md](workflow.md) · [implementation.md](implementation.md) · [bugtracking.md](bugtracking.md) · [generate.mdc](generate.mdc)
 
 ## Branching
 
-- `main` — production, published via GitHub Pages at
-  https://universallimbs.github.io/ULF-RD-Dashboard/. Deploys on every push.
-- `develop` — the working branch. All edits land here first; open a PR into
-  `main` when a change is ready to go live.
+- `main` — production, published via GitHub Pages, deploys on every push.
+- `develop` — working branch; PR into `main` when ready.
 
 ## Continuous checks
 
-`.github/workflows/link-checker.yml` runs on every push/PR to `main` and `develop` and:
-- scans the site for internal links (relative `href`/`src`) and flags any pointing to a file that doesn't exist in the repo,
-- flags Google Docs/Drive/Forms links that aren't scoped to a `universallimbs.com` account, so shared documents stay restricted to UL team members instead of being publicly open.
-
-## Contact / feedback
-
-Every page has a persistent feedback bar at the bottom that opens a pre-filled email to the R&D team.
+`.github/workflows/link-checker.yml` flags internal links to missing files and
+Google Docs/Drive/Forms links not scoped to a `universallimbs.com` account.
