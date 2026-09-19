@@ -61,9 +61,41 @@ All reverted by a plain re-fetch. Re-apply after every refresh:
    Drag to rotate, scroll to zoom, arrow keys to orbit, hover for the part.
    Falls back to the SVG map below if WebGL is unavailable.
 
-   **Known gap:** two of the seventeen parts are hard to hit with the cursor —
-   `FST` (the screws are tiny) and `LNR` (occluded inside the cuff). A
-   click-through part list beside the model would fix both; not built yet.
+   **Geometry follows printed construction, not smooth primitives.** Phalanges
+   are bevelled extrusions with tendon channels and silicone grip pads; joints
+   are *flexible hinges* rather than snap pins; the cuff and socket are open
+   C-shells with real wall thickness, strap slots and a print seam; the palm is
+   a plate with a cavity. That architecture comes from the published design
+   notes of the two reference designs — see below.
+
+   **Known gap:** `FST` (fasteners) is hard to hit with the cursor; the screws
+   are genuinely tiny. A click-through part list beside the model would fix it.
+   The other sixteen parts pick reliably.
+
+### The reference designs and why their geometry is not used
+
+| Thing | Design | Licence |
+| --- | --- | --- |
+| [4618922](https://www.thingiverse.com/thing:4618922) | **Kinetic Hand** — Free 3D Hands | **CC BY-NC-SA 4.0** |
+| [6525526](https://www.thingiverse.com/thing:6525526) | **Waacs arm for e-NABLE** — SandraDermisek (remix, WIP) | CC (variant not shown on page) |
+
+Universal Limbs is a non-profit, which very likely satisfies **NC** — that term
+turns on commercial advantage or monetary compensation, not on org type. It does
+**not** dispose of the other two:
+
+- **ShareAlike** propagates. Anything derived from that geometry must itself be
+  CC BY-NC-SA 4.0, which would permanently attach NC to ULF's own CAD and rule
+  out a commercial manufacturing partner later.
+- **Attribution** is required wherever it appears.
+- The Kinetic Hand carries a further restriction beyond its licence: released
+  *"for trial and evaluation purposes only"*, *"not classified as a medical
+  device"*, and requires consulting medical professionals before use.
+
+So this model borrows the **documented architecture** — which is published
+information — and none of the geometry. If the foundation decides the terms are
+acceptable, the Kinetic Hand now ships per-component **STEP files** and that
+would give true dimensional fidelity; that is a decision for ULF, not a
+default.
 
 5. **Interactive assembly map** (SVG) on the Live reference tab — replaces the
    export's `A - 30 SEPT` / `D - 30 SEPT` pills and its hand photo with an

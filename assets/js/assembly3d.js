@@ -3,12 +3,13 @@
  * Phase 0 deliverable: the model itself.
  *
  * The geometry is authored here rather than imported. Two reasons:
- *   1. No CAD export exists yet.
- *   2. The Thingiverse references are third-party designs whose licences could
- *      not be verified (the pages sit behind a Cloudflare challenge). Copying
- *      their geometry would carry unknown BY-NC-SA obligations. Everything
- *      below is built from the standard anatomy of a body-powered transradial
- *      prosthesis, which is not anyone's IP.
+ *   1. No ULF CAD export exists yet.
+ *   2. The two reference designs are third-party and non-commercially licensed:
+ *        thing:4618922  Kinetic Hand, Free 3D Hands   CC BY-NC-SA 4.0
+ *        thing:6525526  Waacs arm for e-NABLE, SandraDermisek (remix, WIP)
+ *      Their *construction* is documented publicly and is what this model
+ *      follows. Their *geometry* is not copied: ShareAlike would propagate
+ *      NC onto anything derived from it. See the README before changing that.
  *
  * Every part is a named THREE.Mesh whose name is its three-letter category code
  * from ULF-DOC-001 Rev A §3, so hover picking maps straight onto part numbers.
@@ -33,7 +34,14 @@
       liner:      new THREE.MeshStandardMaterial({ color: 0x5a6065, roughness: 0.85, metalness: 0.04 }),
       metal:      new THREE.MeshStandardMaterial({ color: 0x9aa0a6, roughness: 0.3,  metalness: 0.85 }),
       cable:      new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.42, metalness: 0.08 }),
-      hose:       new THREE.MeshStandardMaterial({ color: 0x6f6c69, roughness: 0.7,  metalness: 0.05 })
+      hose:       new THREE.MeshStandardMaterial({ color: 0x6f6c69, roughness: 0.7,  metalness: 0.05 }),
+      // TPU flexible hinges — the Kinetic Hand uses these in place of snap pins
+      flex:       new THREE.MeshStandardMaterial({ color: 0x3f4449, roughness: 0.95, metalness: 0.0 }),
+      // moulded silicone grip pads on the distal phalanges
+      grip:       new THREE.MeshStandardMaterial({ color: 0x555b60, roughness: 0.98, metalness: 0.0 }),
+      seam:       new THREE.MeshStandardMaterial({ color: 0x121517, roughness: 1.0, metalness: 0.0, transparent: true, opacity: 0.55 }),
+      channel:    new THREE.MeshStandardMaterial({ color: 0x0e1012, roughness: 1.0,  metalness: 0.0 }),
+      strapDark:  new THREE.MeshStandardMaterial({ color: 0x0a0b0c, roughness: 0.98, metalness: 0.0 })
     };
   }
 
@@ -52,6 +60,19 @@
   }
 
   // ------------------------------------------------------------------- model
+  /* Construction follows how these devices are actually printed, taken from the
+   * published design notes of the Kinetic Hand (Free 3D Hands, CC BY-NC-SA 4.0)
+   * and the Waacs/e-NABLE arm. No geometry is copied from either — both are
+   * non-commercial licensed. What is borrowed is the *architecture*:
+   *
+   *   - phalanges are chunky bevelled printed blocks, not smooth capsules
+   *   - joints are FLEXIBLE HINGES moulded between segments, not snap pins
+   *   - dual tendons run in channels through the fingers and palm
+   *   - the palm carries a cavity and a separate flexible palm cover
+   *   - tensioners sit under a gauntlet cover
+   *   - everything is oriented to print without supports: flat bottoms,
+   *     bevelled top edges, no overhangs steeper than ~45 degrees
+   */
   function buildAssembly(THREE) {
     const M = materials(THREE);
     const root = new THREE.Group();
@@ -59,124 +80,246 @@
 
     function part(code, mesh) {
       markPart(mesh, code);
-      mesh.castShadow = mesh.receiveShadow = true;
       if (!parts[code]) parts[code] = new THREE.Group();
       parts[code].add(mesh);
       return mesh;
     }
 
-    // ---- biceps cuff: open-backed cup around the upper arm
-    part('BIC', new THREE.Mesh(
-      tapered(THREE, [[0,-21],[5.6,-21],[5.6,-20.4],[5.2,-11.4],[5.2,-10.8],[0,-10.8]], 44), M.shell));
-    // cut-out look: a lighter inner wall reads as the open back
-    part('LNR', new THREE.Mesh(
-      tapered(THREE, [[0,-20.2],[4.9,-20.2],[4.6,-11.6],[0,-11.6]], 36), M.liner));
+    /** Rounded rectangle in XY, corner radius r. */
+    function roundRect(x, y, w, h, r) {
+      const s = new THREE.Shape();
+      r = Math.min(r, h / 2, w / 2);
+      s.moveTo(x + r, y);
+      s.lineTo(x + w - r, y);
+      s.quadraticCurveTo(x + w, y, x + w, y + r);
+      s.lineTo(x + w, y + h - r);
+      s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      s.lineTo(x + r, y + h);
+      s.quadraticCurveTo(x, y + h, x, y + h - r);
+      s.lineTo(x, y + r);
+      s.quadraticCurveTo(x, y, x + r, y);
+      return s;
+    }
 
-    // ---- straps
-    [-18.6, -13.4].forEach(x => {
-      const s = new THREE.Mesh(new THREE.TorusGeometry(5.5, 0.55, 10, 34), M.strap);
-      s.rotation.y = Math.PI / 2; s.position.x = x;
-      part('STR', s);
+    /** Extrude a shape along Z and centre it — the printed-part primitive. */
+    function printed(shape, depth, bevel) {
+      const b = bevel === undefined ? 0.12 : bevel;
+      const g = new THREE.ExtrudeGeometry(shape, {
+        depth: depth - b * 2, bevelEnabled: b > 0, bevelSize: b,
+        bevelThickness: b, bevelSegments: 2, curveSegments: 10
+      });
+      g.translate(0, 0, -(depth - b * 2) / 2);
+      return g;
+    }
+
+    // ============================================================== gauntlet
+    // Upper-arm cuff: a C-shell, open at the back so it can be strapped on.
+    function cShell(rOuter, rInner, x0, len, openDeg) {
+      const half = THREE.MathUtils.degToRad(180 - openDeg / 2);
+      const s = new THREE.Shape();
+      s.absarc(0, 0, rOuter, -half, half, false);
+      s.absarc(0, 0, rInner, half, -half, true);
+      const g = new THREE.ExtrudeGeometry(s, {
+        depth: len, bevelEnabled: true, bevelSize: 0.1, bevelThickness: 0.1,
+        bevelSegments: 2, curveSegments: 26
+      });
+      g.rotateY(Math.PI / 2);
+      g.translate(x0, 0, 0);
+      return g;
+    }
+
+    part('BIC', new THREE.Mesh(cShell(5.6, 5.0, -21, 10, 95), M.shell));
+    part('LNR', new THREE.Mesh(cShell(4.96, 4.55, -20.4, 8.8, 100), M.liner));
+
+    // strap slots are printed through the cuff wall; the straps thread them
+    [-18.4, -13.6].forEach(x => {
+      const band = new THREE.Mesh(new THREE.TorusGeometry(5.62, 0.42, 8, 30, Math.PI * 1.35), M.strap);
+      band.rotation.y = Math.PI / 2; band.rotation.z = -Math.PI * 0.18; band.position.x = x;
+      part('STR', band);
+      [1, -1].forEach(sgn => {
+        const slot = new THREE.Mesh(printed(roundRect(-0.9, -0.28, 1.8, 0.56, 0.2), 0.5, 0.06), M.strapDark);
+        slot.rotation.y = Math.PI / 2; slot.position.set(x, sgn * 4.1, 3.6 * sgn * 0 + 3.3);
+        part('STR', slot);
+      });
     });
 
-    // ---- elbow hinge: side plate + pin
-    const plate = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.5, 0.7), M.shellLight);
-    plate.position.set(-9.4, 0, 4.4); part('ELB', plate);
-    const plate2 = plate.clone(); plate2.position.z = -4.4; part('ELB', plate2);
-    [4.4, -4.4].forEach(z => {
-      const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 1.1, 18), M.metal);
-      pin.rotation.x = Math.PI / 2; pin.position.set(-9.4, 0, z);
+    // ============================================================ elbow hinge
+    // Twin side plates on a steel pin — the one place a pin is right.
+    [4.5, -4.5].forEach(z => {
+      const plate = new THREE.Mesh(printed(roundRect(-3.2, -0.95, 6.4, 1.9, 0.9), 0.62), M.shellLight);
+      plate.position.set(-9.6, 0, z);
+      part('ELB', plate);
+      const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 1.5, 16), M.metal);
+      pin.rotation.x = Math.PI / 2; pin.position.set(-9.6, 0, z);
       part('ELB', pin);
     });
 
-    // ---- forearm socket (proximal, receives the residual limb)
-    part('SKT', new THREE.Mesh(
-      tapered(THREE, [[0,-8],[5.0,-8],[4.9,-3],[4.4,2],[0,2]], 44), M.shell));
+    // ========================================================= forearm socket
+    part('SKT', new THREE.Mesh(cShell(5.05, 4.6, -8.2, 10.2, 62), M.shell));
+    // print seam down the socket, the giveaway that this is an FDM part
+    const seam = new THREE.Mesh(new THREE.BoxGeometry(10.2, 0.1, 0.16), M.seam);
+    seam.position.set(-3.1, 0, 4.72); part('SKT', seam);
 
-    // ---- fasteners
-    [[-5.5, 3.0, 2.6], [0.2, 3.4, 1.4], [-5.5, -3.0, 2.6]].forEach(([x,y,z]) => {
-      const scr = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.35, 14), M.metal);
+    // fasteners: countersunk heads on the socket flange
+    [[-7.2, 3.1, 3.6], [-7.2, -3.1, 3.6], [1.0, 3.6, 2.8]].forEach(([x, y, z]) => {
+      const scr = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.34, 0.3, 14), M.metal);
       scr.rotation.x = Math.PI / 2; scr.position.set(x, y, z);
       part('FST', scr);
     });
 
-    // ---- forearm shell (distal, tapering to the wrist)
+    // ========================================================== forearm shell
     part('FRM', new THREE.Mesh(
-      tapered(THREE, [[0,2],[4.4,2],[3.6,8],[2.7,13.4],[0,13.4]], 44), M.shellLight));
+      tapered(THREE, [[0,2],[4.45,2],[4.1,6],[3.3,10],[2.66,13.6],[0,13.6]], 40), M.shellLight));
+    const seam2 = new THREE.Mesh(new THREE.BoxGeometry(11.6, 0.1, 0.16), M.seam);
+    seam2.position.set(7.8, 0, 3.6); part('FRM', seam2);
 
-    // ---- wrist coupler
-    const wr = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.4, 2.2, 30), M.shellLight);
-    wr.rotation.z = Math.PI / 2; wr.position.x = 14.6; part('WRS', wr);
-    const knurl = new THREE.Mesh(new THREE.CylinderGeometry(2.62, 2.62, 0.9, 40), M.metal);
-    knurl.rotation.z = Math.PI / 2; knurl.position.x = 14.6; part('WRS', knurl);
+    // =============================================================== wrist
+    const wr = new THREE.Mesh(new THREE.CylinderGeometry(2.45, 2.62, 1.9, 26), M.shellLight);
+    wr.rotation.z = Math.PI / 2; wr.position.x = 14.7; part('WRS', wr);
+    // knurled collar
+    for (let i = 0; i < 26; i++) {
+      const a = (i / 26) * Math.PI * 2;
+      const rib = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.16, 0.16), M.metal);
+      rib.position.set(16.0, Math.cos(a) * 2.5, Math.sin(a) * 2.5);
+      rib.rotation.x = -a; part('WRS', rib);
+    }
 
-    // ---- palm
-    const palm = new THREE.Mesh(new THREE.BoxGeometry(7.2, 8.4, 3.0), M.shell);
-    palm.position.set(19.4, 0.3, 0); part('PLM', palm);
-    const back = new THREE.Mesh(new THREE.BoxGeometry(5.4, 6.4, 0.5), M.shellLight);
-    back.position.set(19.6, 0.3, 1.6); part('PLM', back);
+    // ================================================================ palm
+    // Printed plate with a cavity for the residual hand, plus a flexible cover.
+    const palmOutline = roundRect(-4.2, -4.4, 8.4, 8.8, 1.5);
+    const cavity = new THREE.Path();
+    cavity.absarc(0.2, 0.2, 2.5, 0, Math.PI * 2, true);
+    palmOutline.holes.push(cavity);
+    const palm = new THREE.Mesh(printed(palmOutline, 2.5, 0.22), M.shell);
+    palm.position.set(21.2, 0.2, 0); part('PLM', palm);
 
-    // ---- digits: proximal / middle / distal with knuckle pins
-    function digit(code, yOff, lengths, zTilt) {
-      let x = 23.2;
-      lengths.forEach((len, i) => {
-        const r = 0.72 - i * 0.08;
-        const seg = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 5, 14), M.digit);
-        seg.rotation.z = Math.PI / 2;
-        seg.position.set(x + len / 2, yOff, 0);
-        seg.rotation.y = zTilt || 0;
-        part(code, seg);
-        const k = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.15, r * 1.15, 1.5, 14), M.metal);
-        k.rotation.x = Math.PI / 2; k.position.set(x, yOff, 0);
-        part(code, k);
-        x += len + r * 1.4;
+    const cover = new THREE.Mesh(printed(roundRect(-3.4, -3.6, 6.8, 7.2, 1.4), 0.45, 0.14), M.flex);
+    cover.position.set(21.2, 0.2, -1.5); part('PLM', cover);
+
+    // tendon guide holes through the palm, one per digit
+    [3.0, 1.0, -1.0, -2.9].forEach(y => {
+      const guide = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 2.6, 10), M.channel);
+      guide.rotation.z = Math.PI / 2; guide.position.set(22.6, y, 0.9);
+      part('PLM', guide);
+    });
+
+    // =============================================================== digits
+    /* Each digit: printed phalanges with a flexible hinge moulded between them,
+     * and a silicone grip pad on the gripping face of the distal segment. */
+    function digit(code, y, segs, width, baseX, tilt) {
+      let x = baseX;
+      segs.forEach((len, i) => {
+        const h = 1.55 - i * 0.16;
+        const w = width - i * 0.14;
+
+        const ph = new THREE.Mesh(printed(roundRect(0, -h / 2, len, h, h * 0.42), w, 0.13), M.digit);
+        ph.position.set(x, y, 0); ph.rotation.z = tilt ? tilt * (i + 1) * 0.12 : 0;
+        part(code, ph);
+
+        // tendon channel along the dorsal face
+        const ch = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, len * 0.82, 8), M.channel);
+        ch.rotation.z = Math.PI / 2; ch.position.set(x + len / 2, y + h * 0.3, w * 0.22);
+        part(code, ch);
+
+        // silicone grip pad on the distal segment's palmar face
+        if (i === segs.length - 1) {
+          const pad = new THREE.Mesh(printed(roundRect(0.2, -h * 0.3, len * 0.6, h * 0.6, 0.2), w * 0.8, 0.08), M.grip);
+          pad.position.set(x, y, -w * 0.18);
+          part(code, pad);
+        }
+
+        x += len;
+        // flexible hinge between segments (and at the knuckle)
+        if (i < segs.length - 1) {
+          const hg = new THREE.Mesh(printed(roundRect(0, -h * 0.34, 0.5, h * 0.68, 0.2), w * 0.82, 0.08), M.flex);
+          hg.position.set(x, y, 0);
+          part(code, hg);
+          x += 0.5;
+        }
       });
     }
-    digit('IND',  2.9, [3.2, 2.2, 1.6]);
-    digit('MID',  0.9, [3.5, 2.5, 1.7]);
-    digit('RNG', -1.1, [3.2, 2.3, 1.6]);
-    digit('LTL', -3.0, [2.5, 1.7, 1.3]);
 
-    // ---- thumb: offset and rotated out of the palm plane
-    const thumbG = new THREE.Group();
-    [[0, 2.6, 0.78], [2.9, 2.0, 0.7]].forEach(([x, len, r]) => {
-      const seg = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 5, 14), M.digit);
-      seg.rotation.z = Math.PI / 2; seg.position.x = x + len / 2;
-      thumbG.add(markPart(seg, 'THM'));
-      const k = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.15, r * 1.15, 1.4, 14), M.metal);
-      k.rotation.x = Math.PI / 2; k.position.x = x;
-      thumbG.add(markPart(k, 'THM'));
+    // knuckle hinges where the digits meet the palm
+    [[3.0, 1.5], [1.0, 1.6], [-1.0, 1.5], [-2.9, 1.3]].forEach(([y, w], i) => {
+      const kn = new THREE.Mesh(printed(roundRect(0, -0.78, 0.55, 1.56, 0.4), w * 0.85, 0.08), M.flex);
+      kn.position.set(25.1, y, 0);
+      part(['IND', 'MID', 'RNG', 'LTL'][i], kn);
     });
-    thumbG.position.set(17.6, -3.6, 1.4);
-    thumbG.rotation.z = -0.55; thumbG.rotation.y = 0.5;
+
+    digit('IND',  3.0, [3.3, 2.3, 1.7], 1.5, 25.65);
+    digit('MID',  1.0, [3.6, 2.5, 1.8], 1.6, 25.65);
+    digit('RNG', -1.0, [3.3, 2.3, 1.7], 1.5, 25.65);
+    digit('LTL', -2.9, [2.6, 1.8, 1.35], 1.3, 25.65);
+
+    // thumb: opposed, rotated out of the palm plane
+    const thumbG = new THREE.Group();
+    let tx = 0;
+    [[2.7, 1.55], [2.0, 1.4]].forEach(([len, w], i) => {
+      const h = 1.6 - i * 0.18;
+      const ph = new THREE.Mesh(printed(roundRect(0, -h / 2, len, h, h * 0.42), w, 0.13), M.digit);
+      ph.position.x = tx; thumbG.add(markPart(ph, 'THM'));
+      if (i === 1) {
+        const pad = new THREE.Mesh(printed(roundRect(0.2, -h * 0.3, len * 0.6, h * 0.6, 0.2), w * 0.8, 0.08), M.grip);
+        pad.position.set(tx, 0, -w * 0.2); thumbG.add(markPart(pad, 'THM'));
+      }
+      tx += len;
+      if (i === 0) {
+        const hg = new THREE.Mesh(printed(roundRect(0, -h * 0.34, 0.5, h * 0.68, 0.2), w * 0.8, 0.08), M.flex);
+        hg.position.x = tx; thumbG.add(markPart(hg, 'THM'));
+        tx += 0.5;
+      }
+    });
+    thumbG.position.set(18.0, -4.0, 1.3);
+    thumbG.rotation.z = -0.62; thumbG.rotation.y = 0.55;
     if (!parts.THM) parts.THM = new THREE.Group();
     parts.THM.add(thumbG);
 
-    // ---- Bowden housing + actuation cable, running under the forearm
-    const cableCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-17.5, -4.6, 1.8),
-      new THREE.Vector3(-11.0, -6.2, 2.4),
-      new THREE.Vector3( -3.0, -5.6, 2.6),
-      new THREE.Vector3(  6.0, -4.2, 2.2),
-      new THREE.Vector3( 13.0, -2.4, 1.6),
-      new THREE.Vector3( 17.5, -1.0, 1.2)
-    ]);
-    part('CBL', new THREE.Mesh(new THREE.TubeGeometry(cableCurve, 60, 0.26, 10, false), M.cable));
+    // ====================================================== tendons + housing
+    // Dual tendons: they loop back through the fingers and are tied once at the
+    // tensioner, so each digit shows a pair rather than a single strand.
+    [3.0, 1.0, -1.0, -2.9].forEach((y, i) => {
+      [0.34, -0.34].forEach(off => {
+        const c = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(32.0 - i * 0.6, y + 0.5, off * 0.8),
+          new THREE.Vector3(27.0, y + 0.45, off),
+          new THREE.Vector3(23.2, y * 0.75, 0.9 + off * 0.3),
+          new THREE.Vector3(18.0, y * 0.4, 1.6)
+        ]);
+        part('CBL', new THREE.Mesh(new THREE.TubeGeometry(c, 26, 0.085, 6, false), M.cable));
+      });
+    });
 
-    const hoseCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-10.0, -6.1, 2.4),
-      new THREE.Vector3( -3.0, -5.6, 2.6),
-      new THREE.Vector3(  5.0, -4.4, 2.3)
+    // main actuation cable, gauntlet to wrist
+    const main = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-17.6, -4.4, 2.2),
+      new THREE.Vector3(-11.0, -6.0, 2.8),
+      new THREE.Vector3( -3.0, -5.4, 3.0),
+      new THREE.Vector3(  6.0, -4.0, 2.6),
+      new THREE.Vector3( 13.2, -2.2, 1.9),
+      new THREE.Vector3( 17.8, -0.8, 1.5)
     ]);
-    part('HSG', new THREE.Mesh(new THREE.TubeGeometry(hoseCurve, 40, 0.48, 10, false), M.hose));
+    part('CBL', new THREE.Mesh(new THREE.TubeGeometry(main, 60, 0.22, 8, false), M.cable));
 
-    // ---- harness cable leaving the cuff
+    const hose = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-10.2, -5.9, 2.8),
+      new THREE.Vector3( -3.0, -5.4, 3.0),
+      new THREE.Vector3(  5.2, -4.2, 2.7)
+    ]);
+    part('HSG', new THREE.Mesh(new THREE.TubeGeometry(hose, 40, 0.42, 10, false), M.hose));
+    // ferrules at each end of the housing
+    [[-10.2, -5.9, 2.8], [5.2, -4.2, 2.7]].forEach(([x, y, z]) => {
+      const f = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 0.6, 12), M.metal);
+      f.rotation.z = Math.PI / 2; f.position.set(x, y, z);
+      part('HSG', f);
+    });
+
+    // ============================================================== harness
     const harness = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-20.4, 3.4, 2.2),
-      new THREE.Vector3(-24.0, 7.5, 1.0),
-      new THREE.Vector3(-26.5, 12.5, -1.0)
+      new THREE.Vector3(-20.6, 3.2, 2.4),
+      new THREE.Vector3(-24.2, 7.4, 1.2),
+      new THREE.Vector3(-26.8, 12.6, -0.8)
     ]);
-    part('HRN', new THREE.Mesh(new THREE.TubeGeometry(harness, 30, 0.17, 8, false), M.hose));
+    part('HRN', new THREE.Mesh(new THREE.TubeGeometry(harness, 30, 0.15, 8, false), M.hose));
 
     CODES.forEach(c => { if (parts[c]) { parts[c].name = c; root.add(parts[c]); } });
     return { root: root, parts: parts };
