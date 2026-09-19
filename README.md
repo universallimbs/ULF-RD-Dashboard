@@ -49,6 +49,12 @@ All reverted by a plain re-fetch. Re-apply after every refresh:
 3. **Team roster** — the export ships 10 people; this repo carries the union
    with the R&D org chart (24), alphabetised by name, with eight new role keys
    added to the `pt` table.
+4. **Interactive part map** on the Live reference tab — replaces the export's
+   `A - 30 SEPT` / `D - 30 SEPT` pills with leader-lined hotspots driven by the
+   Category Code Table in `Part Number Standard .pdf` (ULF-DOC-001 Rev A §3).
+   Hovering a dot gives the category name, part number and status. The five
+   finger/thumb parts are green (in progress); everything else is grey (not
+   started). See `PARTS` / `OFF_PARTS` in the inline script.
 
 (1) and (2) are find-and-replace:
 
@@ -62,7 +68,12 @@ open('index.html', 'w', encoding='utf-8').write(s)
 EOF
 ```
 
-(3) is not — see `git log -p -- index.html` for the roster commit to re-derive it.
+(3) and (4) are not — see `git log -p -- index.html` for those commits to
+re-derive them.
+
+**Part statuses live in one place:** the `wip` flag on each entry in the `PARTS`
+array. Moving a part from not-started to in-progress is a `wip:0` → `wip:1` edit;
+colour, legend and tooltip all follow.
 
 **No longer needed:** the previous export carried a `github.com/…` link that had
 to be repointed. This one has no GitHub link at all.

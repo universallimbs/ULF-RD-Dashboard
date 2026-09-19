@@ -51,21 +51,58 @@ button,a{font:inherit;color:inherit}
 .copy h1{font-size:27px;margin:0 0 12px;line-height:1.05;letter-spacing:-.6px}
 .copy p{font-size:13px;line-height:1.6;color:#55585b;margin:0}
 .liveArt{position:relative}
+/* --- interactive part map (local addition, see README patch list) --- */
+.slide.liveSlide{grid-template-columns:56% minmax(0,1fr)}
+.handBox{position:relative;width:56%;margin:0 auto;overflow:visible}
+.liveArt img{width:100%;display:block}
+.liveArt{padding-bottom:82px}
+.leaders{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible}
+.leaders line{stroke:#c9c4be;stroke-width:1;vector-effect:non-scaling-stroke;
+  stroke-dasharray:var(--len,120);stroke-dashoffset:var(--len,120);
+  animation:draw .7s cubic-bezier(.4,0,.2,1) forwards;animation-delay:var(--d,0s)}
+.leaders line.wip{stroke:#0fb875}
+.leaders line.on{stroke:var(--ink);stroke-width:1.6}
+@keyframes draw{to{stroke-dashoffset:0}}
+.hotspots{position:absolute;inset:0;z-index:3}
+.hot{position:absolute;transform:translate(-50%,-50%);width:11px;height:11px;border-radius:999px;
+  border:0;padding:0;cursor:pointer;background:#b9b3ac;opacity:0;animation:popIn .35s ease forwards;
+  animation-delay:var(--d,0s)}
+.hot:after{content:"";position:absolute;inset:-7px;border-radius:999px}
+.hot.wip{background:#0fb875}
+.hot.wip:before{content:"";position:absolute;inset:-4px;border-radius:999px;border:1.5px solid #0fb875;
+  opacity:.65;animation:ping 2s cubic-bezier(0,0,.2,1) infinite}
+.hot:hover,.hot:focus-visible,.hot.on{transform:translate(-50%,-50%) scale(1.45);outline:none}
+.hot.on{box-shadow:0 0 0 3px #ffffff,0 0 0 5px currentColor}
+@keyframes popIn{to{opacity:1}}
+@keyframes ping{0%{transform:scale(1);opacity:.65}70%{transform:scale(2.1);opacity:0}100%{opacity:0}}
+.tag{position:absolute;transform:translateY(-50%);z-index:4;font-size:9px;font-weight:700;letter-spacing:.06em;
+  color:#8f8b87;background:#f4f2ef;border-radius:5px;padding:2px 5px;white-space:nowrap;cursor:pointer;
+  opacity:0;animation:popIn .35s ease forwards;animation-delay:var(--d,0s)}
+.tag.r{transform:translate(-100%,-50%)}
+.tag.wip{color:#0b7a52;background:#dff4ea}
+.tag.on{color:#fff;background:var(--ink)}
+.partTip{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);z-index:6;pointer-events:none;
+  background:#181a1c;color:#fff;border-radius:10px;padding:8px 11px;min-width:140px;max-width:220px;
+  opacity:0;visibility:hidden;transition:opacity .16s ease,transform .16s ease;text-align:left;
+  box-shadow:0 10px 26px #3c2d2333}
+.partTip.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(-4px)}
+.partTip .tipName{font-size:12px;font-weight:700;line-height:1.25}
+.partTip .tipPn{font-size:10px;color:#b9b3ac;margin-top:2px;font-family:ui-monospace,Menlo,monospace}
+.partTip .tipStatus{display:inline-block;margin-top:6px;font-size:9px;font-weight:700;letter-spacing:.04em;
+  border-radius:999px;padding:2px 7px;background:#333;color:#ddd}
+.partTip .tipStatus.wip{background:#0fb875;color:#08281e}
+.statusDot{width:10px;height:10px;border-radius:999px;display:inline-block}
+.statusDot.wip{background:#0fb875}
+.statusDot.todo{background:#b9b3ac}
+.offPartsWrap{margin-top:14px;text-align:center}
+.offPartsLabel{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#a5a09b;margin-bottom:7px}
+.offParts{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.offPart{font-size:9px;color:#8f8b87;background:#f2efec;border-radius:999px;padding:3px 8px;cursor:default}
+@media (prefers-reduced-motion:reduce){
+  .leaders line,.hot,.tag{animation:none;stroke-dashoffset:0;opacity:1}
+  .hot.wip:before{animation:none}
+}
 .liveArt img{position:relative;z-index:1}
-.liveArt .ring,.liveArt .pill{z-index:2}
-.arcA{position:absolute;z-index:0;top:4%;left:50%;width:66%;aspect-ratio:2/1;transform:translateX(-50%);
-  border-radius:999px 999px 0 0;
-  background:radial-gradient(ellipse at 50% 100%,rgba(15,184,117,.55) 0 42%,rgba(15,184,117,.30) 42% 68%,rgba(15,184,117,.15) 68% 100%)}
-.ring{position:absolute;width:46px;height:46px;border-radius:999px;transform:translate(-50%,-50%);
-  background:radial-gradient(circle,#0d2b22 0 9%,rgba(15,184,117,.55) 9% 34%,rgba(15,184,117,.28) 34% 62%,rgba(15,184,117,.12) 62% 100%)}
-.ringA{top:13%;left:50%;width:14px;height:14px;background:radial-gradient(circle,#0d2b22 0 30%,transparent 30%)}
-.ringL{top:64%;left:32%}
-.ringR{top:64%;left:68%}
-.pill{position:absolute;background:#0fb875;color:#08281e;font-size:9px;font-weight:700;
-  letter-spacing:.03em;border-radius:999px;padding:5px 11px;white-space:nowrap}
-.pillA{top:0;left:50%;transform:translateX(-50%)}
-.pillL{top:78%;left:0}
-.pillR{top:78%;right:0}
 .liveTeam{display:flex;flex-direction:column;gap:10px}
 .liveRow{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center}
 .liveAv{width:34px;height:34px;border-radius:999px;background:#e6f7ef;color:#0b7a52;
@@ -73,10 +110,8 @@ button,a{font:inherit;color:inherit}
 .liveTasks{display:flex;flex-wrap:wrap;gap:5px}
 .task{font-size:10px;color:#3f4245;background:#f2efec;border-radius:999px;padding:4px 9px;white-space:nowrap}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
-.legendItem{display:flex;align-items:center;gap:6px;font-size:10px;color:#6f6c69}
 .key{display:grid;place-items:center;width:16px;height:16px;border-radius:999px;font-size:9px;font-weight:700}
-.keyA{background:#0fb875;color:#08281e}
-.keyD{background:#dff4ea;color:#0b7a52}
+.legendItem{display:flex;align-items:center;gap:6px;font-size:10px;color:#6f6c69}
 .artLegend{justify-content:center;margin-top:14px}
 .rule{height:1px;background:#e6e2dd;margin:26px 0 20px}
 .teamTitle{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8f8b87;font-weight:700;margin-bottom:16px}
@@ -238,22 +273,24 @@ button,a{font:inherit;color:inherit}
             </article>
 
 
-            <article class="slide">
+            <article class="slide liveSlide">
               <div>
-              <div class="art liveArt">
-                <img src="prosthetic-hand.png" alt="UL arm live testing focus areas">
-                <span class="arcA"></span>
-                <span class="ring ringA"></span>
-                <span class="pill pillA" data-i18n="liveA">A - 30 SEPT</span>
-                <span class="ring ringL"></span>
-                <span class="pill pillL" data-i18n="liveL">D - 30 SEPT</span>
-                <span class="ring ringR"></span>
-                <span class="pill pillR" data-i18n="liveR">D - 30 SEPT</span>
+              <div class="art liveArt" id="partMap">
+                <div class="handBox">
+                  <img src="prosthetic-hand.png" alt="UL arm live testing focus areas">
+                  <svg class="leaders" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+                  <div class="hotspots"></div>
+                </div>
+                <div class="partTip" role="status" aria-live="polite"></div>
               </div>
               <div class="legend artLegend">
-                  <span class="legendItem"><span class="key keyA">A</span><span data-i18n="legA">Active now</span></span>
-                  <span class="legendItem"><span class="key keyD">D</span><span data-i18n="legD">Design next</span></span>
+                  <span class="legendItem"><span class="statusDot wip"></span><span data-i18n="legWip">In progress</span></span>
+                  <span class="legendItem"><span class="statusDot todo"></span><span data-i18n="legTodo">Not started</span></span>
                 </div>
+              <div class="offPartsWrap">
+                <div class="offPartsLabel" data-i18n="offParts">Not shown on the diagram</div>
+                <div class="offParts"></div>
+              </div>
               </div>
               <div class="copy">
                 <h1 data-i18n="t5">UL arm &ndash; Live</h1>
@@ -545,7 +582,6 @@ const COPY = {
   pt: {
     ref1: "Waacs", ref2: "YaleHand", ref3: "Softfoot Pro", ref4: "Braço UL", ref5: "Ao vivo",
     t5: "Braço UL – Ao vivo", b5: "Áreas de teste em curso e respetivo calendário.",
-    liveA: "A - 30 SET", liveL: "D - 30 SET", liveR: "D - 30 SET",
     liveTeam: "Equipa e tarefas-chave",
     finTitle: "Finanças", byBranch: "Por área",
     fAvail: "Fundos disponíveis", fSpent: "Gasto até à data", fApprox: "Aprox.",
@@ -561,7 +597,6 @@ const COPY = {
     nRdNote: "Coberto por patrocínio de uma gráfica de Vancouver e colaboração universitária",
     kNot: "Por iniciar", kProg: "Em curso", kAppr: "Requer aprovação", kDone: "Concluído",
     thBranch: "Área", thAppr: "Aprovação", thDone: "Concluído", thTotal: "Total",
-    legA: "Ativo agora", legD: "Desenho a seguir",
     rm1: "Desenho do punho", rm2: "Validação do parceiro", rm3: "Desenho dos dedos", rm4: "Testes preliminares",
     an1: "Orçamento", an2: "Calendário", an3: "Atribuição de tarefas",
     sj1: "Revisão do inquérito", sj2: "Revisão dos testes", sj3: "Preparação de ensaio",
@@ -575,12 +610,129 @@ const COPY = {
     roleRD: "Direção de I&D", roleSys: "Eng. de sistemas", roleSim: "Simulação",
     roleUni: "Universidades", roleCad: "CAD 3D", roleDocs: "Documentação",
     roleProsthetics: "Próteses", roleEA: "Assistente executiva",
+    legWip: "Em curso", legTodo: "Por iniciar", offParts: "Não assinalados no diagrama",
     roleAdvisor: "Consultor", roleBio: "Biomédica", roleConcept: "Arte conceptual", roleDirRD: "Diretora de I&D", roleMvp2: "Líder MVP 2", roleProg: "Líder de programa", roleResearch: "Investigação", roleTest: "Eng. de testes",
     aDown: "Descarregar", aUp: "Enviar", aLinks: "Ligações e atas",
     ready: "Este departamento está pronto para o seu conteúdo."
   }
 };
 document.querySelectorAll('[data-i18n]').forEach(el => { COPY.en[el.dataset.i18n] = el.textContent; });
+
+/* ---- Part map: Category Code Table (ULF-DOC-001 Rev A, section 3) ----
+   Local addition, not from the upstream export. x/y are % of the image box;
+   lx/ly are the label anchor. `wip` marks the five parts currently in design. */
+const PARTS = [
+  {c:'THM', en:'Thumb',               pt:'Polegar',              wip:1, x:19, y:44, lx:-24, ly:41},
+  {c:'IND', en:'Index finger',        pt:'Dedo indicador',       wip:1, x:36, y:26, lx:-24, ly:20},
+  {c:'MID', en:'Middle finger',       pt:'Dedo médio',           wip:1, x:52, y:24, lx:-24, ly:6},
+  {c:'RNG', en:'Ring finger',         pt:'Dedo anelar',          wip:1, x:68, y:27, lx:124, ly:14},
+  {c:'LTL', en:'Little finger',       pt:'Dedo mínimo',          wip:1, x:83, y:33, lx:124, ly:28},
+  {c:'CBL', en:'Cable',               pt:'Cabo',                 wip:0, x:63, y:50, lx:124, ly:50},
+  {c:'PLM', en:'Palm',                pt:'Palma',                wip:0, x:56, y:64, lx:124, ly:64},
+  {c:'FST', en:'Fastener (purchased)',pt:'Fixador (comprado)',   wip:0, x:45, y:76, lx:-24, ly:72},
+  {c:'WRS', en:'Wrist',               pt:'Punho',                wip:0, x:52, y:84, lx:-24, ly:86},
+  {c:'SKT', en:'Socket',              pt:'Encaixe',              wip:0, x:48, y:93, lx:124, ly:88},
+  {c:'LNR', en:'Liner',               pt:'Revestimento interno', wip:0, x:62, y:96, lx:124, ly:98}
+];
+/* Table entries with no physical location on the hand. */
+const OFF_PARTS = [
+  {c:'HRN', en:'Harness',            pt:'Arnês'},
+  {c:'JIG', en:'Assembly jig',       pt:'Gabarito de montagem'},
+  {c:'TOL', en:'Tool',               pt:'Ferramenta'},
+  {c:'ASM', en:'Assembly',           pt:'Conjunto'},
+  {c:'DRW', en:'Engineering drawing',pt:'Desenho técnico'},
+  {c:'DOC', en:'Document / standard',pt:'Documento / norma'}
+];
+const PART_STR = {
+  en:{wip:'In progress', todo:'Not started'},
+  pt:{wip:'Em curso',    todo:'Por iniciar'}
+};
+
+function currentLang(){
+  const b = document.querySelector('.lang button.active');
+  return (b && b.dataset.lang) || 'en';
+}
+
+function renderPartMap(forced){
+  const map = document.getElementById('partMap');
+  if (!map) return;
+  // `forced` is passed by the language buttons. Our click listener is registered
+  // before the export's own, which is what sets .active — so reading .active here
+  // would give the previous language.
+  const lang = forced || currentLang();
+  const svg  = map.querySelector('.leaders');
+  const host = map.querySelector('.hotspots');
+  const tip  = map.querySelector('.partTip');
+  svg.innerHTML = ''; host.innerHTML = '';
+
+  PARTS.forEach((p, i) => {
+    const delay = (0.05 * i).toFixed(2) + 's';
+    const right = p.lx > 50;
+    const name  = lang === 'pt' ? p.pt : p.en;
+    const pn    = 'ULF-' + p.c + '-001';
+    const state = p.wip ? 'wip' : 'todo';
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', p.x); line.setAttribute('y1', p.y);
+    line.setAttribute('x2', p.lx + (right ? -2 : 2)); line.setAttribute('y2', p.ly);
+    line.setAttribute('class', p.wip ? 'wip' : '');
+    line.style.setProperty('--len', Math.hypot(p.lx - p.x, p.ly - p.y) * 2);
+    line.style.setProperty('--d', delay);
+    svg.appendChild(line);
+
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'hot ' + state;
+    dot.style.left = p.x + '%'; dot.style.top = p.y + '%';
+    dot.style.setProperty('--d', delay);
+    dot.setAttribute('aria-label', p.c + ' — ' + name + ' — ' + pn);
+
+    const tag = document.createElement('span');
+    tag.className = 'tag ' + state + (right ? ' r' : '');
+    tag.textContent = p.c;
+    tag.style.left = p.lx + '%'; tag.style.top = p.ly + '%';
+    tag.style.setProperty('--d', delay);
+
+    const show = () => {
+      tip.innerHTML = '';
+      const n = document.createElement('div'); n.className = 'tipName'; n.textContent = name;
+      const q = document.createElement('div'); q.className = 'tipPn';   q.textContent = pn;
+      const st = document.createElement('span');
+      st.className = 'tipStatus ' + (p.wip ? 'wip' : '');
+      st.textContent = PART_STR[lang][p.wip ? 'wip' : 'todo'];
+      tip.append(n, q, st);
+      tip.classList.add('show');
+      dot.classList.add('on'); tag.classList.add('on'); line.classList.add('on');
+    };
+    const hide = () => {
+      tip.classList.remove('show');
+      dot.classList.remove('on'); tag.classList.remove('on'); line.classList.remove('on');
+    };
+
+    ['mouseenter','focus'].forEach(e => { dot.addEventListener(e, show); tag.addEventListener(e, show); });
+    ['mouseleave','blur'].forEach(e => { dot.addEventListener(e, hide); tag.addEventListener(e, hide); });
+    tag.tabIndex = -1;
+
+    host.append(dot, tag);
+  });
+
+  const off = map.parentElement.querySelector('.offParts');
+  if (off) {
+    off.innerHTML = '';
+    OFF_PARTS.forEach(p => {
+      const el = document.createElement('span');
+      el.className = 'offPart';
+      el.textContent = p.c + ' · ' + (lang === 'pt' ? p.pt : p.en);
+      el.title = 'ULF-' + p.c + '-001 — ' + PART_STR[lang].todo;
+      off.appendChild(el);
+    });
+  }
+}
+
+renderPartMap();
+document.querySelectorAll('.lang button').forEach(b =>
+  b.addEventListener('click', () => renderPartMap(b.dataset.lang)));
+
 document.querySelectorAll('.lang button').forEach(btn => btn.addEventListener('click', () => {
   document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b === btn));
   const dict = COPY[btn.dataset.lang] || COPY.en;
