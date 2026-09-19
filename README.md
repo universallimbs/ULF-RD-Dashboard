@@ -12,61 +12,77 @@ python3 -m http.server 8080
 # http://127.0.0.1:8080/index.html
 ```
 
-## ⚠️ index.html is a vendored build artifact
+## index.html is a vendored export
 
-`index.html` is a design-tool export, vendored into this repo verbatim. It is a
-~1.2 MB self-contained page whose markup, styles, fonts and images are all
-inlined and unpacked at runtime by a loader.
+`index.html` is a design-tool export, vendored into this repo. It is readable
+HTML (~38 KB): a single `<style>` block, plain markup with real class names, and
+one inline `<script>`. It needs `prosthetic-hand.png` alongside it — unlike the
+previous export, it is **not** self-contained.
 
-**It is not editable source.** There are no classes to target, no stylesheet to
-change; styles are inline and element ids are generated. Do not hand-edit it —
-any change will be lost the next time the bundle is refreshed, and a careless
-edit can break the loader and leave the page stuck on "Unpacking…".
+It is legible enough to edit, but **edits still do not survive a refresh** —
+re-exporting overwrites the file wholesale. Anything this repo needs to keep
+belongs in the patch list below, so it can be re-applied deliberately.
+
+> **Note:** an earlier export was a ~1.2 MB self-unpacking bundle with inlined
+> fonts and generated ids. That is no longer the shape. If you refresh and get a
+> file starting `<title>Bundled Page</title>`, the export format has changed
+> back and this section needs revisiting.
 
 ### Refreshing it
 
-Re-export or re-download the published bundle over `index.html`, then re-apply
-the local patches below. The publish URL is not recorded here — ask the R&D
-lead for the current one.
+Re-download the published export over `index.html` **and its image**, then
+re-apply the local patches below. The publish URL is not recorded here — ask
+the R&D lead for the current one.
 
 ```bash
-curl -sL "<published bundle URL>" -o index.html
-# then re-apply the local patches below
+curl -sL "<published URL>/"                    -o index.html
+curl -sL "<published URL>/prosthetic-hand.png" -o prosthetic-hand.png
 ```
 
 ### The local patches
 
-Three, all reverted by a plain re-fetch. Re-apply after every refresh:
+All reverted by a plain re-fetch. Re-apply after every refresh:
 
-1. **Anqido buttons** — the export points all five at `anqido.app/social`; this
-   repo uses the team workspace.
-2. **GitHub link** — the export ships someone else's repo URL; this repo is
-   published from the `universallimbs` org.
-3. **Teams roster** — the export ships four tiles; this repo carries all 21 people
-   from the R&D org chart, with `r5`–`r21` / `x5`–`x21` added to both language
-   tables. Not expressible as a find-and-replace; see
-   `git show <this commit> -- index.html` to re-derive it.
+1. **Anqido link** — the export points at `anqido.app/social`; this repo uses
+   the team workspace.
+2. **Ganesh A → Ganesh V** — including the `GA` avatar initials.
+3. **Team roster** — the export ships 10 people; this repo carries the union
+   with the R&D org chart (24), alphabetised by name, with eight new role keys
+   added to the `pt` table.
+
+(1) and (2) are find-and-replace:
 
 ```bash
 python3 - <<'EOF'
-import re
 s = open('index.html', encoding='utf-8').read()
 s = s.replace('anqido.app/social', 'anqido.app/work/universal-limbs/my-desk')
-s = re.sub(r'github\.com/[\w.-]+/ULF-RD-Dashboard',
-           'github.com/universallimbs/ULF-RD-Dashboard', s)
+s = s.replace('<div class="avatar">GA</div><div class="person-name">Ganesh A</div>',
+              '<div class="avatar">GV</div><div class="person-name">Ganesh V</div>')
 open('index.html', 'w', encoding='utf-8').write(s)
 EOF
 ```
 
+(3) is not — see `git log -p -- index.html` for the roster commit to re-derive it.
+
+**No longer needed:** the previous export carried a `github.com/…` link that had
+to be repointed. This one has no GitHub link at all.
+
+### How the export does EN/PT
+
+English lives inline in the markup on `data-i18n` elements; the script harvests
+it into `COPY.en` at load. Only Portuguese is stored, as an override table
+(`COPY.pt`). So **adding a person means adding the English inline and a `pt`
+entry** — there is no `en` table to update.
+
 ### What the export currently ships
 
-Tabs: **Overview · Upload · Download · Teams · Mins**. A dual-timezone clock
-(Brazil fixed, second city selectable), an EN/PT switch, a dark-mode toggle, and
-an Overview built around *Current projects* (MVP 1 terminal hand, MVP 2 silicone
-glove), *Unassigned tasks* and *Blockers*.
+Department tabs **R&D · P&R · Finance · ULF**, an EN/PT switch, reference tabs
+(**Waacs · YaleHand · Softfoot Pro · UL arm · Live**), a *Baseline* panel, the
+team strip, and **Download / Upload / Links & Mins** buttons.
 
-The export is re-cut without notice — it was a different layout a week before
-this was written — so treat any description here as a snapshot, not a contract.
+The export is re-cut without notice and has changed shape substantially more
+than once — a seven-tab hub, then a five-tab bundle, now this. Treat any
+description here as a snapshot, not a contract.
 
 ## The survey is hand-authored
 
@@ -145,7 +161,7 @@ honeypot field, and a file-size ceiling.
 `softfoot-pro.jpg`, `ulf-prosthetic-render.*`, `ulf-product-demo-poster.jpg` are
 no longer referenced by any page — the bundle inlines its own images. They are
 kept because they are original programme artifacts, not regenerable.
-`ul-logo.png` is still used by the survey.
+`ul-logo.png` is used by the survey; `prosthetic-hand.png` by the hub export.
 
 ## Documentation
 

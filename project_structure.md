@@ -2,9 +2,9 @@
 
 ```text
 .
-├── index.html                  # VENDORED — a design-tool export, ~1.2 MB,
-│                               # self-contained, not editable source.
-│                               # See README before touching it.
+├── index.html                  # VENDORED — a design-tool export, ~38 KB.
+│                               # Readable HTML, but overwritten on refresh.
+│                               # Needs prosthetic-hand.png. See README.
 ├── prosthetic-user-survey.html # Hand-authored. The page you actually edit.
 ├── google-apps-script.gs       # Workspace backend: Sheets + Drive + mail
 ├── assets/
@@ -22,6 +22,7 @@
 ├── .github/
 │   ├── workflows/link-checker.yml
 │   └── scripts/check_links.py
+├── prosthetic-hand.png         # used by the hub export
 └── ul-logo.png                 # used by the survey
     *.webp / *.png / *.jpg      # programme reference visuals, currently unreferenced
 ```
@@ -30,11 +31,11 @@
 
 This repo now holds two things that share almost nothing:
 
-**1. The hub (`index.html`)** is a vendored design-tool export. Its markup, CSS,
-fonts and images are inlined and unpacked at runtime. There is no source to edit
-here — changes belong in the design tool. The local modifications (Anqido URL,
-GitHub URL, Teams roster) are documented in the README and must be re-applied
-after every refresh.
+**1. The hub (`index.html`)** is a vendored design-tool export — readable HTML
+with its own inline styles and script, plus `prosthetic-hand.png`. Changes
+belong in the design tool: a refresh overwrites the file wholesale. The local
+modifications (Anqido link, Ganesh V rename, team roster) are documented in the
+README and must be re-applied after every refresh.
 
 **2. The survey** is ordinary hand-written source with a small shared runtime
 (`dashboard.css`, `i18n.js`, `i18n-survey.js`, `config.js`, `submit.js`).
