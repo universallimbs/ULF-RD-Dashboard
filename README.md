@@ -49,12 +49,25 @@ All reverted by a plain re-fetch. Re-apply after every refresh:
 3. **Team roster** — the export ships 10 people; this repo carries the union
    with the R&D org chart (24), alphabetised by name, with eight new role keys
    added to the `pt` table.
-4. **Interactive part map** on the Live reference tab — replaces the export's
-   `A - 30 SEPT` / `D - 30 SEPT` pills with leader-lined hotspots driven by the
-   Category Code Table in `Part Number Standard .pdf` (ULF-DOC-001 Rev A §3).
-   Hovering a dot gives the category name, part number and status. The five
-   finger/thumb parts are green (in progress); everything else is grey (not
-   started). See `PARTS` / `OFF_PARTS` in the inline script.
+4. **Interactive assembly map** on the Live reference tab — replaces the
+   export's `A - 30 SEPT` / `D - 30 SEPT` pills and its hand photo with an
+   inline SVG of the full transradial assembly, terminal device through to the
+   biceps cuff. Every part is a real SVG shape, so hovering highlights the
+   component itself, dims the rest, and shows category name, part number and
+   status from the Category Code Table in `Part Number Standard .pdf`
+   (ULF-DOC-001 Rev A §3). See `PARTS` / `OFF_PARTS` in the inline script.
+
+   **Five codes are proposed, not yet in the table.** Per §9 a new category must
+   be added to the master table before use, so these are marked in the UI with
+   a *proposed code* warning until that happens:
+
+   | Code | Part | Named after |
+   | --- | --- | --- |
+   | `FRM` | Forearm shell | anatomy (antebrachium) |
+   | `ELB` | Elbow hinge | anatomy |
+   | `BIC` | Biceps cuff | anatomy |
+   | `STR` | Strap | function |
+   | `HSG` | Cable housing | function (Bowden conduit) |
 
 (1) and (2) are find-and-replace:
 
