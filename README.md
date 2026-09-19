@@ -49,7 +49,23 @@ All reverted by a plain re-fetch. Re-apply after every refresh:
 3. **Team roster** — the export ships 10 people; this repo carries the union
    with the R&D org chart (24), alphabetised by name, with eight new role keys
    added to the `pt` table.
-4. **Interactive assembly map** on the Live reference tab — replaces the
+4. **3D assembly viewer** on the Live reference tab — `assets/js/assembly3d.js`
+   plus an `#arm3d` mount and two script tags in `index.html`. The model is
+   **authored procedurally**, not imported: no CAD export exists yet, and the
+   Thingiverse references could not be licence-checked (their pages sit behind
+   a Cloudflare challenge), so copying that geometry would carry unknown
+   BY-NC-SA obligations. Every mesh is named with its category code, so when a
+   real CAD export arrives you replace `buildAssembly()` with a GLTF load and
+   keep everything else — provided the exported meshes carry the same names.
+
+   Drag to rotate, scroll to zoom, arrow keys to orbit, hover for the part.
+   Falls back to the SVG map below if WebGL is unavailable.
+
+   **Known gap:** two of the seventeen parts are hard to hit with the cursor —
+   `FST` (the screws are tiny) and `LNR` (occluded inside the cuff). A
+   click-through part list beside the model would fix both; not built yet.
+
+5. **Interactive assembly map** (SVG) on the Live reference tab — replaces the
    export's `A - 30 SEPT` / `D - 30 SEPT` pills and its hand photo with an
    inline SVG of the full transradial assembly, terminal device through to the
    biceps cuff. Every part is a real SVG shape, so hovering highlights the

@@ -52,7 +52,26 @@ button,a{font:inherit;color:inherit}
 .copy p{font-size:13px;line-height:1.6;color:#55585b;margin:0}
 .liveArt{position:relative}
 /* --- interactive part map (local addition, see README patch list) --- */
-.slide.liveSlide{grid-template-columns:56% minmax(0,1fr)}
+/* Live slide: full-width 3D viewer on top, text right and flowing down. */
+.slide.liveSlide{display:block}
+.arm3d{position:relative;width:100%;aspect-ratio:21/9;min-height:260px;cursor:grab;
+  border-radius:20px;background:linear-gradient(180deg,#f7f5f2,#ebe8e4);overflow:hidden;
+  touch-action:pan-y;outline:none}
+.arm3d:active{cursor:grabbing}
+.arm3d canvas{display:block;width:100%;height:100%}
+.arm3d:focus-visible{box-shadow:0 0 0 2px var(--orange)}
+.arm3dHint{position:absolute;left:14px;bottom:12px;z-index:2;pointer-events:none;
+  font-size:10px;color:#9a9691;background:#ffffffcc;border-radius:999px;padding:5px 11px}
+.arm3d .partTip{left:0;top:0;bottom:auto;transform:translate(12px,-50%)}
+.arm3d .partTip.show{transform:translate(12px,-50%)}
+.arm3d.ready ~ .svgFallback{display:none}
+.liveBelow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;
+  align-items:start;margin-top:22px}
+.liveBelow .copy{text-align:left}
+@media (max-width:720px){
+  .liveBelow{grid-template-columns:1fr}
+  .arm3d{aspect-ratio:4/3}
+}
 .handBox{position:relative;width:100%;margin:0 auto;overflow:visible}
 .armSvg{width:100%;height:auto;display:block;overflow:visible}
 .liveArt{padding-bottom:78px}
@@ -102,7 +121,8 @@ button,a{font:inherit;color:inherit}
 .offParts{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
 .offPart{font-size:9px;color:#8f8b87;background:#f2efec;border-radius:999px;padding:3px 8px;cursor:default}
 @media (prefers-reduced-motion:reduce){
-  .leaders line,.hot,  }
+  .leaderLayer line,.labelLayer text{animation:none;stroke-dashoffset:0;opacity:1}
+}
 .liveArt img{position:relative;z-index:1}
 .liveTeam{display:flex;flex-direction:column;gap:10px}
 .liveRow{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center}
@@ -277,7 +297,11 @@ button,a{font:inherit;color:inherit}
             <article class="slide liveSlide">
               <div>
               <div class="art liveArt" id="partMap">
-                <div class="handBox">
+                <div id="arm3d" class="arm3d" role="img" aria-label="Rotatable 3D model of the transradial assembly">
+                  <div class="arm3dHint"><span data-i18n="dragHint">Drag to rotate · scroll to zoom · hover a part</span></div>
+                  <div class="partTip" id="arm3dTip"></div>
+                </div>
+                <div class="handBox svgFallback">
 <svg class="armSvg" viewBox="0 0 200 104" role="img" aria-label="Transradial assembly, terminal device to biceps cuff">
   <defs>
     <linearGradient id="shell" x1="0" y1="0" x2="0" y2="1">
@@ -355,7 +379,11 @@ button,a{font:inherit;color:inherit}
                 </div>
                 <div class="partTip" role="status" aria-live="polite"></div>
               </div>
-              <div class="legend artLegend">
+              
+              </div>
+              <div class="liveBelow">
+                <div class="liveAside">
+<div class="legend artLegend">
                   <span class="legendItem"><span class="statusDot wip"></span><span data-i18n="legWip">In progress</span></span>
                   <span class="legendItem"><span class="statusDot todo"></span><span data-i18n="legTodo">Not started</span></span>
                 </div>
@@ -363,8 +391,8 @@ button,a{font:inherit;color:inherit}
                 <div class="offPartsLabel" data-i18n="offParts">Not shown on the diagram</div>
                 <div class="offParts"></div>
               </div>
-              </div>
-              <div class="copy">
+                </div>
+<div class="copy">
                 <h1 data-i18n="t5">UL arm &ndash; Live</h1>
                 <p data-i18n="b5">Current testing focus areas and timeline.</p>
                 <div class="rule"></div>
@@ -402,6 +430,7 @@ button,a{font:inherit;color:inherit}
                     </span>
                   </div>
                 </div>
+              </div>
               </div>
             </article>
           </div>
@@ -799,7 +828,7 @@ function renderPartMap(forced){
     ['mouseleave','blur'].forEach(e => { g.addEventListener(e, hide); t.addEventListener(e, hide); });
   });
 
-  const off = map.parentElement.querySelector('.offParts');
+  const off = document.querySelector('.offParts');
   if (off) {
     off.innerHTML = '';
     OFF_PARTS.forEach(o => {
@@ -812,6 +841,8 @@ function renderPartMap(forced){
   }
 }
 
+window.ULF_PARTS = PARTS;
+window.ULF_PART_STR = PART_STR;
 renderPartMap();
 document.querySelectorAll('.lang button').forEach(b =>
   b.addEventListener('click', () => renderPartMap(b.dataset.lang)));
@@ -830,5 +861,7 @@ document.querySelectorAll('.lang button').forEach(btn => btn.addEventListener('c
   }
 }));
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.1/three.min.js"></script>
+<script src="assets/js/assembly3d.js"></script>
 </body>
 </html>
