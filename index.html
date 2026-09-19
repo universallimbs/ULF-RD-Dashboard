@@ -51,21 +51,79 @@ button,a{font:inherit;color:inherit}
 .copy h1{font-size:27px;margin:0 0 12px;line-height:1.05;letter-spacing:-.6px}
 .copy p{font-size:13px;line-height:1.6;color:#55585b;margin:0}
 .liveArt{position:relative}
+/* --- interactive part map (local addition, see README patch list) --- */
+/* Live slide: full-width 3D viewer on top, text right and flowing down. */
+.slide.liveSlide{display:block}
+.arm3d{position:relative;width:100%;aspect-ratio:21/9;min-height:260px;cursor:grab;
+  border-radius:20px;background:linear-gradient(180deg,#f7f5f2,#ebe8e4);overflow:hidden;
+  touch-action:pan-y;outline:none}
+.arm3d:active{cursor:grabbing}
+.arm3d canvas{display:block;width:100%;height:100%}
+.arm3d:focus-visible{box-shadow:0 0 0 2px var(--orange)}
+.arm3dHint{position:absolute;left:14px;bottom:12px;z-index:2;pointer-events:none;
+  font-size:10px;color:#9a9691;background:#ffffffcc;border-radius:999px;padding:5px 11px}
+.arm3d .partTip{left:0;top:0;bottom:auto;transform:translate(12px,-50%)}
+.arm3d .partTip.show{transform:translate(12px,-50%)}
+.arm3d.ready ~ .svgFallback{display:none}
+.liveBelow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;
+  align-items:start;margin-top:22px}
+.liveBelow .copy{text-align:left}
+@media (max-width:720px){
+  .liveBelow{grid-template-columns:1fr}
+  .arm3d{aspect-ratio:4/3}
+}
+.handBox{position:relative;width:100%;margin:0 auto;overflow:visible}
+.armSvg{width:100%;height:auto;display:block;overflow:visible}
+.liveArt{padding-bottom:78px}
+.part{cursor:pointer}
+.part .sh{fill:url(#shell);stroke:#0d0f10;stroke-width:.6}
+.part .sh2{fill:url(#shellL);stroke:#0d0f10;stroke-width:.6}
+.part .dg{fill:#2a2d30;stroke:#0d0f10;stroke-width:.5}
+.part .strap{fill:#101214;stroke:#000;stroke-width:.4}
+.part .lnr{fill:#4a4e52;opacity:.75}
+.part .scr{fill:#6f7377}
+.part .pin{fill:#8f9398}
+.part>*{transition:fill .16s ease,stroke .16s ease,opacity .16s ease}
+.part.wip .sh,.part.wip .sh2,.part.wip .dg{fill:#0fb875;stroke:#0a6e46}
+.part.on .sh,.part.on .sh2,.part.on .dg,.part.on .strap,.part.on .lnr,.part.on .scr{fill:#f97316;stroke:#a8490b}
+.part.on .ln,.part.on .hose,.part.on .cbl{stroke:#f97316}
+.part.dim{opacity:.35}
+.leaderLayer line{stroke:#c9c4be;stroke-width:.45;
+  stroke-dasharray:var(--len,60);stroke-dashoffset:var(--len,60);
+  animation:draw .7s cubic-bezier(.4,0,.2,1) forwards;animation-delay:var(--d,0s)}
+.leaderLayer line.wip{stroke:#7fd9b6}
+.leaderLayer line.on{stroke:#f97316;stroke-width:.8}
+@keyframes draw{to{stroke-dashoffset:0}}
+.labelLayer text{font-family:Arial,Helvetica,sans-serif;font-size:4.4px;font-weight:700;
+  letter-spacing:.3px;fill:#8f8b87;cursor:pointer;opacity:0;
+  animation:popIn .35s ease forwards;animation-delay:var(--d,0s)}
+.labelLayer text.wip{fill:#0b7a52}
+.labelLayer text.on{fill:#f97316}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes popIn{to{opacity:1}}
+@keyframes ping{0%{transform:scale(1);opacity:.65}70%{transform:scale(2.1);opacity:0}100%{opacity:0}}
+.partTip{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);z-index:6;pointer-events:none;
+  background:#181a1c;color:#fff;border-radius:10px;padding:8px 11px;min-width:140px;max-width:220px;
+  opacity:0;visibility:hidden;transition:opacity .16s ease,transform .16s ease;text-align:left;
+  box-shadow:0 10px 26px #3c2d2333}
+.partTip.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(-4px)}
+.partTip .tipName{font-size:12px;font-weight:700;line-height:1.25}
+.partTip .tipPn{font-size:10px;color:#b9b3ac;margin-top:2px;font-family:ui-monospace,Menlo,monospace}
+.partTip .tipNew{font-size:9px;color:#f9a03c;margin-top:4px}
+.partTip .tipStatus{display:inline-block;margin-top:6px;font-size:9px;font-weight:700;letter-spacing:.04em;
+  border-radius:999px;padding:2px 7px;background:#333;color:#ddd}
+.partTip .tipStatus.wip{background:#0fb875;color:#08281e}
+.statusDot{width:10px;height:10px;border-radius:999px;display:inline-block}
+.statusDot.wip{background:#0fb875}
+.statusDot.todo{background:#b9b3ac}
+.offPartsWrap{margin-top:14px;text-align:center}
+.offPartsLabel{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#a5a09b;margin-bottom:7px}
+.offParts{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.offPart{font-size:9px;color:#8f8b87;background:#f2efec;border-radius:999px;padding:3px 8px;cursor:default}
+@media (prefers-reduced-motion:reduce){
+  .leaderLayer line,.labelLayer text{animation:none;stroke-dashoffset:0;opacity:1}
+}
 .liveArt img{position:relative;z-index:1}
-.liveArt .ring,.liveArt .pill{z-index:2}
-.arcA{position:absolute;z-index:0;top:4%;left:50%;width:66%;aspect-ratio:2/1;transform:translateX(-50%);
-  border-radius:999px 999px 0 0;
-  background:radial-gradient(ellipse at 50% 100%,rgba(15,184,117,.55) 0 42%,rgba(15,184,117,.30) 42% 68%,rgba(15,184,117,.15) 68% 100%)}
-.ring{position:absolute;width:46px;height:46px;border-radius:999px;transform:translate(-50%,-50%);
-  background:radial-gradient(circle,#0d2b22 0 9%,rgba(15,184,117,.55) 9% 34%,rgba(15,184,117,.28) 34% 62%,rgba(15,184,117,.12) 62% 100%)}
-.ringA{top:13%;left:50%;width:14px;height:14px;background:radial-gradient(circle,#0d2b22 0 30%,transparent 30%)}
-.ringL{top:64%;left:32%}
-.ringR{top:64%;left:68%}
-.pill{position:absolute;background:#0fb875;color:#08281e;font-size:9px;font-weight:700;
-  letter-spacing:.03em;border-radius:999px;padding:5px 11px;white-space:nowrap}
-.pillA{top:0;left:50%;transform:translateX(-50%)}
-.pillL{top:78%;left:0}
-.pillR{top:78%;right:0}
 .liveTeam{display:flex;flex-direction:column;gap:10px}
 .liveRow{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center}
 .liveAv{width:34px;height:34px;border-radius:999px;background:#e6f7ef;color:#0b7a52;
@@ -73,10 +131,8 @@ button,a{font:inherit;color:inherit}
 .liveTasks{display:flex;flex-wrap:wrap;gap:5px}
 .task{font-size:10px;color:#3f4245;background:#f2efec;border-radius:999px;padding:4px 9px;white-space:nowrap}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
-.legendItem{display:flex;align-items:center;gap:6px;font-size:10px;color:#6f6c69}
 .key{display:grid;place-items:center;width:16px;height:16px;border-radius:999px;font-size:9px;font-weight:700}
-.keyA{background:#0fb875;color:#08281e}
-.keyD{background:#dff4ea;color:#0b7a52}
+.legendItem{display:flex;align-items:center;gap:6px;font-size:10px;color:#6f6c69}
 .artLegend{justify-content:center;margin-top:14px}
 .rule{height:1px;background:#e6e2dd;margin:26px 0 20px}
 .teamTitle{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8f8b87;font-weight:700;margin-bottom:16px}
@@ -238,24 +294,105 @@ button,a{font:inherit;color:inherit}
             </article>
 
 
-            <article class="slide">
+            <article class="slide liveSlide">
               <div>
-              <div class="art liveArt">
-                <img src="prosthetic-hand.png" alt="UL arm live testing focus areas">
-                <span class="arcA"></span>
-                <span class="ring ringA"></span>
-                <span class="pill pillA" data-i18n="liveA">A - 30 SEPT</span>
-                <span class="ring ringL"></span>
-                <span class="pill pillL" data-i18n="liveL">D - 30 SEPT</span>
-                <span class="ring ringR"></span>
-                <span class="pill pillR" data-i18n="liveR">D - 30 SEPT</span>
-              </div>
-              <div class="legend artLegend">
-                  <span class="legendItem"><span class="key keyA">A</span><span data-i18n="legA">Active now</span></span>
-                  <span class="legendItem"><span class="key keyD">D</span><span data-i18n="legD">Design next</span></span>
+              <div class="art liveArt" id="partMap">
+                <div id="arm3d" class="arm3d" role="img" aria-label="Rotatable 3D model of the transradial assembly">
+                  <div class="arm3dHint"><span data-i18n="dragHint">Drag to rotate · scroll to zoom · hover a part</span></div>
+                  <div class="partTip" id="arm3dTip"></div>
                 </div>
+                <div class="handBox svgFallback">
+<svg class="armSvg" viewBox="0 0 200 104" role="img" aria-label="Transradial assembly, terminal device to biceps cuff">
+  <defs>
+    <linearGradient id="shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#43474b"/><stop offset=".42" stop-color="#24272a"/><stop offset="1" stop-color="#121416"/>
+    </linearGradient>
+    <linearGradient id="shellL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4d5155"/><stop offset=".45" stop-color="#2d3134"/><stop offset="1" stop-color="#17191b"/>
+    </linearGradient>
+  </defs>
+
+  <g class="part" data-p="HRN">
+    <path class="hit" d="M20 30 Q10 16 3 4" fill="none" stroke="transparent" stroke-width="7"/>
+    <path class="ln" d="M20 30 Q10 16 3 4" fill="none" stroke="#9a9691" stroke-width="1" stroke-linecap="round"/>
+  </g>
+
+  <!-- biceps cuff: open-backed cup -->
+  <g class="part" data-p="BIC">
+    <path class="hit sh" d="M20 30 h20 q5 0 5 5 v34 q0 5-5 5 H20 q-4 0-4.6-4 l-1.6-18 q-.3-4 0-8 l1.6-10 q.6-4 4.6-4 z"/>
+  </g>
+  <g class="part" data-p="LNR">
+    <path class="hit lnr" d="M22 34 q-2 18 0 36 h5 q-2-18 0-36 z"/>
+  </g>
+  <g class="part" data-p="STR">
+    <rect class="hit strap" x="18" y="35" width="26" height="7" rx="2.4"/>
+    <rect class="strap" x="18" y="62" width="26" height="7" rx="2.4"/>
+  </g>
+
+  <!-- elbow hinge: side bar + pivot -->
+  <g class="part" data-p="ELB">
+    <path class="hit sh2" d="M45 45 h13 q3 0 3 3.5 v7 q0 3.5-3 3.5 H45 z"/>
+    <circle class="pin" cx="52" cy="52" r="2.4"/>
+  </g>
+
+  <!-- forearm socket: proximal, widest -->
+  <g class="part" data-p="SKT">
+    <path class="hit sh" d="M61 39 q0-5 5-5 h22 q4 0 4.4 4 l1.6 14 -1.6 14 q-.4 4-4.4 4 H66 q-5 0-5-5 z"/>
+  </g>
+  <g class="part" data-p="FST">
+    <circle class="hit scr" cx="70" cy="43" r="1.7"/>
+    <circle class="scr" cx="83" cy="42" r="1.7"/>
+    <circle class="scr" cx="70" cy="62" r="1.7"/>
+  </g>
+
+  <!-- forearm shell: tapering to the wrist -->
+  <g class="part" data-p="FRM">
+    <path class="hit sh2" d="M93 38 L119 44 q5 1.4 5 8 t-5 8 L93 66 q1.4-14 0-28 z"/>
+  </g>
+
+  <g class="part" data-p="HSG">
+    <path class="hit" d="M64 78 Q86 84 106 75" fill="none" stroke="transparent" stroke-width="8"/>
+    <path class="hose" d="M64 78 Q86 84 106 75" fill="none" stroke="#6f6c69" stroke-width="3.2" stroke-linecap="round"/>
+  </g>
+  <g class="part" data-p="CBL">
+    <path class="hit" d="M28 74 Q44 81 64 78 M106 75 Q118 71 126 63" fill="none" stroke="transparent" stroke-width="8"/>
+    <path class="cbl" d="M28 74 Q44 81 64 78 M106 75 Q118 71 126 63" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <g class="part" data-p="WRS">
+    <rect class="hit sh2" x="124" y="44" width="10" height="16" rx="3.5"/>
+  </g>
+
+  <g class="part" data-p="PLM">
+    <path class="hit sh" d="M134 41 q0-4 4-4 h13 q6 0 6 6 v18 q0 6-6 6 h-13 q-4 0-4-4 z"/>
+  </g>
+
+  <g class="part" data-p="IND"><path class="hit dg" d="M157 41.5 h19 q2.6 0 2.6 2.4 t-2.6 2.4 h-19 z"/></g>
+  <g class="part" data-p="MID"><path class="hit dg" d="M157 48 h22 q2.6 0 2.6 2.4 t-2.6 2.4 h-22 z"/></g>
+  <g class="part" data-p="RNG"><path class="hit dg" d="M157 54.5 h18 q2.6 0 2.6 2.4 t-2.6 2.4 h-18 z"/></g>
+  <g class="part" data-p="LTL"><path class="hit dg" d="M157 61 h13 q2.6 0 2.6 2.4 t-2.6 2.4 h-13 z"/></g>
+  <g class="part" data-p="THM"><path class="hit dg" d="M139 66 l9 11 q1.8 2.2-.6 3.9 t-3.9-.6 l-8-10 z"/></g>
+
+  <g class="leaderLayer"></g>
+  <g class="labelLayer"></g>
+</svg>
+                </div>
+                <div class="partTip" role="status" aria-live="polite"></div>
               </div>
-              <div class="copy">
+              
+              </div>
+              <div class="liveBelow">
+                <div class="liveAside">
+<div class="legend artLegend">
+                  <span class="legendItem"><span class="statusDot wip"></span><span data-i18n="legWip">In progress</span></span>
+                  <span class="legendItem"><span class="statusDot todo"></span><span data-i18n="legTodo">Not started</span></span>
+                </div>
+              <div class="offPartsWrap">
+                <div class="offPartsLabel" data-i18n="offParts">Not shown on the diagram</div>
+                <div class="offParts"></div>
+              </div>
+                </div>
+<div class="copy">
                 <h1 data-i18n="t5">UL arm &ndash; Live</h1>
                 <p data-i18n="b5">Current testing focus areas and timeline.</p>
                 <div class="rule"></div>
@@ -293,6 +430,7 @@ button,a{font:inherit;color:inherit}
                     </span>
                   </div>
                 </div>
+              </div>
               </div>
             </article>
           </div>
@@ -545,7 +683,6 @@ const COPY = {
   pt: {
     ref1: "Waacs", ref2: "YaleHand", ref3: "Softfoot Pro", ref4: "Braço UL", ref5: "Ao vivo",
     t5: "Braço UL – Ao vivo", b5: "Áreas de teste em curso e respetivo calendário.",
-    liveA: "A - 30 SET", liveL: "D - 30 SET", liveR: "D - 30 SET",
     liveTeam: "Equipa e tarefas-chave",
     finTitle: "Finanças", byBranch: "Por área",
     fAvail: "Fundos disponíveis", fSpent: "Gasto até à data", fApprox: "Aprox.",
@@ -561,7 +698,6 @@ const COPY = {
     nRdNote: "Coberto por patrocínio de uma gráfica de Vancouver e colaboração universitária",
     kNot: "Por iniciar", kProg: "Em curso", kAppr: "Requer aprovação", kDone: "Concluído",
     thBranch: "Área", thAppr: "Aprovação", thDone: "Concluído", thTotal: "Total",
-    legA: "Ativo agora", legD: "Desenho a seguir",
     rm1: "Desenho do punho", rm2: "Validação do parceiro", rm3: "Desenho dos dedos", rm4: "Testes preliminares",
     an1: "Orçamento", an2: "Calendário", an3: "Atribuição de tarefas",
     sj1: "Revisão do inquérito", sj2: "Revisão dos testes", sj3: "Preparação de ensaio",
@@ -575,12 +711,142 @@ const COPY = {
     roleRD: "Direção de I&D", roleSys: "Eng. de sistemas", roleSim: "Simulação",
     roleUni: "Universidades", roleCad: "CAD 3D", roleDocs: "Documentação",
     roleProsthetics: "Próteses", roleEA: "Assistente executiva",
+    legWip: "Em curso", legTodo: "Por iniciar", offParts: "Não assinalados no diagrama",
     roleAdvisor: "Consultor", roleBio: "Biomédica", roleConcept: "Arte conceptual", roleDirRD: "Diretora de I&D", roleMvp2: "Líder MVP 2", roleProg: "Líder de programa", roleResearch: "Investigação", roleTest: "Eng. de testes",
     aDown: "Descarregar", aUp: "Enviar", aLinks: "Ligações e atas",
     ready: "Este departamento está pronto para o seu conteúdo."
   }
 };
 document.querySelectorAll('[data-i18n]').forEach(el => { COPY.en[el.dataset.i18n] = el.textContent; });
+
+/* ---- Part map: Category Code Table (ULF-DOC-001 Rev A, section 3) ----
+   Local addition, not from the upstream export. x/y are % of the image box;
+   lx/ly are the label anchor. `wip` marks the five parts currently in design. */
+const PARTS = [
+  // code, EN, PT, in-progress, label x/y (viewBox units), leader anchor ax/ay, anchor on drawing px/py
+  {c:'HRN', en:'Harness',            pt:'Arnês',                 wip:0, lx:6,   ly:6,  px:8,   py:16},
+  {c:'BIC', en:'Biceps cuff',        pt:'Braçadeira de bíceps',  wip:0, lx:24,  ly:6,  px:27,  py:31, new:1},
+  {c:'ELB', en:'Elbow hinge',        pt:'Dobradiça de cotovelo', wip:0, lx:47,  ly:6,  px:50,  py:45, new:1},
+  {c:'SKT', en:'Socket',             pt:'Encaixe',               wip:0, lx:70,  ly:6,  px:74,  py:35},
+  {c:'FRM', en:'Forearm shell',      pt:'Casca do antebraço',    wip:0, lx:101, ly:6,  px:105, py:40, new:1},
+  {c:'WRS', en:'Wrist',              pt:'Punho',                 wip:0, lx:124, ly:6,  px:129, py:43},
+  {c:'IND', en:'Index finger',       pt:'Dedo indicador',        wip:1, lx:150, ly:14, px:170, py:41},
+  {c:'MID', en:'Middle finger',      pt:'Dedo médio',            wip:1, lx:168, ly:22, px:174, py:48},
+  {c:'RNG', en:'Ring finger',        pt:'Dedo anelar',           wip:1, lx:186, ly:32, px:171, py:55},
+  {c:'LTL', en:'Little finger',      pt:'Dedo mínimo',           wip:1, lx:186, ly:44, px:167, py:62},
+  {c:'THM', en:'Thumb',              pt:'Polegar',               wip:1, lx:168, ly:96, px:147, py:76},
+  {c:'PLM', en:'Palm',               pt:'Palma',                 wip:0, lx:142, ly:96, px:146, py:67},
+  {c:'CBL', en:'Cable',              pt:'Cabo',                  wip:0, lx:116, ly:96, px:114, py:71},
+  {c:'HSG', en:'Cable housing',      pt:'Bainha do cabo',        wip:0, lx:92,  ly:96, px:84,  py:79, new:1},
+  {c:'FST', en:'Fastener (purchased)',pt:'Fixador (comprado)',   wip:0, lx:68,  ly:96, px:72,  py:62},
+  {c:'STR', en:'Strap',              pt:'Correia',               wip:0, lx:40,  ly:96, px:27,  py:70, new:1},
+  {c:'LNR', en:'Liner',              pt:'Revestimento interno',  wip:0, lx:12,  ly:96, px:19,  py:60}
+];
+/* Table entries with no physical location on the hand. */
+const OFF_PARTS = [
+  {c:'JIG', en:'Assembly jig',        pt:'Gabarito de montagem'},
+  {c:'TOL', en:'Tool',                pt:'Ferramenta'},
+  {c:'ASM', en:'Assembly',            pt:'Conjunto'},
+  {c:'DRW', en:'Engineering drawing', pt:'Desenho técnico'},
+  {c:'DOC', en:'Document / standard', pt:'Documento / norma'}
+];
+const PART_STR = {
+  en:{wip:'In progress', todo:'Not started', proposed:'proposed code'},
+  pt:{wip:'Em curso',    todo:'Por iniciar', proposed:'código proposto'}
+};
+
+function currentLang(){
+  const b = document.querySelector('.lang button.active');
+  return (b && b.dataset.lang) || 'en';
+}
+
+function renderPartMap(forced){
+  const map = document.getElementById('partMap');
+  if (!map) return;
+  // `forced` comes from the language buttons: our listener runs before the
+  // export's, and the export's is what sets .active, so reading .active here
+  // would give the previous language.
+  const lang = forced || currentLang();
+  const svg  = map.querySelector('.armSvg');
+  const lead = svg.querySelector('.leaderLayer');
+  const lbls = svg.querySelector('.labelLayer');
+  const tip  = map.querySelector('.partTip');
+  lead.innerHTML = ''; lbls.innerHTML = '';
+  const NS = 'http://www.w3.org/2000/svg';
+
+  PARTS.forEach((p, i) => {
+    const g = svg.querySelector('[data-p="' + p.c + '"]');
+    if (!g) return;
+    const delay = (0.04 * i).toFixed(2) + 's';
+    const name  = lang === 'pt' ? p.pt : p.en;
+    const pn    = 'ULF-' + p.c + '-001';
+    if (p.wip) g.classList.add('wip');
+
+    const line = document.createElementNS(NS,'line');
+    line.setAttribute('x1', p.px); line.setAttribute('y1', p.py);
+    line.setAttribute('x2', p.lx + 4); line.setAttribute('y2', p.ly + (p.ly < 50 ? 1.5 : -3));
+    if (p.wip) line.classList.add('wip');
+    line.style.setProperty('--len', Math.hypot(p.lx - p.px, p.ly - p.py) * 1.6);
+    line.style.setProperty('--d', delay);
+    lead.appendChild(line);
+
+    const t = document.createElementNS(NS,'text');
+    t.setAttribute('x', p.lx); t.setAttribute('y', p.ly);
+    t.textContent = p.c;
+    if (p.wip) t.classList.add('wip');
+    t.style.setProperty('--d', delay);
+    t.setAttribute('tabindex','0');
+    t.setAttribute('role','button');
+    t.setAttribute('aria-label', p.c + ' — ' + name + ' — ' + pn);
+    lbls.appendChild(t);
+
+    const show = () => {
+      tip.innerHTML = '';
+      const n = document.createElement('div'); n.className = 'tipName'; n.textContent = name;
+      const q = document.createElement('div'); q.className = 'tipPn';   q.textContent = pn;
+      tip.append(n, q);
+      if (p.new) {
+        const w = document.createElement('div'); w.className = 'tipNew';
+        w.textContent = '\u26a0 ' + PART_STR[lang].proposed;
+        tip.appendChild(w);
+      }
+      const st = document.createElement('span');
+      st.className = 'tipStatus ' + (p.wip ? 'wip' : '');
+      st.textContent = PART_STR[lang][p.wip ? 'wip' : 'todo'];
+      tip.appendChild(st);
+      tip.classList.add('show');
+      g.classList.add('on'); t.classList.add('on'); line.classList.add('on');
+      svg.querySelectorAll('.part').forEach(o => { if (o !== g) o.classList.add('dim'); });
+    };
+    const hide = () => {
+      tip.classList.remove('show');
+      g.classList.remove('on'); t.classList.remove('on'); line.classList.remove('on');
+      svg.querySelectorAll('.part').forEach(o => o.classList.remove('dim'));
+    };
+
+    ['mouseenter','focus'].forEach(e => { g.addEventListener(e, show); t.addEventListener(e, show); });
+    ['mouseleave','blur'].forEach(e => { g.addEventListener(e, hide); t.addEventListener(e, hide); });
+  });
+
+  const off = document.querySelector('.offParts');
+  if (off) {
+    off.innerHTML = '';
+    OFF_PARTS.forEach(o => {
+      const el = document.createElement('span');
+      el.className = 'offPart';
+      el.textContent = o.c + ' \u00b7 ' + (lang === 'pt' ? o.pt : o.en);
+      el.title = 'ULF-' + o.c + '-001 \u2014 ' + PART_STR[lang].todo;
+      off.appendChild(el);
+    });
+  }
+}
+
+window.ULF_PARTS = PARTS;
+window.ULF_PART_STR = PART_STR;
+renderPartMap();
+document.querySelectorAll('.lang button').forEach(b =>
+  b.addEventListener('click', () => renderPartMap(b.dataset.lang)));
+
 document.querySelectorAll('.lang button').forEach(btn => btn.addEventListener('click', () => {
   document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b === btn));
   const dict = COPY[btn.dataset.lang] || COPY.en;
@@ -595,5 +861,7 @@ document.querySelectorAll('.lang button').forEach(btn => btn.addEventListener('c
   }
 }));
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.1/three.min.js"></script>
+<script src="assets/js/assembly3d.js"></script>
 </body>
 </html>

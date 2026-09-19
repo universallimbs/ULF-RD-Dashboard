@@ -49,6 +49,73 @@ All reverted by a plain re-fetch. Re-apply after every refresh:
 3. **Team roster** — the export ships 10 people; this repo carries the union
    with the R&D org chart (24), alphabetised by name, with eight new role keys
    added to the `pt` table.
+4. **3D assembly viewer** on the Live reference tab — `assets/js/assembly3d.js`
+   plus an `#arm3d` mount and two script tags in `index.html`. The model is
+   **authored procedurally**, not imported: no CAD export exists yet, and the
+   Thingiverse references could not be licence-checked (their pages sit behind
+   a Cloudflare challenge), so copying that geometry would carry unknown
+   BY-NC-SA obligations. Every mesh is named with its category code, so when a
+   real CAD export arrives you replace `buildAssembly()` with a GLTF load and
+   keep everything else — provided the exported meshes carry the same names.
+
+   Drag to rotate, scroll to zoom, arrow keys to orbit, hover for the part.
+   Falls back to the SVG map below if WebGL is unavailable.
+
+   **Geometry follows printed construction, not smooth primitives.** Phalanges
+   are bevelled extrusions with tendon channels and silicone grip pads; joints
+   are *flexible hinges* rather than snap pins; the cuff and socket are open
+   C-shells with real wall thickness, strap slots and a print seam; the palm is
+   a plate with a cavity. That architecture comes from the published design
+   notes of the two reference designs — see below.
+
+   **Known gap:** `FST` (fasteners) is hard to hit with the cursor; the screws
+   are genuinely tiny. A click-through part list beside the model would fix it.
+   The other sixteen parts pick reliably.
+
+### The reference designs and why their geometry is not used
+
+| Thing | Design | Licence |
+| --- | --- | --- |
+| [4618922](https://www.thingiverse.com/thing:4618922) | **Kinetic Hand** — Free 3D Hands | **CC BY-NC-SA 4.0** |
+| [6525526](https://www.thingiverse.com/thing:6525526) | **Waacs arm for e-NABLE** — SandraDermisek (remix, WIP) | CC (variant not shown on page) |
+
+Universal Limbs is a non-profit, which very likely satisfies **NC** — that term
+turns on commercial advantage or monetary compensation, not on org type. It does
+**not** dispose of the other two:
+
+- **ShareAlike** propagates. Anything derived from that geometry must itself be
+  CC BY-NC-SA 4.0, which would permanently attach NC to ULF's own CAD and rule
+  out a commercial manufacturing partner later.
+- **Attribution** is required wherever it appears.
+- The Kinetic Hand carries a further restriction beyond its licence: released
+  *"for trial and evaluation purposes only"*, *"not classified as a medical
+  device"*, and requires consulting medical professionals before use.
+
+So this model borrows the **documented architecture** — which is published
+information — and none of the geometry. If the foundation decides the terms are
+acceptable, the Kinetic Hand now ships per-component **STEP files** and that
+would give true dimensional fidelity; that is a decision for ULF, not a
+default.
+
+5. **Interactive assembly map** (SVG) on the Live reference tab — replaces the
+   export's `A - 30 SEPT` / `D - 30 SEPT` pills and its hand photo with an
+   inline SVG of the full transradial assembly, terminal device through to the
+   biceps cuff. Every part is a real SVG shape, so hovering highlights the
+   component itself, dims the rest, and shows category name, part number and
+   status from the Category Code Table in `Part Number Standard .pdf`
+   (ULF-DOC-001 Rev A §3). See `PARTS` / `OFF_PARTS` in the inline script.
+
+   **Five codes are proposed, not yet in the table.** Per §9 a new category must
+   be added to the master table before use, so these are marked in the UI with
+   a *proposed code* warning until that happens:
+
+   | Code | Part | Named after |
+   | --- | --- | --- |
+   | `FRM` | Forearm shell | anatomy (antebrachium) |
+   | `ELB` | Elbow hinge | anatomy |
+   | `BIC` | Biceps cuff | anatomy |
+   | `STR` | Strap | function |
+   | `HSG` | Cable housing | function (Bowden conduit) |
 
 (1) and (2) are find-and-replace:
 
@@ -62,7 +129,12 @@ open('index.html', 'w', encoding='utf-8').write(s)
 EOF
 ```
 
-(3) is not — see `git log -p -- index.html` for the roster commit to re-derive it.
+(3) and (4) are not — see `git log -p -- index.html` for those commits to
+re-derive them.
+
+**Part statuses live in one place:** the `wip` flag on each entry in the `PARTS`
+array. Moving a part from not-started to in-progress is a `wip:0` → `wip:1` edit;
+colour, legend and tooltip all follow.
 
 **No longer needed:** the previous export carried a `github.com/…` link that had
 to be repointed. This one has no GitHub link at all.
