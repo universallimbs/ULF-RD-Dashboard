@@ -42,8 +42,8 @@ button,a{font:inherit;color:inherit}
 
 /* slides */
 .stage{position:relative}
-.viewport{overflow:hidden}
-.track{display:flex;transition:transform .4s cubic-bezier(.4,0,.2,1)}
+.viewport{overflow:hidden;transition:height .35s ease}
+.track{display:flex;align-items:flex-start;transition:transform .4s cubic-bezier(.4,0,.2,1)}
 .slide{flex:0 0 100%;width:100%;display:grid;grid-template-columns:44% minmax(0,1fr);gap:24px;align-items:center;padding:0 2px}
 .art{width:100%;display:grid;place-items:center}
 .art img{display:block;width:88%;height:auto;filter:drop-shadow(0 20px 28px rgba(60,45,35,.14))}
@@ -258,7 +258,7 @@ button,a{font:inherit;color:inherit}
 
       <div class="stage">
 
-        <div class="viewport">
+        <div class="viewport" id="viewport">
           <div class="track" id="track">
 
             <article class="slide">
@@ -580,18 +580,29 @@ document.querySelectorAll('.department').forEach(btn => btn.addEventListener('cl
 }));
 
 const track = document.getElementById('track');
+const viewport = document.getElementById('viewport');
 const refs = [...document.querySelectorAll('.reference')];
+const slides = [...track.children];
 const COUNT = refs.length;
 let i = 0;
 
 refs.forEach((r, n) => r.addEventListener('click', () => go(n)));
 
+function sizeViewport() {
+  const current = slides[i];
+  if (current) viewport.style.height = current.offsetHeight + 'px';
+}
+
 function go(n) {
   i = Math.max(0, Math.min(COUNT - 1, n));
   track.style.transform = 'translateX(-' + (i * 100) + '%)';
   refs.forEach((r, k) => r.classList.toggle('active', k === i));
+  sizeViewport();
 }
 go(0);
+window.addEventListener('resize', sizeViewport);
+window.addEventListener('load', sizeViewport);
+track.querySelectorAll('img').forEach(img => img.addEventListener('load', sizeViewport));
 
 
 /* ---------- Finance: live from the published Google Sheet ---------- */
