@@ -485,7 +485,16 @@
       state.fit = need;
       if (!state.zoomed) { state.dist = need; place(); }
     }
-    new ResizeObserver(resize).observe(host);
+    // Coalesced to at most once per animation frame: the dashboard animates
+    // #viewport's height on tab switch (a CSS transition), which would
+    // otherwise fire this on every intermediate layout step. Pure perf guard —
+    // doesn't change what resize() computes, just how often it's called.
+    let resizePending = false;
+    new ResizeObserver(() => {
+      if (resizePending) return;
+      resizePending = true;
+      requestAnimationFrame(() => { resizePending = false; resize(); });
+    }).observe(host);
     resize(); place(); setHighlight(null);
 
     const slow = matchMedia('(prefers-reduced-motion: reduce)').matches;
