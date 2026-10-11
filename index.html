@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Universal Limbs — R&amp;D</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{--ink:#181a1c;--mute:#7d7a77;--orange:#f97316;--line:#e2ded9;--card:#f1eeeb}
 *{box-sizing:border-box}
@@ -183,8 +184,7 @@ button,a{font:inherit;color:inherit}
 .breakdown{display:none;margin-top:12px;background:#f8f6f4;border-radius:18px;padding:20px 22px}
 .breakdown.open{display:block}
 .donutWrap{display:grid;grid-template-columns:150px minmax(0,1fr);gap:22px;align-items:center}
-.donut{position:relative;width:150px;height:150px;border-radius:999px;
-  background:conic-gradient(#14a08a 0 35%,#f2604c 35% 61%,#f5a623 61% 78%,#2f3234 78% 91%,#d3cec9 91% 100%)}
+.donut{position:relative;width:150px;height:150px;border-radius:999px;background:#e2ded9}
 .donutHole{position:absolute;inset:17px;border-radius:999px;background:#f8f6f4;display:grid;place-content:center;text-align:center}
 .donutN{font-size:22px;font-weight:700;letter-spacing:-.8px}
 .donutL{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#7d7975;margin-top:2px}
@@ -226,10 +226,45 @@ button,a{font:inherit;color:inherit}
   .art img{width:60%}
   .copy h1{font-size:24px}
 }
+
+/* auth */
+.authGate{position:fixed;inset:0;background:#e9e6e3;display:grid;place-items:center;z-index:1000;padding:20px}
+.authGate[hidden]{display:none}
+.authBox{background:#faf9f7;border-radius:26px;padding:36px 32px;box-shadow:0 24px 60px #3c2d230f;max-width:360px;width:100%;text-align:center}
+.authBox h1{font-size:20px;margin:0 0 10px}
+.authBox p{font-size:13px;line-height:1.5;color:#55585b;margin:0 0 20px}
+#gsiButton{display:flex;justify-content:center}
+.authMsg{font-size:12px;color:#a15c00;margin-top:16px}
+.authMsg.err{color:#c0392b}
+.accountBar{display:flex;align-items:center;gap:10px;font-size:11px;color:#7d7a77;margin-bottom:10px}
+.accountBar[hidden]{display:none}
+.acctEmail{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.roleBadge{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:#f4f2ef;color:var(--ink)}
+.roleBadge.admin{background:#fde7d4;color:#a15c00}
+.manageLink{font-size:11px;color:var(--orange);text-decoration:none;margin-left:auto}
+.signOutBtn{border:0;background:none;font-size:11px;color:#7d7a77;cursor:pointer;padding:0;margin-left:8px;text-decoration:underline}
+.acctEmail{margin-right:auto}
 </style>
 </head>
 <body>
-<div class="wrap">
+
+<div class="authGate" id="authGate">
+  <div class="authBox">
+    <h1 data-i18n="authTitle">Sign in required</h1>
+    <p data-i18n="authBody">Sign in with your Google account to access the Universal Limbs R&amp;D dashboard.</p>
+    <div id="gsiButton"></div>
+    <p class="authMsg" id="authMsg" hidden></p>
+  </div>
+</div>
+
+<div class="wrap" id="appWrap" hidden>
+
+  <div class="accountBar" id="accountBar" hidden>
+    <span class="acctEmail" id="acctEmail"></span>
+    <span class="roleBadge" id="acctRole"></span>
+    <a class="manageLink" id="manageLink" href="#" target="_blank" rel="noopener" hidden data-i18n="manageAccess">Manage access</a>
+    <button class="signOutBtn" id="signOutBtn" data-i18n="signOut">Sign out</button>
+  </div>
 
   <div class="topbar">
     <nav class="departments" aria-label="Departments">
@@ -493,11 +528,11 @@ button,a{font:inherit;color:inherit}
       <div class="fundRow">
         <div class="fundCard lead">
           <div class="fundL" data-i18n="fAvail">Funds available</div>
-          <div class="fundN">$8,000</div>
+          <div class="fundN" id="fundsAvailable">—</div>
         </div>
         <div class="fundCard clickable" id="spentCard" role="button" tabindex="0">
           <div class="fundL"><span data-i18n="fSpent">Spent to date</span><span class="chev" id="spentChev">&#8250;</span></div>
-          <div class="fundN">$23,000</div>
+          <div class="fundN" id="spentToDate">—</div>
           <div class="fundM" data-i18n="fApprox">Approx.</div>
         </div>
       </div>
@@ -506,16 +541,16 @@ button,a{font:inherit;color:inherit}
         <div class="donutWrap">
           <div class="donut" id="donut">
             <div class="donutHole">
-              <div class="donutN">$23K</div>
+              <div class="donutN" id="donutSpentK">—</div>
               <div class="donutL" data-i18n="fSpent">Spent to date</div>
             </div>
           </div>
           <div class="breakList">
-            <div class="breakRow"><span class="sw" style="background:#14a08a"></span><span data-i18n="e1">Research &amp; development</span><b>$8,000</b></div>
-            <div class="breakRow"><span class="sw" style="background:#f2604c"></span><span data-i18n="e2">Prototyping &amp; materials</span><b>$6,000</b></div>
-            <div class="breakRow"><span class="sw" style="background:#f5a623"></span><span data-i18n="e3">Travel &amp; logistics</span><b>$4,000</b></div>
-            <div class="breakRow"><span class="sw" style="background:#2f3234"></span><span data-i18n="e4">Admin</span><b>$3,000</b></div>
-            <div class="breakRow"><span class="sw" style="background:#d3cec9"></span><span data-i18n="e5">Other</span><b>$2,000</b></div>
+            <div class="breakRow"><span class="sw" style="background:#14a08a"></span><span data-i18n="e1">Research &amp; development</span><b id="e1Amt">—</b></div>
+            <div class="breakRow"><span class="sw" style="background:#f2604c"></span><span data-i18n="e2">Prototyping &amp; materials</span><b id="e2Amt">—</b></div>
+            <div class="breakRow"><span class="sw" style="background:#f5a623"></span><span data-i18n="e3">Travel &amp; logistics</span><b id="e3Amt">—</b></div>
+            <div class="breakRow"><span class="sw" style="background:#2f3234"></span><span data-i18n="e4">Admin</span><b id="e4Amt">—</b></div>
+            <div class="breakRow"><span class="sw" style="background:#d3cec9"></span><span data-i18n="e5">Other</span><b id="e5Amt">—</b></div>
           </div>
         </div>
         <div class="fundM" data-i18n="ePlaceholder">Placeholder split — to be confirmed against the ledger.</div>
@@ -572,6 +607,8 @@ button,a{font:inherit;color:inherit}
   <section class="page placeholder" id="ulf"><div class="card"><h1>ULF</h1><p data-i18n="ready">This department is ready for its content.</p></div></section>
 </div>
 
+<script src="assets/js/config.js"></script>
+<script src="assets/js/submit.js"></script>
 <script>
 document.querySelectorAll('.department').forEach(btn => btn.addEventListener('click', () => {
   document.querySelectorAll('.department,.page').forEach(el => el.classList.remove('active'));
@@ -584,19 +621,51 @@ const viewport = document.getElementById('viewport');
 const refs = [...document.querySelectorAll('.reference')];
 const slides = [...track.children];
 const COUNT = refs.length;
+const LIVE_SLIDE_INDEX = slides.findIndex(s => s.classList.contains('liveSlide'));
 let i = 0;
 
 refs.forEach((r, n) => r.addEventListener('click', () => go(n)));
+
+/**
+ * three.js (~600KB) plus building the full procedural assembly used to load
+ * unconditionally on every page view, Live tab or not — the single biggest
+ * contributor to "the Live tab takes too long to load", since most visits
+ * never touch it. Loaded on demand instead: once when the Live tab is first
+ * opened, or earlier in the background via requestIdleCallback once signed
+ * in, so it's usually already warm by the time someone clicks it. Neither
+ * path changes the model, geometry, or controls in assembly3d.js at all.
+ */
+let liveAssetsPromise = null;
+function ensureLiveAssets() {
+  if (liveAssetsPromise) return liveAssetsPromise;
+  liveAssetsPromise = new Promise((resolve, reject) => {
+    const three = document.createElement('script');
+    three.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.1/three.min.js';
+    three.onload = () => {
+      const assembly = document.createElement('script');
+      assembly.src = 'assets/js/assembly3d.js';
+      assembly.onload = resolve;
+      assembly.onerror = reject;
+      document.body.appendChild(assembly);
+    };
+    three.onerror = reject;
+    document.body.appendChild(three);
+  });
+  return liveAssetsPromise;
+}
+window.ULF_LIVE = { ensureAssets: ensureLiveAssets };
 
 function sizeViewport() {
   const current = slides[i];
   if (current) viewport.style.height = current.offsetHeight + 'px';
 }
+window.ULF_CAROUSEL = { sizeViewport };
 
 function go(n) {
   i = Math.max(0, Math.min(COUNT - 1, n));
   track.style.transform = 'translateX(-' + (i * 100) + '%)';
   refs.forEach((r, k) => r.classList.toggle('active', k === i));
+  if (i === LIVE_SLIDE_INDEX) ensureLiveAssets().then(sizeViewport).catch(() => {});
   sizeViewport();
 }
 go(0);
@@ -605,26 +674,11 @@ window.addEventListener('load', sizeViewport);
 track.querySelectorAll('img').forEach(img => img.addEventListener('load', sizeViewport));
 
 
-/* ---------- Finance: live from the published Google Sheet ---------- */
-/* Sheet › File › Share › Publish to web › Tracker › CSV, then paste that URL here. */
-const FIN_CSV = "https://docs.google.com/spreadsheets/d/1ihMYkOskDxoHKgJluGO3LgG5tfyCxJdDFA3nbi9sZHg/gviz/tq?tqx=out:csv&gid=153656831";
-
-function parseCSV(text) {
-  const rows = []; let row = [], val = '', q = false;
-  for (let k = 0; k < text.length; k++) {
-    const ch = text[k];
-    if (q) {
-      if (ch === '"' && text[k + 1] === '"') { val += '"'; k++; }
-      else if (ch === '"') q = false;
-      else val += ch;
-    } else if (ch === '"') q = true;
-    else if (ch === ',') { row.push(val); val = ''; }
-    else if (ch === '\n') { row.push(val); rows.push(row); row = []; val = ''; }
-    else if (ch !== '\r') val += ch;
-  }
-  row.push(val); rows.push(row);
-  return rows.filter(r => r.some(c => c.trim() !== ''));
-}
+/* ---------- Finance: fetched from Apps Script, admins only ---------- */
+/* See auth.js: loadFinanceData() calls this only after the signed-in user's
+   role has been verified server-side as "admin". Nothing here fetches a
+   public URL any more — the old published-CSV link should be turned off in
+   the Sheet (File › Share › Publish to web) once this is deployed. */
 
 let FIN = { asof: '', note: 'loading' };
 function finStrings() {
@@ -662,23 +716,48 @@ function paintFinance(body, asof, note) {
   paintFinMeta();
 }
 
-function renderFinance(rows) {
-  const num = (v) => { const n = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? 0 : n; };
-  const headIdx = rows.findIndex(r => /branch/i.test(r[0] || ''));
-  if (headIdx === -1) throw new Error('no header row');
-  const asof = rows.slice(0, headIdx).map(r => r[0]).filter(Boolean)[0];
-  const body = rows.slice(headIdx + 1)
-    .filter(r => (r[0] || '').trim() && !/^total$/i.test(r[0].trim()))
-    .map(r => [r[0], num(r[1]), num(r[2]), num(r[3]), num(r[4]), (r[5] || '').trim() === '' ? '' : num(r[5])]);
-  paintFinance(body, asof, 'live');
+const BREAKDOWN_COLORS = ['#14a08a', '#f2604c', '#f5a623', '#2f3234', '#d3cec9'];
+const BREAKDOWN_AMT_IDS = ['e1Amt', 'e2Amt', 'e3Amt', 'e4Amt', 'e5Amt'];
+// null/undefined means "not available yet" (no live source wired up), not zero —
+// showing $0 would fabricate a figure nobody actually reported.
+const money = (n) => n == null ? '—' : '$' + Math.round(n).toLocaleString('en-US');
+
+/** Renders the fund totals + donut + breakdown list from an admin-only Apps Script response. */
+function paintFinHeadline(data) {
+  document.getElementById('fundsAvailable').textContent = money(data.fundsAvailable);
+  document.getElementById('spentToDate').textContent = money(data.spentToDate);
+  document.getElementById('donutSpentK').textContent = data.spentToDate == null ? '—' : '$' + Math.round(data.spentToDate / 1000) + 'K';
+
+  const breakdown = data.breakdown || [];
+  if (!breakdown.length) {
+    BREAKDOWN_AMT_IDS.forEach(id => { document.getElementById(id).textContent = '—'; });
+    return; // leave the donut as its neutral default — no fabricated split
+  }
+  const total = breakdown.reduce((sum, b) => sum + (b.amount || 0), 0) || 1;
+  let pos = 0;
+  const stops = breakdown.map((b, k) => {
+    const start = pos, end = pos + ((b.amount || 0) / total) * 100;
+    pos = end;
+    document.getElementById(BREAKDOWN_AMT_IDS[k]).textContent = money(b.amount);
+    return BREAKDOWN_COLORS[k] + ' ' + start.toFixed(2) + '% ' + end.toFixed(2) + '%';
+  });
+  if (stops.length) document.getElementById('donut').style.background = 'conic-gradient(' + stops.join(',') + ')';
 }
 
-fetch(FIN_CSV)
-  .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-  .then(t => renderFinance(parseCSV(t)))
-  .catch(() => {
-    paintFinance([['Grants',0,2,0,0,2],['Sponsorships',0,0,0,0,0],['Donors',0,0,0,0,3],['Partnerships',0,2,0,0,0],['Admin',3,2,0,0,5],['Fundraising',2,1,0,0,3],['Charitable Status',1,0,0,0,1]], finStrings().fallbackAsof, 'stale');
-  });
+function renderFinance(data) {
+  paintFinHeadline(data);
+  paintFinance(data.byBranch || [], data.asof, 'live');
+}
+
+/** Clears the stuck "Loading tracker…" placeholder and shows why Finance didn't load. */
+function showFinanceError(message) {
+  const asof = document.getElementById('finAsof');
+  if (asof) asof.textContent = '';
+  const note = document.getElementById('finNote');
+  if (note) note.textContent = message;
+}
+
+window.ULF_FIN = { renderFinance, finStrings, paintFinMeta, showFinanceError };
 
 (function () {
   const card = document.getElementById('spentCard');
@@ -725,7 +804,9 @@ const COPY = {
     legWip: "Em curso", legTodo: "Por iniciar", offParts: "Não assinalados no diagrama",
     roleAdvisor: "Consultor", roleBio: "Biomédica", roleConcept: "Arte conceptual", roleDirRD: "Diretora de I&D", roleMvp2: "Líder MVP 2", roleProg: "Líder de programa", roleResearch: "Investigação", roleTest: "Eng. de testes",
     aDown: "Descarregar", aUp: "Enviar", aLinks: "Ligações e atas",
-    ready: "Este departamento está pronto para o seu conteúdo."
+    ready: "Este departamento está pronto para o seu conteúdo.",
+    authTitle: "Sessão necessária", authBody: "Inicie sessão com a sua conta Google para aceder ao painel de I&D da Universal Limbs.",
+    manageAccess: "Gerir acessos", signOut: "Terminar sessão"
   }
 };
 document.querySelectorAll('[data-i18n]').forEach(el => { COPY.en[el.dataset.i18n] = el.textContent; });
@@ -872,7 +953,6 @@ document.querySelectorAll('.lang button').forEach(btn => btn.addEventListener('c
   }
 }));
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.1/three.min.js"></script>
-<script src="assets/js/assembly3d.js"></script>
+<script src="assets/js/auth.js"></script>
 </body>
 </html>

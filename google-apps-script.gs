@@ -17,13 +17,20 @@
  *   1. script.google.com -> New project -> paste this file in.
  *   2. Project Settings -> Script properties. Add:
  *        DELIVERABLE_SHEET_ID          id of the deliverables Google Sheet
- *        SURVEY_SHEET_ID               id of the survey Google Sheet
  *        DOWNLOAD_SHEET_ID             id of the download-responses Google Sheet
  *        DELIVERABLE_PARENT_FOLDER_ID  Drive folder submissions are filed under
  *                                      (the R&D folder works: 14iGYmt91YZmHAzsnil6HtJv8Nu5YTF6X)
  *        REVIEWERS_JSON                see reviewerTemplate() at the bottom
  *        FALLBACK_REVIEWER_EMAIL       gets "Other" and any misrouted submission
- *      Optional: ALLOWED_MAIL_DOMAINS, DAILY_SUBMISSION_CAP, ACK_SUBMITTERS
+ *        GOOGLE_CLIENT_ID              the OAuth Web client ID from Google Cloud
+ *                                      Console — must match the one in assets/js/config.js
+ *        USERS_SHEET_ID                id of the Sheet with an "email" / "role" tab
+ *                                      named "Users" (role is "admin" or "member")
+ *        FINANCE_SHEET_ID              id of the Finance Tracker Google Sheet
+ *        FINANCE_SHEET_GID             numeric gid of its "Tracker" tab (from its URL)
+ *      Optional: ALLOWED_MAIL_DOMAINS (default universallimbs.com — also doubles as the
+ *                "automatic member" Workspace domain list, see resolveRole() below),
+ *                DAILY_SUBMISSION_CAP, ACK_SUBMITTERS
  *   3. Run setup() once and read the execution log. It lists whatever is still
  *      missing or malformed instead of failing at submit time.
  *   4. Deploy -> New deployment -> Web app
@@ -39,6 +46,49 @@
  *   the browser sends a reviewer *id*, never an address, so this endpoint can
  *   only mail people on its own allowlist. It cannot be used as an open relay.
  *
+ * ROLE-BASED ACCESS (Finance tab, every web-app submission action, and everything resolveRole() gates)
+ *   This project is the INTERNAL dashboard's backend only. The patient-facing
+ *   survey (prosthetic-user-survey.html) belongs to the public main ULF
+ *   website, not this dashboard, and has no action here — if that page's real,
+ *   live version needs a backend, it must get its own separate Apps Script
+ *   deployment and its own submissionEndpoint, never this one. (That file still
+ *   lives in this repo and currently points its config at the same
+ *   submissionEndpoint as the dashboard; pointing it at *this* deployment would
+ *   break it, by design, since survey is intentionally absent below.)
+ *
+ *   Every remaining submission action (deliverable/download/upload) requires a
+ *   signed-in, approved account (member or admin). None of them are called by
+ *   any page in this repo today, so leaving them open under an
+ *   "Execute as: Me" deployment would let an unauthenticated request file
+ *   Drive uploads and send email through the deploying account for no reason.
+ *   External university collaborators have their own, separate, isolated path:
+ *   the Google Form -> onFormSubmit trigger below, which never goes through
+ *   doPost and carries Google Form's own abuse protections.
+ *
+ *   whoAmI is necessarily reachable without an approved role already in place
+ *   — that's the check that determines approval, so it can't itself require
+ *   being pre-approved. It only ever returns the caller's own email/role,
+ *   resolved from a cryptographically verified token, never arbitrary data.
+ *   doGet is also reachable without auth, but only ever returns a
+ *   non-identifying list of which script properties are missing, for
+ *   diagnosing setup — no user, financial, or Sheet data.
+ *
+ *   The browser never decides who sees Finance data — it only decides which tabs
+ *   to *show*, which is cosmetic. The real gate is here: every request carries a
+ *   Google Sign-In ID token, this file verifies it against Google (tokeninfo
+ *   endpoint, no library needed) to get a trustworthy email address — the
+ *   browser's own claim of who it is is never trusted — and resolveRole()
+ *   turns that into a role:
+ *     - "admin" in the Users sheet always wins, any domain.
+ *     - "member" in the Users sheet approves an external (non-Workspace) account.
+ *     - unlisted but on an ALLOWED_MAIL_DOMAINS domain (default
+ *       universallimbs.com) -> member automatically, no Users row needed.
+ *     - unlisted and off-domain -> denied.
+ *   A "member" (or anyone unapproved) calling financeData directly — bypassing
+ *   the UI entirely — gets the same rejection the hidden tab implies.
+ *   IMPORTANT: once this is live, turn OFF "Publish to web" on the Finance
+ *   Tracker sheet — that old CSV link bypasses this check completely.
+ *
  * NOTE ON STATUS CODES
  *   ContentService cannot set an HTTP status, so every response is 200 and the
  *   real outcome is the `ok` field in the JSON body. Clients must check the body.
@@ -46,7 +96,6 @@
 
 const PROPS = PropertiesService.getScriptProperties();
 
-const P_SURVEY_SHEET  = 'SURVEY_SHEET_ID';
 const P_DELIV_SHEET   = 'DELIVERABLE_SHEET_ID';
 const P_DOWNLOAD_SHEET = 'DOWNLOAD_SHEET_ID';
 const P_DRIVE_PARENT  = 'DELIVERABLE_PARENT_FOLDER_ID';
@@ -56,6 +105,14 @@ const P_DOMAINS       = 'ALLOWED_MAIL_DOMAINS';
 const P_DAILY_CAP     = 'DAILY_SUBMISSION_CAP';
 const P_ACK           = 'ACK_SUBMITTERS';
 const P_FORM_ID       = 'FORM_ID';
+
+const P_GOOGLE_CLIENT_ID = 'GOOGLE_CLIENT_ID';
+const P_USERS_SHEET      = 'USERS_SHEET_ID';
+const P_FIN_SHEET        = 'FINANCE_SHEET_ID';
+const P_FIN_GID          = 'FINANCE_SHEET_GID';
+
+const ROLE_ADMIN  = 'admin';
+const ROLE_MEMBER = 'member';
 
 const MAX_FILE_BYTES    = 10 * 1024 * 1024;   // matches the 10 MB limit in the UI
 const UPLOAD_MAX_BYTES  = 20 * 1024 * 1024;   // the Upload panel advertises 20 MB
@@ -75,19 +132,20 @@ function doGet() {
 }
 
 function doPost(event) {
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) {
-    return json({ ok: false, error: 'The form is busy. Please try again in a moment.' });
-  }
   try {
     const request = parseRequest(event);
     throttle();
 
-    if (request.type === 'deliverable') return json({ ok: true, result: handleDeliverable(request.payload) });
-    if (request.type === 'survey')      return json({ ok: true, result: handleSurvey(request.payload) });
-    if (request.type === 'download')    return json({ ok: true, result: handleDownload(request.payload) });
-    if (request.type === 'upload')      return json({ ok: true, result: handleUpload(request.payload) });
-    throw new PublicError('Unsupported submission type.');
+    // Read-only, auth-checked calls: no write lock needed, kept fast.
+    if (request.type === 'whoAmI')      return json({ ok: true, result: handleWhoAmI(request.payload) });
+    if (request.type === 'financeData') return json({ ok: true, result: handleFinanceData(request.payload) });
+
+    return withLock(function () {
+      if (request.type === 'deliverable') return json({ ok: true, result: handleDeliverable(request.payload) });
+      if (request.type === 'download')    return json({ ok: true, result: handleDownload(request.payload) });
+      if (request.type === 'upload')      return json({ ok: true, result: handleUpload(request.payload) });
+      throw new PublicError('Unsupported submission type.');
+    });
   } catch (error) {
     logFailure(error, event);
     return json({
@@ -95,6 +153,16 @@ function doPost(event) {
       error: error && error.isPublic ? error.message
                                      : 'We could not record this submission. Please contact the R&D team.'
     });
+  }
+}
+
+function withLock(fn) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    return json({ ok: false, error: 'The form is busy. Please try again in a moment.' });
+  }
+  try {
+    return fn();
   } finally {
     lock.releaseLock();
   }
@@ -117,6 +185,18 @@ function parseRequest(event) {
 // -------------------------------------------------------------------- handlers
 
 function handleDeliverable(payload) {
+  // Not called by any live page today — nothing public needs this open, and
+  // "Execute as: Me" means an unauthenticated hit here could file Drive
+  // uploads and send email under your account. External collaborators should
+  // use the Google Form (onFormSubmit below), which is a separate, isolated
+  // path with its own abuse protections.
+  const user = verifyIdToken(payload.idToken);
+  if (!resolveRole(user.email)) throw new PublicError('You do not have access to submit here.');
+  return doHandleDeliverable(payload);
+}
+
+/** The deliverable pipeline itself, separated out so selfTest() can exercise it directly. */
+function doHandleDeliverable(payload) {
   const required = ['submitterName', 'organization', 'taskName', 'submissionType',
                     'version', 'changes', 'recipientEmail', 'nextSteps', 'fileName', 'fileBase64'];
   const missing = required.filter(field => !String(payload[field] || '').trim());
@@ -166,6 +246,13 @@ function handleDeliverable(payload) {
  * check in app.js is only there to fail fast.
  */
 function handleUpload(payload) {
+  // Unlike deliverable/survey/download (intentionally public — external
+  // collaborators without ULF accounts), the Upload panel is an internal
+  // dashboard feature with no documented external use case, so it requires a
+  // signed-in, approved account (either role) rather than being open to anyone.
+  const user = verifyIdToken(payload.idToken);
+  if (!resolveRole(user.email)) throw new PublicError('You do not have access to upload files here.');
+
   if (!payload.fileBase64 || !payload.fileName) throw new PublicError('No file was received.');
 
   const bytes = Utilities.base64Decode(payload.fileBase64);
@@ -198,6 +285,10 @@ function handleUpload(payload) {
  * the collaboration coordinator, because the point is programme-level tracking.
  */
 function handleDownload(payload) {
+  // Same reasoning as handleDeliverable — unused by any live page today.
+  const user = verifyIdToken(payload.idToken);
+  if (!resolveRole(user.email)) throw new PublicError('You do not have access to submit here.');
+
   const required = ['packageName', 'submitterName', 'organization', 'status', 'workDone'];
   const missing = required.filter(field => !String(payload[field] || '').trim());
   if (missing.length) throw new PublicError('Please complete every required field.');
@@ -227,12 +318,175 @@ function handleDownload(payload) {
   return { recorded: true, fileUrl: record.fileUrl };
 }
 
-function handleSurvey(payload) {
-  if (payload.consent !== true) throw new PublicError('Consent is required to submit the survey.');
-  const record = Object.assign({ submittedAt: new Date() }, payload);
-  delete record.website;
-  appendKeyedRow(sheetFor(P_SURVEY_SHEET, 'Survey responses'), record);
-  return { recorded: true };
+// ------------------------------------------------------- authentication & roles
+
+/**
+ * Who the browser says it is, resolved into a role it cannot forge.
+ *
+ * Returns role: null for a signed-in-but-unapproved account rather than
+ * throwing, so the dashboard can show "not authorized yet" instead of a
+ * generic error. manageUrl is only included for admins, and points at the
+ * Users sheet directly — there is no in-app role editor, the sheet IS the
+ * editor, so this is the one thing worth handing back.
+ */
+function handleWhoAmI(payload) {
+  const user = verifyIdToken(payload.idToken);
+  const role = resolveRole(user.email);
+  const result = { email: user.email, role: role || null };
+  if (role === ROLE_ADMIN) {
+    const sheetId = PROPS.getProperty(P_USERS_SHEET);
+    if (sheetId) result.manageUrl = 'https://docs.google.com/spreadsheets/d/' + sheetId + '/edit';
+  }
+  return result;
+}
+
+/**
+ * The actual Finance gate. Hiding the tab in the UI is cosmetic only — this is
+ * what stops a member (or anyone else) from getting the figures by calling the
+ * endpoint directly, with or without the dashboard loaded at all.
+ */
+function handleFinanceData(payload) {
+  const user = verifyIdToken(payload.idToken);
+  const role = resolveRole(user.email);
+  if (role !== ROLE_ADMIN) throw new PublicError('You do not have access to Finance data.');
+  return readFinanceData();
+}
+
+/**
+ * The access policy, applied to an already-verified email (never a
+ * browser-supplied one — see verifyIdToken):
+ *   1. Listed as "admin" in the Users sheet -> admin, no matter the domain.
+ *      Admin always wins, even over a workspace account that would otherwise
+ *      default to member.
+ *   2. Listed as "member" in the Users sheet -> member. This is how an
+ *      approved external (non-workspace) Gmail account gets in at all.
+ *   3. Not listed, but the email's domain is one of ALLOWED_MAIL_DOMAINS
+ *      (defaults to universallimbs.com) -> member automatically. Every
+ *      verified Workspace account gets in without needing a Users row.
+ *   4. Anything else (an external account with no Users row) -> null,
+ *      denied. The sheet is the only way in for non-Workspace accounts.
+ */
+function resolveRole(email) {
+  // The Users sheet grants admin and approves external accounts, but a
+  // verified Workspace account's default member access should not depend on
+  // that sheet being reachable — so a lookup problem here falls through to
+  // the domain check below instead of denying every sign-in.
+  let sheetRole = null;
+  try {
+    sheetRole = getUserRole(email);
+  } catch (error) {
+    console.error('Users sheet lookup failed (' + error.message + '); falling back to domain default for ' + email);
+  }
+  if (sheetRole === ROLE_ADMIN) return ROLE_ADMIN;
+  if (sheetRole === ROLE_MEMBER) return ROLE_MEMBER;
+
+  const domain = String(email || '').split('@')[1] || '';
+  if (allowedDomains().indexOf(domain.toLowerCase()) !== -1) return ROLE_MEMBER;
+
+  return null;
+}
+
+/**
+ * Verifies a Google Identity Services ID token the browser just received at
+ * sign-in. Uses Google's own tokeninfo endpoint rather than a JWT library —
+ * one UrlFetchApp call, no crypto code to maintain. Low-volume use (one check
+ * per sign-in, not per click) is exactly what Google documents this for.
+ */
+function verifyIdToken(idToken) {
+  if (!idToken) throw new PublicError('Please sign in with Google first.');
+  const clientId = PROPS.getProperty(P_GOOGLE_CLIENT_ID);
+  if (!clientId) throw new PublicError('Sign-in is not configured yet. Please contact an administrator.');
+
+  const response = UrlFetchApp.fetch(
+    'https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken),
+    { muteHttpExceptions: true }
+  );
+  if (response.getResponseCode() !== 200) {
+    throw new PublicError('Your session has expired. Please sign in again.');
+  }
+
+  let claims;
+  try { claims = JSON.parse(response.getContentText()); } catch (error) {
+    throw new PublicError('Your session could not be verified. Please sign in again.');
+  }
+
+  // tokeninfo already refuses a 200 for a token that fails signature, issuer
+  // or expiry checks — these are re-checked explicitly anyway so the security
+  // property is visible in this file's code, not just implied by trusting the
+  // endpoint's behavior.
+  if (claims.iss !== 'https://accounts.google.com' && claims.iss !== 'accounts.google.com') {
+    throw new PublicError('Your session could not be verified. Please sign in again.');
+  }
+  if (claims.aud !== clientId) {
+    throw new PublicError('Your session could not be verified. Please sign in again.');
+  }
+  const exp = Number(claims.exp || 0);
+  if (!exp || exp * 1000 <= Date.now()) {
+    throw new PublicError('Your session has expired. Please sign in again.');
+  }
+  if (claims.email_verified !== 'true' && claims.email_verified !== true) {
+    throw new PublicError('Your Google account email is not verified.');
+  }
+  return { email: String(claims.email || '').toLowerCase(), name: claims.name || claims.email };
+}
+
+/** Looks an already-verified email up in the Users sheet. Null = not approved. */
+function getUserRole(email) {
+  const sheetId = PROPS.getProperty(P_USERS_SHEET);
+  if (!sheetId) throw new PublicError('User roles are not configured yet. Please contact an administrator.');
+  const sheet = SpreadsheetApp.openById(sheetId).getSheetByName('Users');
+  if (!sheet) throw new PublicError('User roles are not configured yet. Please contact an administrator.');
+
+  const values = sheet.getDataRange().getValues();
+  if (!values.length) return null;
+  const header = values[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
+  const emailCol = header.indexOf('email');
+  const roleCol = header.indexOf('role');
+  if (emailCol === -1 || roleCol === -1) return null;
+
+  const target = String(email || '').toLowerCase();
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][emailCol] || '').trim().toLowerCase() === target) {
+      const role = String(values[i][roleCol] || '').trim().toLowerCase();
+      return (role === ROLE_ADMIN || role === ROLE_MEMBER) ? role : null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Reads the Finance Tracker sheet directly (not its old public CSV link) and
+ * returns plain JSON the dashboard can render without fetching or parsing
+ * anything itself.
+ *
+ * fundsAvailable/spentToDate/breakdown are intentionally always null/empty —
+ * there is no hardcoded placeholder data here any more (there used to be, via
+ * a script property). Those headline figures will come from a live Google
+ * Sheets reporting copy synced from an Excel workbook once that pipeline
+ * exists; until then the dashboard shows "not yet available" rather than a
+ * fabricated number. The "by branch" table below is already a real, live
+ * read of the existing Tracker sheet, unaffected by this.
+ */
+function readFinanceData() {
+  const sheetId = PROPS.getProperty(P_FIN_SHEET);
+  if (!sheetId) throw new PublicError('Finance data is not configured yet. Please contact an administrator.');
+  const book = SpreadsheetApp.openById(sheetId);
+  const gid = Number(PROPS.getProperty(P_FIN_GID) || 0);
+  const sheet = book.getSheets().filter(function (s) { return s.getSheetId() === gid; })[0] || book.getSheets()[0];
+
+  const rows = sheet.getDataRange().getValues();
+  const headIdx = rows.findIndex(function (r) { return /branch/i.test(String(r[0] || '')); });
+  if (headIdx === -1) throw new PublicError('Finance tracker sheet is missing its "Branch" header row.');
+
+  const num = function (v) { const n = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? 0 : n; };
+  const asof = rows.slice(0, headIdx).map(function (r) { return r[0]; }).filter(Boolean)[0] || '';
+  const byBranch = rows.slice(headIdx + 1)
+    .filter(function (r) { return String(r[0] || '').trim() && !/^total$/i.test(String(r[0]).trim()); })
+    .map(function (r) {
+      return [r[0], num(r[1]), num(r[2]), num(r[3]), num(r[4]), String(r[5] || '').trim() === '' ? '' : num(r[5])];
+    });
+
+  return { asof: asof, byBranch: byBranch, fundsAvailable: null, spentToDate: null, breakdown: [] };
 }
 
 // ------------------------------------------------------------------- reviewers
@@ -694,7 +948,7 @@ function configReport() {
   const problems = [];
   const domains = allowedDomains();
 
-  [[P_DELIV_SHEET, 'deliverable sheet'], [P_SURVEY_SHEET, 'survey sheet'],
+  [[P_DELIV_SHEET, 'deliverable sheet'],
    [P_DOWNLOAD_SHEET, 'download responses sheet'],
    [P_DRIVE_PARENT, 'Drive parent folder']].forEach(function (pair) {
     if (!PROPS.getProperty(pair[0])) problems.push('Missing script property ' + pair[0] + ' (' + pair[1] + ').');
@@ -722,6 +976,10 @@ function configReport() {
   });
   if (!hasTrigger) problems.push('No form-submit trigger installed — run installFormTrigger() if you use the Google Form.');
 
+  if (!PROPS.getProperty(P_GOOGLE_CLIENT_ID)) problems.push('Missing script property GOOGLE_CLIENT_ID — sign-in will fail.');
+  if (!PROPS.getProperty(P_USERS_SHEET)) problems.push('Missing script property USERS_SHEET_ID — no one can be granted admin, and external (non-Workspace) accounts cannot be approved.');
+  if (!PROPS.getProperty(P_FIN_SHEET)) problems.push('Missing script property FINANCE_SHEET_ID — the Finance tab will error for admins.');
+
   return { ready: problems.length === 0, problems: problems };
 }
 
@@ -739,9 +997,46 @@ function reviewerTemplate() {
   };
 }
 
-/** Files a fake deliverable end to end so you can verify Drive/Sheet/mail wiring. */
+/**
+ * Run this in the Apps Script editor (Run -> selfTestRoles) to check the
+ * access policy against real addresses WITHOUT needing a live Google sign-in.
+ * Requires USERS_SHEET_ID (and ideally ALLOWED_MAIL_DOMAINS) to already be
+ * set. Edit the `cases` list below to match whoever you want to check.
+ */
+function selfTestRoles() {
+  const cases = [
+    'rasna@universallimbs.com',
+    'vlmantha13@gmail.com',
+    'someone-unlisted@gmail.com',
+    'random-person@universallimbs.com'
+  ];
+  cases.forEach(function (email) {
+    console.log(email + ' -> ' + (resolveRole(email) || 'DENIED'));
+  });
+}
+
+/**
+ * Run this in the Apps Script editor (Run -> selfTestFinance) to see exactly
+ * what the Finance tab would receive, without needing a live sign-in. Calls
+ * readFinanceData() directly, bypassing the role check in handleFinanceData()
+ * — safe here since this only runs when you deliberately execute it from the
+ * editor. If the sheet's shape doesn't match what's expected, this throws the
+ * exact same error the dashboard would show, so you can fix the sheet (not
+ * the code) if that's the actual problem.
+ */
+function selfTestFinance() {
+  const result = readFinanceData();
+  console.log(JSON.stringify(result, null, 2));
+  return result;
+}
+
+/** Files a fake deliverable end to end so you can verify Drive/Sheet/mail wiring.
+ * Calls doHandleDeliverable() directly (skipping the auth check in
+ * handleDeliverable()) since this runs as a developer in the Apps Script
+ * editor, not through doPost, and has no ID token to present.
+ */
 function selfTest() {
-  const result = handleDeliverable({
+  const result = doHandleDeliverable({
     submitterName: 'Self test', submitterEmail: '', organization: 'ULF internal',
     taskName: 'Pipeline self test', submissionType: 'Concept', version: 'v0.0',
     changes: 'Automated self test — safe to delete.', nextSteps: 'Review',
