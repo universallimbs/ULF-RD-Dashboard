@@ -58,7 +58,12 @@ All reverted by a plain re-fetch. Re-apply after every refresh:
    real CAD export arrives you replace `buildAssembly()` with a GLTF load and
    keep everything else — provided the exported meshes carry the same names.
 
-   Drag to rotate, scroll to zoom, arrow keys to orbit, hover for the part.
+   Mouse: drag to rotate, scroll to zoom, arrow keys to orbit, hover for the
+   part. Touch: one finger orbits (both axes), two fingers pinch-zoom, tap a
+   part to select it (its card pins to the top of the viewer so a finger never
+   covers it), double-tap to reset the view. The viewer sets `touch-action:none`,
+   so it captures touch; the page scrolls by swiping outside it. Gestures are
+   Pointer Events in `assembly3d.js` and `pointercancel` is handled.
    Falls back to the SVG map below if WebGL is unavailable.
 
    **Geometry follows printed construction, not smooth primitives.** Phalanges

@@ -375,28 +375,84 @@
     model.position.sub(centre);
 
     // ---- orbit (hand-rolled: avoids a second CDN dependency) ----
-    const state = { az: 0.12, el: 0.20, dist: radius * 2.5, drag: false, px: 0, py: 0, idle: true };
+    const state = { az: 0.12, el: 0.20, dist: radius * 2.5, px: 0, py: 0, idle: true, zoomed: false };
     function place() {
       const d = state.dist, ce = Math.cos(state.el);
       camera.position.set(d * ce * Math.sin(state.az), d * Math.sin(state.el), d * ce * Math.cos(state.az));
       camera.lookAt(0, 0, 0);
     }
-    const down = e => { state.drag = true; state.idle = false; state.px = e.clientX; state.py = e.clientY;
-                        host.setPointerCapture && host.setPointerCapture(e.pointerId); };
-    const move = e => {
-      if (!state.drag) { hover(e); return; }
-      state.az -= (e.clientX - state.px) * 0.008;
-      state.el = Math.max(-1.2, Math.min(1.2, state.el + (e.clientY - state.py) * 0.006));
-      state.px = e.clientX; state.py = e.clientY; place();
+    const clampDist = d => Math.max(radius * 1.1, Math.min(radius * 4, d));
+    function resetView() {
+      state.az = 0.12; state.el = 0.20; state.zoomed = false;
+      state.dist = state.fit || radius * 2.5; place();
+    }
+
+    // Pointer events cover mouse, pen and touch. One pointer orbits, two pinch
+    // (and keep orbiting by their midpoint), a short still touch is a "tap".
+    const pts = new Map();               // pointerId -> {x, y}
+    let pinch = 0, gesture = null, lastTap = { t: 0, x: 0, y: 0 };
+    const centroid = () => {
+      let x = 0, y = 0; pts.forEach(p => { x += p.x; y += p.y; });
+      return { x: x / pts.size, y: y / pts.size };
     };
-    const up = () => { state.drag = false; };
+    const spread = () => {
+      const [a, b] = [...pts.values()];
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    };
+    // Re-baseline whenever the finger count changes, so the model never jumps.
+    function rebase() {
+      const c = centroid(); state.px = c.x; state.py = c.y;
+      pinch = pts.size >= 2 ? spread() : 0;
+    }
+    const down = e => {
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      state.idle = false;
+      if (pts.size === 1) gesture = { t: performance.now(), x: e.clientX, y: e.clientY, moved: false };
+      else if (gesture) gesture.moved = true;
+      rebase();
+      try { host.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ }
+    };
+    const move = e => {
+      if (!pts.has(e.pointerId)) { if (e.pointerType !== 'touch') hover(e); return; }
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const c = centroid();
+      state.az -= (c.x - state.px) * 0.008;
+      state.el = Math.max(-1.2, Math.min(1.2, state.el + (c.y - state.py) * 0.006));
+      state.px = c.x; state.py = c.y;
+      if (pts.size >= 2) {
+        const d = spread();
+        if (pinch && d) { state.dist = clampDist(state.dist * pinch / d); state.zoomed = true; }
+        pinch = d;
+      }
+      if (gesture && Math.hypot(e.clientX - gesture.x, e.clientY - gesture.y) > 8) gesture.moved = true;
+      place();
+    };
+    const end = e => {
+      if (!pts.has(e.pointerId)) return;
+      pts.delete(e.pointerId);
+      const cancelled = e.type !== 'pointerup';
+      if (pts.size) { rebase(); return; }
+      const g = gesture; gesture = null;
+      if (!g || cancelled || g.moved || e.pointerType !== 'touch') return;
+      const now = performance.now();
+      if (now - g.t > 350) return;                 // a long press is not a tap
+      if (now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30) {
+        lastTap.t = 0; resetView(); hover(e, true); // double-tap: reset and clear
+        return;
+      }
+      lastTap = { t: now, x: e.clientX, y: e.clientY };
+      hover(e);                                    // tap: pick the part under the finger
+    };
     host.addEventListener('pointerdown', down);
     host.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+    host.addEventListener('lostpointercapture', end);
+    host.addEventListener('dblclick', resetView);
     host.addEventListener('wheel', e => {
       e.preventDefault();
       state.zoomed = true;
-      state.dist = Math.max(radius * 1.1, Math.min(radius * 4, state.dist + e.deltaY * 0.05));
+      state.dist = clampDist(state.dist + e.deltaY * 0.05);
       place();
     }, { passive: false });
 
@@ -431,13 +487,13 @@
       });
     }
 
-    function hover(e) {
+    function hover(e, clear) {
       const r = host.getBoundingClientRect();
       ptr.x = ((e.clientX - r.left) / r.width) * 2 - 1;
       ptr.y = -((e.clientY - r.top) / r.height) * 2 + 1;
       ray.setFromCamera(ptr, camera);
       const hit = ray.intersectObjects(model.children, true)[0];
-      const code = hit && hit.object.userData.code;
+      const code = !clear && hit && hit.object.userData.code;
       if (code === current) return;
       current = code || null;
       setHighlight(current);
@@ -466,7 +522,8 @@
       tip.style.top  = (e.clientY - r.top) + 'px';
     }
 
-    host.addEventListener('pointerleave', () => {
+    host.addEventListener('pointerleave', e => {
+      if (e.pointerType === 'touch') return;   // a lifted finger leaves; keep the tap selection
       current = null; setHighlight(null);
       if (tip) tip.classList.remove('show');
     });

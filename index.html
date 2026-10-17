@@ -57,7 +57,8 @@ button,a{font:inherit;color:inherit}
 .slide.liveSlide{display:block}
 .arm3d{position:relative;width:100%;aspect-ratio:21/9;min-height:260px;cursor:grab;
   border-radius:20px;background:linear-gradient(180deg,#f7f5f2,#ebe8e4);overflow:hidden;
-  touch-action:pan-y;outline:none}
+  touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  -webkit-tap-highlight-color:transparent;outline:none}
 .arm3d:active{cursor:grabbing}
 .arm3d canvas{display:block;width:100%;height:100%}
 .arm3d:focus-visible{box-shadow:0 0 0 2px var(--orange)}
@@ -65,6 +66,12 @@ button,a{font:inherit;color:inherit}
   font-size:10px;color:#9a9691;background:#ffffffcc;border-radius:999px;padding:5px 11px}
 .arm3d .partTip{left:0;top:0;bottom:auto;transform:translate(12px,-50%)}
 .arm3d .partTip.show{transform:translate(12px,-50%)}
+.hintTouch{display:none}
+@media (pointer:coarse){
+  .hintMouse{display:none}.hintTouch{display:inline}
+  /* a finger would cover a pointer-anchored tooltip: pin it top-centre instead */
+  .arm3d .partTip,.arm3d .partTip.show{left:50%!important;top:10px!important;transform:translateX(-50%)}
+}
 .arm3d.ready ~ .svgFallback{display:none}
 /* Part Number Standard table (ULF-DOC-001 §3), under the 3D view */
 .pnsBlock{margin-top:22px}
@@ -350,7 +357,7 @@ button,a{font:inherit;color:inherit}
               <div>
               <div class="art liveArt" id="partMap">
                 <div id="arm3d" class="arm3d" role="img" aria-label="Rotatable 3D model of the transradial assembly">
-                  <div class="arm3dHint"><span data-i18n="dragHint">Drag to rotate · scroll to zoom · hover a part</span></div>
+                  <div class="arm3dHint"><span class="hintMouse" data-i18n="dragHint">Drag to rotate · scroll to zoom · hover a part</span><span class="hintTouch" data-i18n="dragHintTouch">Drag to rotate · pinch to zoom · tap a part · double-tap to reset</span></div>
                   <div class="partTip" id="arm3dTip"></div>
                 </div>
                 <div class="handBox svgFallback">
@@ -835,6 +842,7 @@ const COPY = {
     roleUni: "Universidades", roleCad: "CAD 3D", roleDocs: "Documentação",
     roleProsthetics: "Próteses", roleEA: "Assistente executiva",
     legWip: "Em curso", legTodo: "Por iniciar", offParts: "Não assinalados no diagrama",
+    dragHint: "Arraste para rodar · deslize para ampliar · passe sobre uma peça", dragHintTouch: "Arraste para rodar · pince para ampliar · toque numa peça · toque duplo para repor",
     pnsTitle: "Norma de numeração de peças", pnsFormat: "Organização · código de categoria · sequência (nunca reutilizada)",
     pnsCode: "Código", pnsCat: "Categoria", pnsEx: "Exemplo", pnsStatus: "Estado",
     roleAdvisor: "Consultor", roleBio: "Biomédica", roleConcept: "Arte conceptual", roleDirRD: "Diretora de I&D", roleMvp2: "Líder MVP 2", roleProg: "Líder de programa", roleResearch: "Investigação", roleTest: "Eng. de testes",
