@@ -66,6 +66,23 @@ button,a{font:inherit;color:inherit}
 .arm3d .partTip{left:0;top:0;bottom:auto;transform:translate(12px,-50%)}
 .arm3d .partTip.show{transform:translate(12px,-50%)}
 .arm3d.ready ~ .svgFallback{display:none}
+/* Part Number Standard table (ULF-DOC-001 §3), under the 3D view */
+.pnsBlock{margin-top:22px}
+.pnsHead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pnsHead .teamTitle{margin-bottom:8px}
+.pnsDoc{font-size:10px;color:#a5a09b;font-family:ui-monospace,Menlo,monospace}
+.pnsFormat{font-size:11px;color:#6f6c69;margin:0 0 12px}
+.pnsWrap{overflow-x:auto}
+.pnsTable{width:100%;border-collapse:collapse;font-size:12px;text-align:left}
+.pnsTable th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7d7975;font-weight:700;padding:0 10px 10px 0}
+.pnsTable td{padding:8px 10px 8px 0;border-top:1px solid #ece8e3;color:#3f4245}
+.pnsTable td:last-child,.pnsTable th:last-child{padding-right:0}
+.pnsCode{font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700;color:var(--orange);
+  background:#f2efec;border-radius:6px;padding:2px 6px}
+.pnsTable .pnsEx{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#6f6c69}
+.pnsTable th.pnsEx{font-family:inherit;font-size:10px;color:#7d7975}
+.pnsStat{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#6f6c69;white-space:nowrap}
+@media (max-width:720px){.pnsTable .pnsEx{display:none}}
 .liveBelow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;
   align-items:start;margin-top:22px}
 .liveBelow .copy{text-align:left}
@@ -414,7 +431,23 @@ button,a{font:inherit;color:inherit}
                 </div>
                 <div class="partTip" role="status" aria-live="polite"></div>
               </div>
-              
+
+              </div>
+              <div class="pnsBlock">
+                <div class="pnsHead">
+                  <span class="teamTitle" data-i18n="pnsTitle">Part number standard</span>
+                  <span class="pnsDoc">ULF-DOC-001 · Rev A</span>
+                </div>
+                <p class="pnsFormat"><b class="pnsCode">ULF-XXX-001</b> <span data-i18n="pnsFormat">Organisation · category code · sequence (never reused)</span></p>
+                <div class="pnsWrap">
+                  <table class="pnsTable">
+                    <thead><tr>
+                      <th data-i18n="pnsCode">Code</th><th data-i18n="pnsCat">Category</th>
+                      <th class="pnsEx" data-i18n="pnsEx">Example</th><th data-i18n="pnsStatus">Status</th>
+                    </tr></thead>
+                    <tbody id="pnsBody"></tbody>
+                  </table>
+                </div>
               </div>
               <div class="liveBelow">
                 <div class="liveAside">
@@ -802,6 +835,8 @@ const COPY = {
     roleUni: "Universidades", roleCad: "CAD 3D", roleDocs: "Documentação",
     roleProsthetics: "Próteses", roleEA: "Assistente executiva",
     legWip: "Em curso", legTodo: "Por iniciar", offParts: "Não assinalados no diagrama",
+    pnsTitle: "Norma de numeração de peças", pnsFormat: "Organização · código de categoria · sequência (nunca reutilizada)",
+    pnsCode: "Código", pnsCat: "Categoria", pnsEx: "Exemplo", pnsStatus: "Estado",
     roleAdvisor: "Consultor", roleBio: "Biomédica", roleConcept: "Arte conceptual", roleDirRD: "Diretora de I&D", roleMvp2: "Líder MVP 2", roleProg: "Líder de programa", roleResearch: "Investigação", roleTest: "Eng. de testes",
     aDown: "Descarregar", aUp: "Enviar", aLinks: "Ligações e atas",
     ready: "Este departamento está pronto para o seu conteúdo.",
@@ -842,6 +877,10 @@ const OFF_PARTS = [
   {c:'DRW', en:'Engineering drawing', pt:'Desenho técnico'},
   {c:'DOC', en:'Document / standard', pt:'Documento / norma'}
 ];
+/* The Category Code Table exactly as ULF-DOC-001 Rev A §3 lists it — proposed
+   codes (new:1 above) stay out until they are added to the standard. */
+const STD_CODES = ['SKT','PLM','WRS','THM','IND','MID','RNG','LTL','HRN','CBL',
+                   'LNR','FST','JIG','TOL','ASM','DRW','DOC'];
 const PART_STR = {
   en:{wip:'In progress', todo:'Not started', proposed:'proposed code'},
   pt:{wip:'Em curso',    todo:'Por iniciar', proposed:'código proposto'}
@@ -930,6 +969,30 @@ function renderPartMap(forced){
       el.title = 'ULF-' + o.c + '-001 \u2014 ' + PART_STR[lang].todo;
       off.appendChild(el);
     });
+  }
+
+  const pns = document.getElementById('pnsBody');
+  if (pns) {
+    const byCode = {};
+    PARTS.concat(OFF_PARTS).forEach(p => { byCode[p.c] = p; });
+    pns.innerHTML = '';
+    STD_CODES.forEach(c => {
+      const p = byCode[c];
+      const tr = document.createElement('tr');
+      const code = document.createElement('td');
+      const pill = document.createElement('span'); pill.className = 'pnsCode'; pill.textContent = c;
+      code.appendChild(pill);
+      const cat = document.createElement('td'); cat.textContent = lang === 'pt' ? p.pt : p.en;
+      const ex = document.createElement('td'); ex.className = 'pnsEx'; ex.textContent = 'ULF-' + c + '-001';
+      const st = document.createElement('td');
+      const s = document.createElement('span'); s.className = 'pnsStat';
+      const dot = document.createElement('span'); dot.className = 'statusDot ' + (p.wip ? 'wip' : 'todo');
+      s.append(dot, PART_STR[lang][p.wip ? 'wip' : 'todo']);
+      st.appendChild(s);
+      tr.append(code, cat, ex, st);
+      pns.appendChild(tr);
+    });
+    if (window.ULF_CAROUSEL) window.ULF_CAROUSEL.sizeViewport();
   }
 }
 
