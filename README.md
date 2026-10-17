@@ -105,6 +105,11 @@ default.
    status from the Category Code Table in `Part Number Standard .pdf`
    (ULF-DOC-001 Rev A §3). See `PARTS` / `OFF_PARTS` in the inline script.
 
+   Directly under the 3D view, the **§3 Category Code Table** itself is shown
+   (`#pnsBody`): the 17 codes in the standard's order (`STD_CODES`), with names
+   and status pulled from `PARTS` / `OFF_PARTS`, so it follows EN/PT and the
+   `wip` flags. Proposed codes are deliberately left out of it.
+
    **Five codes are proposed, not yet in the table.** Per §9 a new category must
    be added to the master table before use, so these are marked in the UI with
    a *proposed code* warning until that happens:
