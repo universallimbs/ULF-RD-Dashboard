@@ -1,0 +1,8 @@
+[
+  {
+    "name": "V1_Hand",
+    "source": "V1_Hand.STEP",
+    "model": "V1_Hand.model.json",
+    "exportedAt": "2026-10-12T09:16:56"
+  }
+]

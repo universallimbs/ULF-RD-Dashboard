@@ -260,3 +260,16 @@ kept because they are original programme artifacts, not regenerable.
 
 `.github/workflows/link-checker.yml` flags internal links to missing files and
 Google Docs/Drive/Forms links not scoped to a `universallimbs.com` account.
+
+## Updating the CAD tab
+
+Export the assembly from SolidWorks as STEP, copy it into `assets/cad/`
+(replace the old file or add a new name), commit and push to `main`.
+`.github/workflows/cad-convert.yml` converts every STEP file there into a
+lightweight `<name>.model.json` plus `manifest.json` and commits them back;
+the CAD tab shows the newest export (by the date in the STEP header). Run
+`git pull` afterwards to pick up the bot's commit. Deleting a STEP file also
+removes its converted model.
+
+To convert locally instead (Node 20):
+`npm install --no-save --prefix .github/scripts occt-import-js@0.0.23 && node .github/scripts/step_to_model.mjs`

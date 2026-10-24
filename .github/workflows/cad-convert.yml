@@ -1,0 +1,53 @@
+name: Convert CAD models
+
+# Drop or replace a STEP file in assets/cad/ and push: this regenerates the
+# lightweight <name>.model.json + manifest.json the CAD tab renders, and
+# commits them back. Pushes made with GITHUB_TOKEN don't re-trigger workflows,
+# so the bot commit can't loop.
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'assets/cad/*.STEP'
+      - 'assets/cad/*.step'
+      - 'assets/cad/*.STP'
+      - 'assets/cad/*.stp'
+      - '.github/scripts/step_to_model.mjs'
+      - '.github/workflows/cad-convert.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cad-convert
+  cancel-in-progress: false
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install STEP importer
+        run: npm install --no-save --no-package-lock --prefix .github/scripts occt-import-js@0.0.23
+
+      - name: Convert STEP files
+        run: node .github/scripts/step_to_model.mjs
+
+      - name: Commit regenerated models
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
+          git add -A assets/cad
+          if git diff --cached --quiet; then
+            echo "Models already up to date."
+            exit 0
+          fi
+          git commit -m "chore: regenerate CAD models from STEP"
+          git pull --rebase
+          git push
