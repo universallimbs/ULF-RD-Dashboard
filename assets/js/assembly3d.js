@@ -479,9 +479,10 @@
         const m = o.material;
         if (!o.userData.base) o.userData.base = m.color.getHex();
         const p = meta[c];
-        if (code && c === code)      m.color.setHex(0xf97316);
-        else if (p && p.wip)         m.color.setHex(0x0fb875);
-        else                         m.color.setHex(o.userData.base);
+        if (code && c === code)        m.color.setHex(0xf97316);
+        else if (p && p.status === 'wip')  m.color.setHex(0x0fb875);
+        else if (p && p.status === 'done') m.color.setHex(0x3b7dd8);
+        else                            m.color.setHex(o.userData.base);
         m.opacity = code && c !== code ? 0.28 : 1;
         m.transparent = !!(code && c !== code);
       });
@@ -514,8 +515,8 @@
         tip.appendChild(w);
       }
       const st = document.createElement('span');
-      st.className = 'tipStatus ' + (p.wip ? 'wip' : '');
-      st.textContent = S[p.wip ? 'wip' : 'todo'];
+      st.className = 'tipStatus ' + (p.status || 'todo');
+      st.textContent = S[p.status] || S.todo;
       tip.appendChild(st);
       tip.classList.add('show');
       tip.style.left = (e.clientX - r.left) + 'px';

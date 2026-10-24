@@ -95,6 +95,10 @@ button,a{font:inherit;color:inherit}
 .pnsSelect:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
 .pnsSelect:disabled{opacity:.55;cursor:wait}
 .pnsMsg{font-size:11px;color:#c0392b;margin:8px 0 0}
+.cadMeta{margin-top:14px}
+.cadCaption{font-size:12px;color:#6f6c69;margin:0 0 4px}
+.cadDate{font-family:ui-monospace,Menlo,monospace;color:#3f4245}
+.cadNote{font-size:11px;color:#a5a09b;margin:0}
 @media (max-width:720px){.pnsTable .pnsEx{display:none}}
 .liveBelow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;
   align-items:start;margin-top:22px}
@@ -321,6 +325,7 @@ button,a{font:inherit;color:inherit}
         <button class="reference" data-slide="2"><span class="thumb"></span><span data-i18n="ref3">Softfoot Pro</span><span class="refUnderline"></span></button>
         <button class="reference" data-slide="3"><span class="thumb"></span><span data-i18n="ref4">UL arm</span><span class="refUnderline"></span></button>
         <button class="reference" data-slide="4"><span class="thumb"></span><span data-i18n="ref5">Live</span><span class="refUnderline"></span></button>
+        <button class="reference" data-slide="5"><span class="thumb"></span><span data-i18n="refCad">CAD</span><span class="refUnderline"></span></button>
       </nav>
 
       <div class="stage">
@@ -470,6 +475,7 @@ button,a{font:inherit;color:inherit}
 <div class="legend artLegend">
                   <span class="legendItem"><span class="statusDot wip"></span><span data-i18n="legWip">In progress</span></span>
                   <span class="legendItem"><span class="statusDot todo"></span><span data-i18n="legTodo">Not started</span></span>
+                  <span class="legendItem"><span class="statusDot done"></span><span data-i18n="legDone">Completed</span></span>
                 </div>
               <div class="offPartsWrap">
                 <div class="offPartsLabel" data-i18n="offParts">Not shown on the diagram</div>
@@ -515,6 +521,33 @@ button,a{font:inherit;color:inherit}
                   </div>
                 </div>
               </div>
+              </div>
+            </article>
+
+            <article class="slide cadSlide">
+              <div class="art liveArt" id="cadStage">
+                <div id="cadViewer" class="arm3d" role="img" aria-label="Rotatable live CAD model of the current hand design, exported from SolidWorks">
+                  <div class="arm3dHint"><span class="hintMouse" data-i18n="cadHint">Drag to rotate · scroll to zoom · hover a body</span><span class="hintTouch" data-i18n="cadHintTouch">Drag to rotate · pinch to zoom · tap a body</span></div>
+                  <div class="partTip" id="cadViewerTip"></div>
+                </div>
+              </div>
+              <div class="cadMeta">
+                <p class="cadCaption">
+                  <span data-i18n="cadCaptionLabel">Live CAD export from SolidWorks</span>
+                  · <span data-i18n="cadDateLabel">last updated</span> <span class="cadDate" id="cadDate">…</span>
+                </p>
+                <p class="pnsMsg" id="cadLoadStatus"></p>
+                <p class="cadNote" data-i18n="cadNote">This is the actual current design state, not the illustrative model on the Live tab — only the bodies modelled so far appear here.</p>
+              </div>
+              <div class="liveBelow">
+                <div class="liveAside">
+                  <div class="teamTitle" data-i18n="cadStatusTitle">Project status (ULF-DOC-001)</div>
+                  <div class="legend artLegend" id="cadStatusSummary"></div>
+                </div>
+                <div class="copy">
+                  <h1 data-i18n="t6">CAD — current state</h1>
+                  <p data-i18n="b6">This model is pulled straight from the mechanical team's current SolidWorks file — no illustration, no placeholder geometry. Rotate it to see exactly what has been designed so far, and check the Live tab's Part Number Standard table for the full status breakdown.</p>
+                </div>
               </div>
             </article>
           </div>
@@ -671,6 +704,7 @@ const refs = [...document.querySelectorAll('.reference')];
 const slides = [...track.children];
 const COUNT = refs.length;
 const LIVE_SLIDE_INDEX = slides.findIndex(s => s.classList.contains('liveSlide'));
+const CAD_SLIDE_INDEX = slides.findIndex(s => s.classList.contains('cadSlide'));
 let i = 0;
 
 refs.forEach((r, n) => r.addEventListener('click', () => go(n)));
@@ -704,6 +738,32 @@ function ensureLiveAssets() {
 }
 window.ULF_LIVE = { ensureAssets: ensureLiveAssets };
 
+/**
+ * occt-import-js (~7.6MB wasm, a full OpenCascade build) is far heavier than
+ * three.js, so unlike the Live tab's assets this is never prefetched — only
+ * loaded the first time someone actually opens the CAD tab. Depends on
+ * ensureLiveAssets() for THREE itself, so three.js is never fetched twice.
+ */
+let cadAssetsPromise = null;
+function ensureCadAssets() {
+  if (cadAssetsPromise) return cadAssetsPromise;
+  cadAssetsPromise = ensureLiveAssets().then(() => new Promise((resolve, reject) => {
+    const occt = document.createElement('script');
+    occt.src = 'assets/js/occt/occt-import-js.js';
+    occt.onload = () => {
+      const viewer = document.createElement('script');
+      viewer.src = 'assets/js/cadViewer.js';
+      viewer.onload = resolve;
+      viewer.onerror = reject;
+      document.body.appendChild(viewer);
+    };
+    occt.onerror = reject;
+    document.body.appendChild(occt);
+  }));
+  return cadAssetsPromise;
+}
+window.ULF_CAD = { ensureAssets: ensureCadAssets };
+
 function sizeViewport() {
   const current = slides[i];
   if (current) viewport.style.height = current.offsetHeight + 'px';
@@ -715,6 +775,7 @@ function go(n) {
   track.style.transform = 'translateX(-' + (i * 100) + '%)';
   refs.forEach((r, k) => r.classList.toggle('active', k === i));
   if (i === LIVE_SLIDE_INDEX) ensureLiveAssets().then(sizeViewport).catch(() => {});
+  if (i === CAD_SLIDE_INDEX) ensureCadAssets().then(sizeViewport).catch(() => {});
   sizeViewport();
 }
 go(0);
@@ -850,10 +911,17 @@ const COPY = {
     roleRD: "Direção de I&D", roleSys: "Eng. de sistemas", roleSim: "Simulação",
     roleUni: "Universidades", roleCad: "CAD 3D", roleDocs: "Documentação",
     roleProsthetics: "Próteses", roleEA: "Assistente executiva",
-    legWip: "Em curso", legTodo: "Por iniciar", offParts: "Não assinalados no diagrama",
+    legWip: "Em curso", legTodo: "Por iniciar", legDone: "Concluído", offParts: "Não assinalados no diagrama",
     dragHint: "Arraste para rodar · deslize para ampliar · passe sobre uma peça", dragHintTouch: "Arraste para rodar · pince para ampliar · toque numa peça · toque duplo para repor",
     pnsTitle: "Norma de numeração de peças", pnsFormat: "Organização · código de categoria · sequência (nunca reutilizada)",
     pnsCode: "Código", pnsCat: "Categoria", pnsEx: "Exemplo", pnsStatus: "Estado",
+    refCad: "CAD", cadHint: "Arraste para rodar · deslize para ampliar · passe sobre uma peça",
+    cadHintTouch: "Arraste para rodar · pince para ampliar · toque numa peça",
+    cadCaptionLabel: "Modelo CAD em tempo real do SolidWorks", cadDateLabel: "última atualização",
+    cadNote: "Este é o estado atual real do desenho — apenas as peças já modeladas aparecem aqui, ao contrário do modelo ilustrativo do separador Em Direto.",
+    cadStatusTitle: "Estado do projeto (ULF-DOC-001)",
+    t6: "CAD — estado atual",
+    b6: "Este modelo vem diretamente do ficheiro SolidWorks atual da equipa mecânica — sem ilustração, sem geometria provisória. Rode-o para ver exatamente o que já foi desenhado e consulte a tabela da Norma de numeração de peças no separador Em Direto para o resumo completo do estado.",
     roleAdvisor: "Consultor", roleBio: "Biomédica", roleConcept: "Arte conceptual", roleDirRD: "Diretora de I&D", roleMvp2: "Líder MVP 2", roleProg: "Líder de programa", roleResearch: "Investigação", roleTest: "Eng. de testes",
     aDown: "Descarregar", aUp: "Enviar", aLinks: "Ligações e atas",
     ready: "Este departamento está pronto para o seu conteúdo.",
@@ -1022,6 +1090,23 @@ function renderPartMap(forced){
       pns.appendChild(tr);
     });
     if (window.ULF_CAROUSEL) window.ULF_CAROUSEL.sizeViewport();
+  }
+
+  // Read-only status counts shown next to the real CAD model on the CAD tab —
+  // the same PARTS/OFF_PARTS data as the table above, just summarised, so it
+  // stays in sync automatically whenever a status is edited or the language
+  // changes, with no separate interactive controls to keep in sync.
+  const cadSummary = document.getElementById('cadStatusSummary');
+  if (cadSummary) {
+    const counts = { todo: 0, wip: 0, done: 0 };
+    PARTS.concat(OFF_PARTS).forEach(p => { counts[p.status] = (counts[p.status] || 0) + 1; });
+    cadSummary.innerHTML = '';
+    STATUS_KEYS.forEach(key => {
+      const item = document.createElement('span'); item.className = 'legendItem';
+      const dot = document.createElement('span'); dot.className = 'statusDot ' + key;
+      item.append(dot, counts[key] + ' ' + PART_STR[lang][key]);
+      cadSummary.appendChild(item);
+    });
   }
 }
 
