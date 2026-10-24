@@ -361,13 +361,15 @@ function handleFinanceData(payload) {
   return readFinanceData();
 }
 
+const PART_STATUS_KEYS = ['todo', 'wip', 'done'];
+
 /**
- * Current "in progress" / "not started" status for every Part Number Standard
+ * Current status ('todo' / 'wip' / 'done') for every Part Number Standard
  * code the Live tab's status column has ever had edited. Codes with no row
  * yet are simply absent from the result — the dashboard keeps showing its
  * own built-in default for those until someone edits them. No auth required:
- * this is the same wip/not-wip information the hardcoded diagram already
- * shows to anyone who opens the Live tab.
+ * this is the same status information the hardcoded diagram already shows
+ * to anyone who opens the Live tab.
  */
 function handlePartStatus() {
   return { statuses: readPartStatuses() };
@@ -386,10 +388,11 @@ function handleUpdatePartStatus(payload) {
 
   const code = String(payload.code || '').trim().toUpperCase();
   if (!/^[A-Z]{2,6}$/.test(code)) throw new PublicError('Unknown part code.');
-  const wip = Boolean(payload.wip);
+  const status = String(payload.status || '').trim().toLowerCase();
+  if (PART_STATUS_KEYS.indexOf(status) === -1) throw new PublicError('Unknown status.');
 
-  upsertPartStatus(code, wip, user.email);
-  return { code: code, wip: wip };
+  upsertPartStatus(code, status, user.email);
+  return { code: code, status: status };
 }
 
 /** Opens (or lazily creates) the "PartStatus" tab, or null if not configured yet. */
@@ -407,29 +410,30 @@ function readPartStatuses() {
   const rows = sheet.getRange(1, 1, sheet.getLastRow(), width).getValues();
   const header = rows[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
   const codeCol = header.indexOf('code');
-  const wipCol = header.indexOf('wip');
-  if (codeCol === -1 || wipCol === -1) return {};
+  const statusCol = header.indexOf('status');
+  if (codeCol === -1 || statusCol === -1) return {};
 
   const out = {};
   for (let i = 1; i < rows.length; i++) {
     const code = String(rows[i][codeCol] || '').trim().toUpperCase();
-    if (code) out[code] = Boolean(rows[i][wipCol]);
+    const status = String(rows[i][statusCol] || '').trim().toLowerCase();
+    if (code && PART_STATUS_KEYS.indexOf(status) !== -1) out[code] = status;
   }
   return out;
 }
 
 /** Updates the row for `code` in place, or appends one if this is its first edit. */
-function upsertPartStatus(code, wip, email) {
+function upsertPartStatus(code, status, email) {
   const sheet = openPartsSheet();
   if (!sheet) throw new PublicError('Part status storage is not configured yet. Please contact an administrator.');
 
-  const header = ['code', 'wip', 'updatedBy', 'updatedAt'];
+  const header = ['code', 'status', 'updatedBy', 'updatedAt'];
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight('bold');
     sheet.setFrozenRows(1);
   }
 
-  const record = [code, wip, email, new Date()];
+  const record = [code, status, email, new Date()];
   const existingRows = sheet.getLastRow() - 1;
   const codes = existingRows > 0 ? sheet.getRange(2, 1, existingRows, 1).getValues() : [];
   const rowIndex = codes.findIndex(function (r) { return String(r[0] || '').trim().toUpperCase() === code; });

@@ -88,12 +88,12 @@ button,a{font:inherit;color:inherit}
   background:#f2efec;border-radius:6px;padding:2px 6px}
 .pnsTable .pnsEx{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#6f6c69}
 .pnsTable th.pnsEx{font-family:inherit;font-size:10px;color:#7d7975}
-.pnsStat{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#6f6c69;white-space:nowrap;
-  font:inherit;background:none;border:1px solid transparent;border-radius:999px;padding:3px 8px 3px 6px;
-  cursor:pointer;transition:background .15s ease,border-color .15s ease}
-.pnsStat:hover{background:#f2efec;border-color:#e3ded7}
-.pnsStat:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
-.pnsStat:disabled{opacity:.55;cursor:wait}
+.pnsStat{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#6f6c69;white-space:nowrap}
+.pnsSelect{font:inherit;font-size:11px;color:#3f4245;background:#fff;border:1px solid #e3ded7;
+  border-radius:999px;padding:3px 10px;cursor:pointer;transition:border-color .15s ease}
+.pnsSelect:hover{border-color:#cfc9c1}
+.pnsSelect:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
+.pnsSelect:disabled{opacity:.55;cursor:wait}
 .pnsMsg{font-size:11px;color:#c0392b;margin:8px 0 0}
 @media (max-width:720px){.pnsTable .pnsEx{display:none}}
 .liveBelow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;
@@ -144,9 +144,11 @@ button,a{font:inherit;color:inherit}
 .partTip .tipStatus{display:inline-block;margin-top:6px;font-size:9px;font-weight:700;letter-spacing:.04em;
   border-radius:999px;padding:2px 7px;background:#333;color:#ddd}
 .partTip .tipStatus.wip{background:#0fb875;color:#08281e}
+.partTip .tipStatus.done{background:#3b7dd8;color:#eaf1fc}
 .statusDot{width:10px;height:10px;border-radius:999px;display:inline-block}
 .statusDot.wip{background:#0fb875}
 .statusDot.todo{background:#b9b3ac}
+.statusDot.done{background:#3b7dd8}
 .offPartsWrap{margin-top:14px;text-align:center}
 .offPartsLabel{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#a5a09b;margin-bottom:7px}
 .offParts{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
@@ -863,44 +865,46 @@ document.querySelectorAll('[data-i18n]').forEach(el => { COPY.en[el.dataset.i18n
 
 /* ---- Part map: Category Code Table (ULF-DOC-001 Rev A, section 3) ----
    Local addition, not from the upstream export. x/y are % of the image box;
-   lx/ly are the label anchor. `wip` marks the five parts currently in design. */
+   lx/ly are the label anchor. `status` is one of STATUS_KEYS below; only
+   'wip' is highlighted on the 3D/SVG diagram. */
+const STATUS_KEYS = ['todo', 'wip', 'done'];
 const PARTS = [
-  // code, EN, PT, in-progress, label x/y (viewBox units), leader anchor ax/ay, anchor on drawing px/py
-  {c:'HRN', en:'Harness',            pt:'Arnês',                 wip:0, lx:6,   ly:6,  px:8,   py:16},
-  {c:'BIC', en:'Biceps cuff',        pt:'Braçadeira de bíceps',  wip:0, lx:24,  ly:6,  px:27,  py:31, new:1},
-  {c:'ELB', en:'Elbow hinge',        pt:'Dobradiça de cotovelo', wip:0, lx:47,  ly:6,  px:50,  py:45, new:1},
-  {c:'SKT', en:'Socket',             pt:'Encaixe',               wip:0, lx:70,  ly:6,  px:74,  py:35},
-  {c:'FRM', en:'Forearm shell',      pt:'Casca do antebraço',    wip:0, lx:101, ly:6,  px:105, py:40, new:1},
-  {c:'WRS', en:'Wrist',              pt:'Punho',                 wip:0, lx:124, ly:6,  px:129, py:43},
-  {c:'IND', en:'Index finger',       pt:'Dedo indicador',        wip:1, lx:150, ly:14, px:170, py:41},
-  {c:'MID', en:'Middle finger',      pt:'Dedo médio',            wip:1, lx:168, ly:22, px:174, py:48},
-  {c:'RNG', en:'Ring finger',        pt:'Dedo anelar',           wip:1, lx:186, ly:32, px:171, py:55},
-  {c:'LTL', en:'Little finger',      pt:'Dedo mínimo',           wip:1, lx:186, ly:44, px:167, py:62},
-  {c:'THM', en:'Thumb',              pt:'Polegar',               wip:1, lx:168, ly:96, px:147, py:76},
-  {c:'PLM', en:'Palm',               pt:'Palma',                 wip:0, lx:142, ly:96, px:146, py:67},
-  {c:'CBL', en:'Cable',              pt:'Cabo',                  wip:0, lx:116, ly:96, px:114, py:71},
-  {c:'HSG', en:'Cable housing',      pt:'Bainha do cabo',        wip:0, lx:92,  ly:96, px:84,  py:79, new:1},
-  {c:'FST', en:'Fastener (purchased)',pt:'Fixador (comprado)',   wip:0, lx:68,  ly:96, px:72,  py:62},
-  {c:'STR', en:'Strap',              pt:'Correia',               wip:0, lx:40,  ly:96, px:27,  py:70, new:1},
-  {c:'LNR', en:'Liner',              pt:'Revestimento interno',  wip:0, lx:12,  ly:96, px:19,  py:60}
+  // code, EN, PT, status, label x/y (viewBox units), leader anchor ax/ay, anchor on drawing px/py
+  {c:'HRN', en:'Harness',            pt:'Arnês',                 status:'todo', lx:6,   ly:6,  px:8,   py:16},
+  {c:'BIC', en:'Biceps cuff',        pt:'Braçadeira de bíceps',  status:'todo', lx:24,  ly:6,  px:27,  py:31, new:1},
+  {c:'ELB', en:'Elbow hinge',        pt:'Dobradiça de cotovelo', status:'todo', lx:47,  ly:6,  px:50,  py:45, new:1},
+  {c:'SKT', en:'Socket',             pt:'Encaixe',               status:'todo', lx:70,  ly:6,  px:74,  py:35},
+  {c:'FRM', en:'Forearm shell',      pt:'Casca do antebraço',    status:'todo', lx:101, ly:6,  px:105, py:40, new:1},
+  {c:'WRS', en:'Wrist',              pt:'Punho',                 status:'todo', lx:124, ly:6,  px:129, py:43},
+  {c:'IND', en:'Index finger',       pt:'Dedo indicador',        status:'wip',  lx:150, ly:14, px:170, py:41},
+  {c:'MID', en:'Middle finger',      pt:'Dedo médio',            status:'wip',  lx:168, ly:22, px:174, py:48},
+  {c:'RNG', en:'Ring finger',        pt:'Dedo anelar',           status:'wip',  lx:186, ly:32, px:171, py:55},
+  {c:'LTL', en:'Little finger',      pt:'Dedo mínimo',           status:'wip',  lx:186, ly:44, px:167, py:62},
+  {c:'THM', en:'Thumb',              pt:'Polegar',               status:'wip',  lx:168, ly:96, px:147, py:76},
+  {c:'PLM', en:'Palm',               pt:'Palma',                 status:'todo', lx:142, ly:96, px:146, py:67},
+  {c:'CBL', en:'Cable',              pt:'Cabo',                  status:'todo', lx:116, ly:96, px:114, py:71},
+  {c:'HSG', en:'Cable housing',      pt:'Bainha do cabo',        status:'todo', lx:92,  ly:96, px:84,  py:79, new:1},
+  {c:'FST', en:'Fastener (purchased)',pt:'Fixador (comprado)',   status:'todo', lx:68,  ly:96, px:72,  py:62},
+  {c:'STR', en:'Strap',              pt:'Correia',               status:'todo', lx:40,  ly:96, px:27,  py:70, new:1},
+  {c:'LNR', en:'Liner',              pt:'Revestimento interno',  status:'todo', lx:12,  ly:96, px:19,  py:60}
 ];
 /* Table entries with no physical location on the hand. */
 const OFF_PARTS = [
-  {c:'JIG', en:'Assembly jig',        pt:'Gabarito de montagem', wip:0},
-  {c:'TOL', en:'Tool',                pt:'Ferramenta',           wip:0},
-  {c:'ASM', en:'Assembly',            pt:'Conjunto',             wip:0},
-  {c:'DRW', en:'Engineering drawing', pt:'Desenho técnico',      wip:0},
-  {c:'DOC', en:'Document / standard', pt:'Documento / norma',    wip:0}
+  {c:'JIG', en:'Assembly jig',        pt:'Gabarito de montagem', status:'todo'},
+  {c:'TOL', en:'Tool',                pt:'Ferramenta',           status:'todo'},
+  {c:'ASM', en:'Assembly',            pt:'Conjunto',             status:'todo'},
+  {c:'DRW', en:'Engineering drawing', pt:'Desenho técnico',      status:'todo'},
+  {c:'DOC', en:'Document / standard', pt:'Documento / norma',    status:'todo'}
 ];
 /* The Category Code Table exactly as ULF-DOC-001 Rev A §3 lists it — proposed
    codes (new:1 above) stay out until they are added to the standard. */
 const STD_CODES = ['SKT','PLM','WRS','THM','IND','MID','RNG','LTL','HRN','CBL',
                    'LNR','FST','JIG','TOL','ASM','DRW','DOC'];
 const PART_STR = {
-  en:{wip:'In progress', todo:'Not started', proposed:'proposed code',
-      toggle:'Click to mark as in progress / not started'},
-  pt:{wip:'Em curso',    todo:'Por iniciar', proposed:'código proposto',
-      toggle:'Clique para alternar o estado'}
+  en:{wip:'In progress', todo:'Not started', done:'Completed', proposed:'proposed code',
+      toggle:'Change status'},
+  pt:{wip:'Em curso',    todo:'Por iniciar', done:'Concluído', proposed:'código proposto',
+      toggle:'Alterar o estado'}
 };
 
 function currentLang(){
@@ -928,12 +932,12 @@ function renderPartMap(forced){
     const delay = (0.04 * i).toFixed(2) + 's';
     const name  = lang === 'pt' ? p.pt : p.en;
     const pn    = 'ULF-' + p.c + '-001';
-    if (p.wip) g.classList.add('wip');
+    if (p.status === 'wip') g.classList.add('wip');
 
     const line = document.createElementNS(NS,'line');
     line.setAttribute('x1', p.px); line.setAttribute('y1', p.py);
     line.setAttribute('x2', p.lx + 4); line.setAttribute('y2', p.ly + (p.ly < 50 ? 1.5 : -3));
-    if (p.wip) line.classList.add('wip');
+    if (p.status === 'wip') line.classList.add('wip');
     line.style.setProperty('--len', Math.hypot(p.lx - p.px, p.ly - p.py) * 1.6);
     line.style.setProperty('--d', delay);
     lead.appendChild(line);
@@ -941,7 +945,7 @@ function renderPartMap(forced){
     const t = document.createElementNS(NS,'text');
     t.setAttribute('x', p.lx); t.setAttribute('y', p.ly);
     t.textContent = p.c;
-    if (p.wip) t.classList.add('wip');
+    if (p.status === 'wip') t.classList.add('wip');
     t.style.setProperty('--d', delay);
     t.setAttribute('tabindex','0');
     t.setAttribute('role','button');
@@ -959,8 +963,8 @@ function renderPartMap(forced){
         tip.appendChild(w);
       }
       const st = document.createElement('span');
-      st.className = 'tipStatus ' + (p.wip ? 'wip' : '');
-      st.textContent = PART_STR[lang][p.wip ? 'wip' : 'todo'];
+      st.className = 'tipStatus ' + p.status;
+      st.textContent = PART_STR[lang][p.status];
       tip.appendChild(st);
       tip.classList.add('show');
       g.classList.add('on'); t.classList.add('on'); line.classList.add('on');
@@ -983,7 +987,7 @@ function renderPartMap(forced){
       const el = document.createElement('span');
       el.className = 'offPart';
       el.textContent = o.c + ' \u00b7 ' + (lang === 'pt' ? o.pt : o.en);
-      el.title = 'ULF-' + o.c + '-001 \u2014 ' + PART_STR[lang][o.wip ? 'wip' : 'todo'];
+      el.title = 'ULF-' + o.c + '-001 \u2014 ' + PART_STR[lang][o.status];
       off.appendChild(el);
     });
   }
@@ -1002,13 +1006,18 @@ function renderPartMap(forced){
       const cat = document.createElement('td'); cat.textContent = lang === 'pt' ? p.pt : p.en;
       const ex = document.createElement('td'); ex.className = 'pnsEx'; ex.textContent = 'ULF-' + c + '-001';
       const st = document.createElement('td');
-      const s = document.createElement('button');
-      s.type = 'button'; s.className = 'pnsStat'; s.title = PART_STR[lang].toggle;
-      s.setAttribute('aria-pressed', String(Boolean(p.wip)));
-      const dot = document.createElement('span'); dot.className = 'statusDot ' + (p.wip ? 'wip' : 'todo');
-      s.append(dot, PART_STR[lang][p.wip ? 'wip' : 'todo']);
-      s.addEventListener('click', () => togglePartStatus(p, s));
-      st.appendChild(s);
+      const wrap = document.createElement('span'); wrap.className = 'pnsStat';
+      const dot = document.createElement('span'); dot.className = 'statusDot ' + p.status;
+      const sel = document.createElement('select'); sel.className = 'pnsSelect'; sel.title = PART_STR[lang].toggle;
+      STATUS_KEYS.forEach(key => {
+        const opt = document.createElement('option');
+        opt.value = key; opt.textContent = PART_STR[lang][key];
+        if (key === p.status) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', () => changePartStatus(p, sel, dot));
+      wrap.append(dot, sel);
+      st.appendChild(wrap);
       tr.append(code, cat, ex, st);
       pns.appendChild(tr);
     });
@@ -1017,27 +1026,35 @@ function renderPartMap(forced){
 }
 
 /**
- * Flips one part's wip flag from the Part Number Standard table and saves it
- * through the Apps Script backend (see handleUpdatePartStatus in
- * google-apps-script.gs). Optimistic: the table re-renders immediately on
- * success; on failure the button re-enables and the change is reported
- * in #pnsMsg so nothing silently fails to save.
+ * Changes one part's status from the Part Number Standard table's dropdown
+ * and saves it through the Apps Script backend (see handleUpdatePartStatus
+ * in google-apps-script.gs). Optimistic: the dot updates immediately and the
+ * whole table re-renders on success; on failure the dropdown reverts to its
+ * previous value and the problem is reported in #pnsMsg so nothing silently
+ * fails to save.
  */
-function togglePartStatus(p, btn){
+function changePartStatus(p, select, dot){
   const idToken = window.ULF_AUTH && window.ULF_AUTH.getIdToken();
   const msg = document.getElementById('pnsMsg');
   if (msg) { msg.hidden = true; msg.textContent = ''; }
+  const prev = p.status;
+  const next = select.value;
   if (!idToken) {
+    select.value = prev;
     if (msg) { msg.hidden = false; msg.textContent = 'Please sign in again to edit part status.'; }
     return;
   }
-  const next = p.wip ? 0 : 1;
-  btn.disabled = true;
-  window.ulfSubmit('updatePartStatus', { idToken: idToken, code: p.c, wip: Boolean(next) })
-    .then(() => { p.wip = next; renderPartMap(); })
+  select.disabled = true;
+  window.ulfSubmit('updatePartStatus', { idToken: idToken, code: p.c, status: next })
+    .then(() => { p.status = next; renderPartMap(); })
     .catch(error => {
-      btn.disabled = false;
-      if (msg) { msg.hidden = false; msg.textContent = error.message || 'Could not save that change. Please try again.'; }
+      select.disabled = false;
+      select.value = prev;
+      if (dot) dot.className = 'statusDot ' + prev;
+      if (msg) {
+        msg.hidden = false;
+        msg.textContent = error.message || 'Could not save that change. Please try again.';
+      }
     });
 }
 
@@ -1054,7 +1071,7 @@ function loadPartStatuses(){
       const statuses = (result && result.statuses) || {};
       if (!Object.keys(statuses).length) return;
       PARTS.concat(OFF_PARTS).forEach(p => {
-        if (Object.prototype.hasOwnProperty.call(statuses, p.c)) p.wip = statuses[p.c] ? 1 : 0;
+        if (STATUS_KEYS.indexOf(statuses[p.c]) !== -1) p.status = statuses[p.c];
       });
       renderPartMap();
     })
