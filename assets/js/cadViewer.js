@@ -1,11 +1,13 @@
-/* ULF R&D Dashboard — real CAD (STEP) viewer for the "CAD" tab
- * ==============================================================
+/* ULF R&D Dashboard — real CAD viewer for the "CAD" tab
+ * =======================================================
  * Unlike assembly3d.js (an illustrative model built to document part codes),
- * this loads the actual SolidWorks export at assets/cad/V1_Hand.STEP and
- * renders exactly what has been modelled so far — nothing invented. Parsing
- * happens entirely in the browser via occt-import-js (a WebAssembly build of
- * OpenCascade, vendored in assets/js/occt/), so the STEP file itself stays
- * the single source of truth; nothing here pre-converts or caches geometry.
+ * this renders the actual SolidWorks design: assets/cad/V1_Hand.model.json,
+ * a lightweight mesh export (vertex positions/normals/indices + body names
+ * and colors) converted once, offline, from the real
+ * assets/cad/V1_Hand.STEP file — that STEP file stays in the repo as the
+ * source of truth for provenance, but is never fetched by the browser, so
+ * visitors don't pay for a multi-megabyte in-browser STEP/WASM parser just
+ * to see the model.
  *
  * The component names shown on hover come straight from the STEP file's own
  * assembly hierarchy (SolidWorks part names), not from ULF-DOC-001 part
@@ -16,26 +18,10 @@
 (function () {
   'use strict';
 
-  const STEP_URL = 'assets/cad/V1_Hand.STEP';
+  const MODEL_URL = 'assets/cad/V1_Hand.model.json';
   const PALETTE = [0x5b6b7a, 0x8a7a66, 0x6f7d6a, 0x7a6b8a, 0x8a8a6f];
 
-  /** Flat meshIndex -> nearest named ancestor, from the import's node hierarchy. */
-  function meshNames(root) {
-    const names = {};
-    (function walk(node, inherited) {
-      const label = node.name || inherited;
-      (node.meshes || []).forEach(idx => { if (names[idx] === undefined) names[idx] = label; });
-      (node.children || []).forEach(child => walk(child, label));
-    })(root, '');
-    return names;
-  }
-
-  function parseExportDate(headerText) {
-    const m = headerText.match(/FILE_NAME\s*\(\s*'[^']*'\s*,\s*'([^']*)'/);
-    return m ? m[1] : '';
-  }
-
-  function boot(occt) {
+  function boot() {
     const host = document.getElementById('cadViewer');
     if (!host || typeof THREE === 'undefined') return;
     if (host.dataset.ready) return;
@@ -174,22 +160,21 @@
       renderer.render(scene, camera);
     })();
 
-    // ---- load + parse the real STEP file ----
-    function buildFromResult(result) {
-      if (!result.success || !result.meshes.length) throw new Error('The STEP file produced no geometry.');
-      const names = meshNames(result.root);
-      result.meshes.forEach((mesh, i) => {
+    // ---- load the precomputed mesh data ----
+    function buildFromModel(data) {
+      if (!data.bodies || !data.bodies.length) throw new Error('The CAD model has no bodies.');
+      data.bodies.forEach((body, i) => {
         const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.Float32BufferAttribute(mesh.attributes.position.array, 3));
-        if (mesh.attributes.normal) geo.setAttribute('normal', new THREE.Float32BufferAttribute(mesh.attributes.normal.array, 3));
-        geo.setIndex(mesh.index.array);
-        if (!mesh.attributes.normal) geo.computeVertexNormals();
-        const color = mesh.color
-          ? new THREE.Color(mesh.color[0], mesh.color[1], mesh.color[2])
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(body.position, 3));
+        if (body.normal) geo.setAttribute('normal', new THREE.Float32BufferAttribute(body.normal, 3));
+        geo.setIndex(body.index);
+        if (!body.normal) geo.computeVertexNormals();
+        const color = body.color
+          ? new THREE.Color(body.color[0], body.color[1], body.color[2])
           : new THREE.Color(PALETTE[i % PALETTE.length]);
         const material = new THREE.MeshStandardMaterial({ color: color, roughness: 0.45, metalness: 0.22 });
         const obj = new THREE.Mesh(geo, material);
-        obj.userData.name = names[i] || mesh.name || ('Body ' + (i + 1));
+        obj.userData.name = body.name || ('Body ' + (i + 1));
         model.add(obj);
       });
 
@@ -197,37 +182,23 @@
       const centre = box.getCenter(new THREE.Vector3());
       model.position.sub(centre);
       radius = Math.max(1, box.getSize(new THREE.Vector3()).length() / 2);
-      state.dist = state.fit = radius * 2.6;
+      // bounding-sphere fit on the vertical FOV, so tall poses aren't clipped
+      state.dist = state.fit = radius / Math.sin(camera.fov * Math.PI / 360) * 1.05;
       resize(); place();
       host.classList.add('ready');
       if (statusEl) statusEl.textContent = '';
+      if (dateEl) dateEl.textContent = data.exportedAt ? data.exportedAt.slice(0, 10) : '—';
     }
 
-    fetch(STEP_URL)
-      .then(r => { if (!r.ok) throw new Error('STEP file not found (HTTP ' + r.status + ').'); return r.arrayBuffer(); })
-      .then(buffer => {
-        const bytes = new Uint8Array(buffer);
-        if (dateEl) {
-          const headerText = new TextDecoder().decode(bytes.slice(0, 2000));
-          const stamp = parseExportDate(headerText);
-          dateEl.textContent = stamp ? stamp.slice(0, 10) : '—';
-        }
-        const result = occt.ReadStepFile(bytes, null);
-        buildFromResult(result);
-      })
+    fetch(MODEL_URL)
+      .then(r => { if (!r.ok) throw new Error('CAD model not found (HTTP ' + r.status + ').'); return r.json(); })
+      .then(buildFromModel)
       .catch(error => {
         if (statusEl) statusEl.textContent = 'Could not load the CAD model: ' + error.message;
         console.error('CAD viewer:', error);
       });
   }
 
-  // occtimportjs() resolves to the ready WASM module; boot() needs that
-  // module, not the factory function, so resolve it before booting.
-  function start() {
-    if (typeof occtimportjs === 'undefined') return;
-    occtimportjs().then(boot);
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
-  else start();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 }());

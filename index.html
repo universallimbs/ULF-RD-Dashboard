@@ -739,26 +739,20 @@ function ensureLiveAssets() {
 window.ULF_LIVE = { ensureAssets: ensureLiveAssets };
 
 /**
- * occt-import-js (~7.6MB wasm, a full OpenCascade build) is far heavier than
- * three.js, so unlike the Live tab's assets this is never prefetched — only
- * loaded the first time someone actually opens the CAD tab. Depends on
- * ensureLiveAssets() for THREE itself, so three.js is never fetched twice.
+ * The CAD tab's mesh data (assets/cad/V1_Hand.model.json) was converted
+ * offline from the real STEP file, so the browser only ever needs three.js
+ * (already loaded via ensureLiveAssets) plus the small cadViewer.js — no
+ * in-browser STEP/WASM parser to fetch.
  */
 let cadAssetsPromise = null;
 function ensureCadAssets() {
   if (cadAssetsPromise) return cadAssetsPromise;
   cadAssetsPromise = ensureLiveAssets().then(() => new Promise((resolve, reject) => {
-    const occt = document.createElement('script');
-    occt.src = 'assets/js/occt/occt-import-js.js';
-    occt.onload = () => {
-      const viewer = document.createElement('script');
-      viewer.src = 'assets/js/cadViewer.js';
-      viewer.onload = resolve;
-      viewer.onerror = reject;
-      document.body.appendChild(viewer);
-    };
-    occt.onerror = reject;
-    document.body.appendChild(occt);
+    const viewer = document.createElement('script');
+    viewer.src = 'assets/js/cadViewer.js';
+    viewer.onload = resolve;
+    viewer.onerror = reject;
+    document.body.appendChild(viewer);
   }));
   return cadAssetsPromise;
 }
