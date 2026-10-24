@@ -28,6 +28,10 @@
  *                                      named "Users" (role is "admin" or "member")
  *        FINANCE_SHEET_ID              id of the Finance Tracker Google Sheet
  *        FINANCE_SHEET_GID             numeric gid of its "Tracker" tab (from its URL)
+ *        PARTS_SHEET_ID                id of a Google Sheet to hold Part Number Standard
+ *                                      status edits (made from the Live tab). Any sheet
+ *                                      works — a "PartStatus" tab is created in it
+ *                                      automatically the first time someone edits a status.
  *      Optional: ALLOWED_MAIL_DOMAINS (default universallimbs.com — also doubles as the
  *                "automatic member" Workspace domain list, see resolveRole() below),
  *                DAILY_SUBMISSION_CAP, ACK_SUBMITTERS
@@ -110,6 +114,7 @@ const P_GOOGLE_CLIENT_ID = 'GOOGLE_CLIENT_ID';
 const P_USERS_SHEET      = 'USERS_SHEET_ID';
 const P_FIN_SHEET        = 'FINANCE_SHEET_ID';
 const P_FIN_GID          = 'FINANCE_SHEET_GID';
+const P_PARTS_SHEET      = 'PARTS_SHEET_ID';
 
 const ROLE_ADMIN  = 'admin';
 const ROLE_MEMBER = 'member';
@@ -136,14 +141,18 @@ function doPost(event) {
     const request = parseRequest(event);
     throttle();
 
-    // Read-only, auth-checked calls: no write lock needed, kept fast.
+    // Read-only calls: no write lock needed, kept fast. partStatus carries no
+    // secret data (the Live tab already shows every part publicly) so, unlike
+    // financeData, it needs no auth check.
     if (request.type === 'whoAmI')      return json({ ok: true, result: handleWhoAmI(request.payload) });
     if (request.type === 'financeData') return json({ ok: true, result: handleFinanceData(request.payload) });
+    if (request.type === 'partStatus')  return json({ ok: true, result: handlePartStatus() });
 
     return withLock(function () {
-      if (request.type === 'deliverable') return json({ ok: true, result: handleDeliverable(request.payload) });
-      if (request.type === 'download')    return json({ ok: true, result: handleDownload(request.payload) });
-      if (request.type === 'upload')      return json({ ok: true, result: handleUpload(request.payload) });
+      if (request.type === 'deliverable')      return json({ ok: true, result: handleDeliverable(request.payload) });
+      if (request.type === 'download')         return json({ ok: true, result: handleDownload(request.payload) });
+      if (request.type === 'upload')           return json({ ok: true, result: handleUpload(request.payload) });
+      if (request.type === 'updatePartStatus') return json({ ok: true, result: handleUpdatePartStatus(request.payload) });
       throw new PublicError('Unsupported submission type.');
     });
   } catch (error) {
@@ -350,6 +359,83 @@ function handleFinanceData(payload) {
   const role = resolveRole(user.email);
   if (role !== ROLE_ADMIN) throw new PublicError('You do not have access to Finance data.');
   return readFinanceData();
+}
+
+/**
+ * Current "in progress" / "not started" status for every Part Number Standard
+ * code the Live tab's status column has ever had edited. Codes with no row
+ * yet are simply absent from the result — the dashboard keeps showing its
+ * own built-in default for those until someone edits them. No auth required:
+ * this is the same wip/not-wip information the hardcoded diagram already
+ * shows to anyone who opens the Live tab.
+ */
+function handlePartStatus() {
+  return { statuses: readPartStatuses() };
+}
+
+/**
+ * Edits one part's status from the Live tab's Part Number Standard table.
+ * Requires a signed-in, approved account (member or admin) — same bar as the
+ * Upload panel — since unlike the read this is a write, but it is not
+ * Finance-sensitive data, so any approved team member (not only admins) may
+ * record progress.
+ */
+function handleUpdatePartStatus(payload) {
+  const user = verifyIdToken(payload.idToken);
+  if (!resolveRole(user.email)) throw new PublicError('You do not have access to update part status.');
+
+  const code = String(payload.code || '').trim().toUpperCase();
+  if (!/^[A-Z]{2,6}$/.test(code)) throw new PublicError('Unknown part code.');
+  const wip = Boolean(payload.wip);
+
+  upsertPartStatus(code, wip, user.email);
+  return { code: code, wip: wip };
+}
+
+/** Opens (or lazily creates) the "PartStatus" tab, or null if not configured yet. */
+function openPartsSheet() {
+  const id = PROPS.getProperty(P_PARTS_SHEET);
+  if (!id) return null;
+  const book = SpreadsheetApp.openById(id);
+  return book.getSheetByName('PartStatus') || book.insertSheet('PartStatus');
+}
+
+function readPartStatuses() {
+  const sheet = openPartsSheet();
+  if (!sheet || sheet.getLastRow() < 2) return {};
+  const width = sheet.getLastColumn();
+  const rows = sheet.getRange(1, 1, sheet.getLastRow(), width).getValues();
+  const header = rows[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
+  const codeCol = header.indexOf('code');
+  const wipCol = header.indexOf('wip');
+  if (codeCol === -1 || wipCol === -1) return {};
+
+  const out = {};
+  for (let i = 1; i < rows.length; i++) {
+    const code = String(rows[i][codeCol] || '').trim().toUpperCase();
+    if (code) out[code] = Boolean(rows[i][wipCol]);
+  }
+  return out;
+}
+
+/** Updates the row for `code` in place, or appends one if this is its first edit. */
+function upsertPartStatus(code, wip, email) {
+  const sheet = openPartsSheet();
+  if (!sheet) throw new PublicError('Part status storage is not configured yet. Please contact an administrator.');
+
+  const header = ['code', 'wip', 'updatedBy', 'updatedAt'];
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+
+  const record = [code, wip, email, new Date()];
+  const existingRows = sheet.getLastRow() - 1;
+  const codes = existingRows > 0 ? sheet.getRange(2, 1, existingRows, 1).getValues() : [];
+  const rowIndex = codes.findIndex(function (r) { return String(r[0] || '').trim().toUpperCase() === code; });
+
+  if (rowIndex === -1) sheet.appendRow(record);
+  else sheet.getRange(rowIndex + 2, 1, 1, record.length).setValues([record]);
 }
 
 /**
@@ -979,6 +1065,7 @@ function configReport() {
   if (!PROPS.getProperty(P_GOOGLE_CLIENT_ID)) problems.push('Missing script property GOOGLE_CLIENT_ID — sign-in will fail.');
   if (!PROPS.getProperty(P_USERS_SHEET)) problems.push('Missing script property USERS_SHEET_ID — no one can be granted admin, and external (non-Workspace) accounts cannot be approved.');
   if (!PROPS.getProperty(P_FIN_SHEET)) problems.push('Missing script property FINANCE_SHEET_ID — the Finance tab will error for admins.');
+  if (!PROPS.getProperty(P_PARTS_SHEET)) problems.push('Missing script property PARTS_SHEET_ID — editing Part Number Standard status on the Live tab will fail (viewing still shows the built-in defaults).');
 
   return { ready: problems.length === 0, problems: problems };
 }

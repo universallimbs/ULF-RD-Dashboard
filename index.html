@@ -88,7 +88,13 @@ button,a{font:inherit;color:inherit}
   background:#f2efec;border-radius:6px;padding:2px 6px}
 .pnsTable .pnsEx{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#6f6c69}
 .pnsTable th.pnsEx{font-family:inherit;font-size:10px;color:#7d7975}
-.pnsStat{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#6f6c69;white-space:nowrap}
+.pnsStat{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#6f6c69;white-space:nowrap;
+  font:inherit;background:none;border:1px solid transparent;border-radius:999px;padding:3px 8px 3px 6px;
+  cursor:pointer;transition:background .15s ease,border-color .15s ease}
+.pnsStat:hover{background:#f2efec;border-color:#e3ded7}
+.pnsStat:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
+.pnsStat:disabled{opacity:.55;cursor:wait}
+.pnsMsg{font-size:11px;color:#c0392b;margin:8px 0 0}
 @media (max-width:720px){.pnsTable .pnsEx{display:none}}
 .liveBelow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;
   align-items:start;margin-top:22px}
@@ -455,6 +461,7 @@ button,a{font:inherit;color:inherit}
                     <tbody id="pnsBody"></tbody>
                   </table>
                 </div>
+                <p class="pnsMsg" id="pnsMsg" hidden></p>
               </div>
               <div class="liveBelow">
                 <div class="liveAside">
@@ -879,19 +886,21 @@ const PARTS = [
 ];
 /* Table entries with no physical location on the hand. */
 const OFF_PARTS = [
-  {c:'JIG', en:'Assembly jig',        pt:'Gabarito de montagem'},
-  {c:'TOL', en:'Tool',                pt:'Ferramenta'},
-  {c:'ASM', en:'Assembly',            pt:'Conjunto'},
-  {c:'DRW', en:'Engineering drawing', pt:'Desenho técnico'},
-  {c:'DOC', en:'Document / standard', pt:'Documento / norma'}
+  {c:'JIG', en:'Assembly jig',        pt:'Gabarito de montagem', wip:0},
+  {c:'TOL', en:'Tool',                pt:'Ferramenta',           wip:0},
+  {c:'ASM', en:'Assembly',            pt:'Conjunto',             wip:0},
+  {c:'DRW', en:'Engineering drawing', pt:'Desenho técnico',      wip:0},
+  {c:'DOC', en:'Document / standard', pt:'Documento / norma',    wip:0}
 ];
 /* The Category Code Table exactly as ULF-DOC-001 Rev A §3 lists it — proposed
    codes (new:1 above) stay out until they are added to the standard. */
 const STD_CODES = ['SKT','PLM','WRS','THM','IND','MID','RNG','LTL','HRN','CBL',
                    'LNR','FST','JIG','TOL','ASM','DRW','DOC'];
 const PART_STR = {
-  en:{wip:'In progress', todo:'Not started', proposed:'proposed code'},
-  pt:{wip:'Em curso',    todo:'Por iniciar', proposed:'código proposto'}
+  en:{wip:'In progress', todo:'Not started', proposed:'proposed code',
+      toggle:'Click to mark as in progress / not started'},
+  pt:{wip:'Em curso',    todo:'Por iniciar', proposed:'código proposto',
+      toggle:'Clique para alternar o estado'}
 };
 
 function currentLang(){
@@ -974,7 +983,7 @@ function renderPartMap(forced){
       const el = document.createElement('span');
       el.className = 'offPart';
       el.textContent = o.c + ' \u00b7 ' + (lang === 'pt' ? o.pt : o.en);
-      el.title = 'ULF-' + o.c + '-001 \u2014 ' + PART_STR[lang].todo;
+      el.title = 'ULF-' + o.c + '-001 \u2014 ' + PART_STR[lang][o.wip ? 'wip' : 'todo'];
       off.appendChild(el);
     });
   }
@@ -993,9 +1002,12 @@ function renderPartMap(forced){
       const cat = document.createElement('td'); cat.textContent = lang === 'pt' ? p.pt : p.en;
       const ex = document.createElement('td'); ex.className = 'pnsEx'; ex.textContent = 'ULF-' + c + '-001';
       const st = document.createElement('td');
-      const s = document.createElement('span'); s.className = 'pnsStat';
+      const s = document.createElement('button');
+      s.type = 'button'; s.className = 'pnsStat'; s.title = PART_STR[lang].toggle;
+      s.setAttribute('aria-pressed', String(Boolean(p.wip)));
       const dot = document.createElement('span'); dot.className = 'statusDot ' + (p.wip ? 'wip' : 'todo');
       s.append(dot, PART_STR[lang][p.wip ? 'wip' : 'todo']);
+      s.addEventListener('click', () => togglePartStatus(p, s));
       st.appendChild(s);
       tr.append(code, cat, ex, st);
       pns.appendChild(tr);
@@ -1004,9 +1016,55 @@ function renderPartMap(forced){
   }
 }
 
+/**
+ * Flips one part's wip flag from the Part Number Standard table and saves it
+ * through the Apps Script backend (see handleUpdatePartStatus in
+ * google-apps-script.gs). Optimistic: the table re-renders immediately on
+ * success; on failure the button re-enables and the change is reported
+ * in #pnsMsg so nothing silently fails to save.
+ */
+function togglePartStatus(p, btn){
+  const idToken = window.ULF_AUTH && window.ULF_AUTH.getIdToken();
+  const msg = document.getElementById('pnsMsg');
+  if (msg) { msg.hidden = true; msg.textContent = ''; }
+  if (!idToken) {
+    if (msg) { msg.hidden = false; msg.textContent = 'Please sign in again to edit part status.'; }
+    return;
+  }
+  const next = p.wip ? 0 : 1;
+  btn.disabled = true;
+  window.ulfSubmit('updatePartStatus', { idToken: idToken, code: p.c, wip: Boolean(next) })
+    .then(() => { p.wip = next; renderPartMap(); })
+    .catch(error => {
+      btn.disabled = false;
+      if (msg) { msg.hidden = false; msg.textContent = error.message || 'Could not save that change. Please try again.'; }
+    });
+}
+
+/**
+ * Pulls any status edits already saved via the Apps Script backend and
+ * overlays them onto the built-in PARTS/OFF_PARTS defaults above. A code with
+ * no saved row yet just keeps its hardcoded default, so this degrades
+ * gracefully if PARTS_SHEET_ID is not configured.
+ */
+function loadPartStatuses(){
+  if (!window.ulfSubmitConfigured || !window.ulfSubmitConfigured()) return;
+  window.ulfSubmit('partStatus', {})
+    .then(result => {
+      const statuses = (result && result.statuses) || {};
+      if (!Object.keys(statuses).length) return;
+      PARTS.concat(OFF_PARTS).forEach(p => {
+        if (Object.prototype.hasOwnProperty.call(statuses, p.c)) p.wip = statuses[p.c] ? 1 : 0;
+      });
+      renderPartMap();
+    })
+    .catch(() => { /* keep the built-in defaults if the status sheet isn't reachable yet */ });
+}
+
 window.ULF_PARTS = PARTS;
 window.ULF_PART_STR = PART_STR;
 renderPartMap();
+loadPartStatuses();
 document.querySelectorAll('.lang button').forEach(b =>
   b.addEventListener('click', () => renderPartMap(b.dataset.lang)));
 
