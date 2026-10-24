@@ -27,10 +27,15 @@ button,a{font:inherit;color:inherit}
 .page{display:none}.page.active{display:block}
 
 /* reference tabs */
-.references{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:30px}
+/* one column per tab, always a single row however many tabs there are */
+.references{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;margin-bottom:30px}
 .reference{border:0;background:transparent;padding:0;cursor:pointer;text-align:center;
-  font-size:10px;color:#8f8b87;line-height:1.2}
+  font-size:10px;color:#8f8b87;line-height:1.2;white-space:nowrap;border-radius:8px}
+.reference:focus{outline:none}
+.reference:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
 .reference.active{color:var(--ink);font-weight:700}
+.reference:nth-child(6) .thumb{background:#3b7dd8;background-image:none}
+.reference:nth-child(6).active .refUnderline{background:#3b7dd8}
 .thumb{display:block;width:34px;height:34px;margin:0 auto 9px;
   background-image:repeating-linear-gradient(45deg,#c4c4c4 0 2px,transparent 2px 7px)}
 .reference:nth-child(2) .thumb{background-image:repeating-linear-gradient(45deg,#f8b271 0 2px,transparent 2px 7px)}
@@ -54,7 +59,7 @@ button,a{font:inherit;color:inherit}
 .liveArt{position:relative}
 /* --- interactive part map (local addition, see README patch list) --- */
 /* Live slide: full-width 3D viewer on top, text right and flowing down. */
-.slide.liveSlide{display:block}
+.slide.liveSlide,.slide.cadSlide{display:block}
 .arm3d{position:relative;width:100%;aspect-ratio:21/9;min-height:260px;cursor:grab;
   border-radius:20px;background:linear-gradient(180deg,#f7f5f2,#ebe8e4);overflow:hidden;
   touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
@@ -95,6 +100,9 @@ button,a{font:inherit;color:inherit}
 .pnsSelect:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
 .pnsSelect:disabled{opacity:.55;cursor:wait}
 .pnsMsg{font-size:11px;color:#c0392b;margin:8px 0 0}
+.cadStage{position:relative}
+.cadLegend{flex-direction:column;gap:10px;margin-top:0}
+.cadLegend .legendItem{font-size:12px;color:#3f4245}
 .cadMeta{margin-top:14px}
 .cadCaption{font-size:12px;color:#6f6c69;margin:0 0 4px}
 .cadDate{font-family:ui-monospace,Menlo,monospace;color:#3f4245}
@@ -258,6 +266,9 @@ button,a{font:inherit;color:inherit}
 
 @media(max-width:480px){
   .wrap{padding:28px 14px 44px}
+  .references{gap:2px}
+  .reference{font-size:9px}
+  .thumb{width:28px;height:28px}
   .slide{grid-template-columns:1fr;gap:16px}
   .art img{width:60%}
   .copy h1{font-size:24px}
@@ -465,10 +476,10 @@ button,a{font:inherit;color:inherit}
                       <th data-i18n="pnsCode">Code</th><th data-i18n="pnsCat">Category</th>
                       <th class="pnsEx" data-i18n="pnsEx">Example</th><th data-i18n="pnsStatus">Status</th>
                     </tr></thead>
-                    <tbody id="pnsBody"></tbody>
+                    <tbody class="pnsBody"></tbody>
                   </table>
                 </div>
-                <p class="pnsMsg" id="pnsMsg" hidden></p>
+                <p class="pnsMsg" hidden></p>
               </div>
               <div class="liveBelow">
                 <div class="liveAside">
@@ -525,7 +536,7 @@ button,a{font:inherit;color:inherit}
             </article>
 
             <article class="slide cadSlide">
-              <div class="art liveArt" id="cadStage">
+              <div class="cadStage">
                 <div id="cadViewer" class="arm3d" role="img" aria-label="Rotatable live CAD model of the current hand design, exported from SolidWorks">
                   <div class="arm3dHint"><span class="hintMouse" data-i18n="cadHint">Drag to rotate · scroll to zoom · hover a body</span><span class="hintTouch" data-i18n="cadHintTouch">Drag to rotate · pinch to zoom · tap a body</span></div>
                   <div class="partTip" id="cadViewerTip"></div>
@@ -539,14 +550,31 @@ button,a{font:inherit;color:inherit}
                 <p class="pnsMsg" id="cadLoadStatus"></p>
                 <p class="cadNote" data-i18n="cadNote">This is the actual current design state, not the illustrative model on the Live tab — only the bodies modelled so far appear here.</p>
               </div>
+              <div class="pnsBlock">
+                <div class="pnsHead">
+                  <span class="teamTitle" data-i18n="pnsTitle">Part number standard</span>
+                  <span class="pnsDoc">ULF-DOC-001 · Rev A</span>
+                </div>
+                <p class="pnsFormat"><b class="pnsCode">ULF-XXX-001</b> <span data-i18n="pnsFormat">Organisation · category code · sequence (never reused)</span></p>
+                <div class="pnsWrap">
+                  <table class="pnsTable">
+                    <thead><tr>
+                      <th data-i18n="pnsCode">Code</th><th data-i18n="pnsCat">Category</th>
+                      <th class="pnsEx" data-i18n="pnsEx">Example</th><th data-i18n="pnsStatus">Status</th>
+                    </tr></thead>
+                    <tbody class="pnsBody"></tbody>
+                  </table>
+                </div>
+                <p class="pnsMsg" hidden></p>
+              </div>
               <div class="liveBelow">
                 <div class="liveAside">
-                  <div class="teamTitle" data-i18n="cadStatusTitle">Project status (ULF-DOC-001)</div>
-                  <div class="legend artLegend" id="cadStatusSummary"></div>
+                  <div class="teamTitle" data-i18n="cadStatusTitle">Project status</div>
+                  <div class="legend cadLegend" id="cadStatusSummary"></div>
                 </div>
                 <div class="copy">
                   <h1 data-i18n="t6">CAD — current state</h1>
-                  <p data-i18n="b6">This model is pulled straight from the mechanical team's current SolidWorks file — no illustration, no placeholder geometry. Rotate it to see exactly what has been designed so far, and check the Live tab's Part Number Standard table for the full status breakdown.</p>
+                  <p data-i18n="b6">This model is pulled straight from the mechanical team's current SolidWorks file — no illustration, no placeholder geometry. Rotate it to see exactly what has been designed so far; the table above is the same one as on the Live tab, and edits made in either place show up in both.</p>
                 </div>
               </div>
             </article>
@@ -773,6 +801,12 @@ function go(n) {
   sizeViewport();
 }
 go(0);
+// Slides change height after they open (CAD model date, saved statuses
+// arriving); re-measure so the viewport never clips the bottom of a slide.
+if (window.ResizeObserver) {
+  const slideObserver = new ResizeObserver(() => sizeViewport());
+  slides.forEach(s => slideObserver.observe(s));
+}
 window.addEventListener('resize', sizeViewport);
 window.addEventListener('load', sizeViewport);
 track.querySelectorAll('img').forEach(img => img.addEventListener('load', sizeViewport));
@@ -913,9 +947,9 @@ const COPY = {
     cadHintTouch: "Arraste para rodar · pince para ampliar · toque numa peça",
     cadCaptionLabel: "Modelo CAD em tempo real do SolidWorks", cadDateLabel: "última atualização",
     cadNote: "Este é o estado atual real do desenho — apenas as peças já modeladas aparecem aqui, ao contrário do modelo ilustrativo do separador Em Direto.",
-    cadStatusTitle: "Estado do projeto (ULF-DOC-001)",
+    cadStatusTitle: "Estado do projeto",
     t6: "CAD — estado atual",
-    b6: "Este modelo vem diretamente do ficheiro SolidWorks atual da equipa mecânica — sem ilustração, sem geometria provisória. Rode-o para ver exatamente o que já foi desenhado e consulte a tabela da Norma de numeração de peças no separador Em Direto para o resumo completo do estado.",
+    b6: "Este modelo vem diretamente do ficheiro SolidWorks atual da equipa mecânica — sem ilustração, sem geometria provisória. Rode-o para ver exatamente o que já foi desenhado; a tabela acima é a mesma do separador Em Direto, e as alterações feitas num lado aparecem no outro.",
     roleAdvisor: "Consultor", roleBio: "Biomédica", roleConcept: "Arte conceptual", roleDirRD: "Diretora de I&D", roleMvp2: "Líder MVP 2", roleProg: "Líder de programa", roleResearch: "Investigação", roleTest: "Eng. de testes",
     aDown: "Descarregar", aUp: "Enviar", aLinks: "Ligações e atas",
     ready: "Este departamento está pronto para o seu conteúdo.",
@@ -1054,10 +1088,11 @@ function renderPartMap(forced){
     });
   }
 
-  const pns = document.getElementById('pnsBody');
-  if (pns) {
-    const byCode = {};
-    PARTS.concat(OFF_PARTS).forEach(p => { byCode[p.c] = p; });
+  // The same table appears on both the Live and CAD tabs; every copy is
+  // rebuilt from PARTS, so an edit in one shows up in the other.
+  const byCode = {};
+  PARTS.concat(OFF_PARTS).forEach(p => { byCode[p.c] = p; });
+  document.querySelectorAll('.pnsBody').forEach(pns => {
     pns.innerHTML = '';
     STD_CODES.forEach(c => {
       const p = byCode[c];
@@ -1083,13 +1118,9 @@ function renderPartMap(forced){
       tr.append(code, cat, ex, st);
       pns.appendChild(tr);
     });
-    if (window.ULF_CAROUSEL) window.ULF_CAROUSEL.sizeViewport();
-  }
+  });
+  if (window.ULF_CAROUSEL) window.ULF_CAROUSEL.sizeViewport();
 
-  // Read-only status counts shown next to the real CAD model on the CAD tab —
-  // the same PARTS/OFF_PARTS data as the table above, just summarised, so it
-  // stays in sync automatically whenever a status is edited or the language
-  // changes, with no separate interactive controls to keep in sync.
   const cadSummary = document.getElementById('cadStatusSummary');
   if (cadSummary) {
     const counts = { todo: 0, wip: 0, done: 0 };
@@ -1109,13 +1140,14 @@ function renderPartMap(forced){
  * and saves it through the Apps Script backend (see handleUpdatePartStatus
  * in google-apps-script.gs). Optimistic: the dot updates immediately and the
  * whole table re-renders on success; on failure the dropdown reverts to its
- * previous value and the problem is reported in #pnsMsg so nothing silently
- * fails to save.
+ * previous value and the problem is reported under the table that was edited
+ * so nothing silently fails to save.
  */
 function changePartStatus(p, select, dot){
   const idToken = window.ULF_AUTH && window.ULF_AUTH.getIdToken();
-  const msg = document.getElementById('pnsMsg');
-  if (msg) { msg.hidden = true; msg.textContent = ''; }
+  document.querySelectorAll('.pnsBlock .pnsMsg').forEach(m => { m.hidden = true; m.textContent = ''; });
+  const block = select.closest('.pnsBlock');
+  const msg = block && block.querySelector('.pnsMsg');
   const prev = p.status;
   const next = select.value;
   if (!idToken) {

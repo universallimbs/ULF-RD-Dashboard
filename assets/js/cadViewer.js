@@ -137,10 +137,20 @@
       if (tip) tip.classList.remove('show');
     });
 
+    let span = null;
     function resize() {
       const w = host.clientWidth, h = host.clientHeight || Math.round(w * 0.42);
       renderer.setSize(w, h, false);
       camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix();
+      if (span) {
+        // Fit the model's height and its widest footprint under rotation (the
+        // XZ diagonal) to the box, rather than a bounding sphere, which left
+        // a tall model small in the wide 21:9 viewer.
+        const vHalf = Math.tan(camera.fov * Math.PI / 360);
+        const hHalf = vHalf * camera.aspect;
+        state.fit = Math.max((span.y / 2) / vHalf, (Math.hypot(span.x, span.z) / 2) / hHalf) * 1.35;
+        if (!state.zoomed) state.dist = state.fit;
+      }
       if (!state.zoomed) place();
     }
     let resizePending = false;
@@ -179,10 +189,9 @@
       const box = new THREE.Box3().setFromObject(model);
       const centre = box.getCenter(new THREE.Vector3());
       model.position.sub(centre);
-      radius = Math.max(1, box.getSize(new THREE.Vector3()).length() / 2);
-      // bounding-sphere fit on the vertical FOV, so tall poses aren't clipped
-      state.dist = state.fit = radius / Math.sin(camera.fov * Math.PI / 360) * 1.05;
-      resize(); place();
+      span = box.getSize(new THREE.Vector3());
+      radius = Math.max(1, span.length() / 2);
+      resize();
       host.classList.add('ready');
       if (statusEl) statusEl.textContent = '';
       if (dateEl) dateEl.textContent = data.exportedAt ? data.exportedAt.slice(0, 10) : '—';
