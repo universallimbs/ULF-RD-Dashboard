@@ -101,8 +101,6 @@ button,a{font:inherit;color:inherit}
 .pnsSelect:disabled{opacity:.55;cursor:wait}
 .pnsMsg{font-size:11px;color:#c0392b;margin:8px 0 0}
 .cadStage{position:relative}
-.cadLegend{flex-direction:column;gap:10px;margin-top:0}
-.cadLegend .legendItem{font-size:12px;color:#3f4245}
 .cadMeta{margin-top:14px}
 .cadCaption{font-size:12px;color:#6f6c69;margin:0 0 4px}
 .cadDate{font-family:ui-monospace,Menlo,monospace;color:#3f4245}
@@ -567,16 +565,6 @@ button,a{font:inherit;color:inherit}
                 </div>
                 <p class="pnsMsg" hidden></p>
               </div>
-              <div class="liveBelow">
-                <div class="liveAside">
-                  <div class="teamTitle" data-i18n="cadStatusTitle">Project status</div>
-                  <div class="legend cadLegend" id="cadStatusSummary"></div>
-                </div>
-                <div class="copy">
-                  <h1 data-i18n="t6">CAD — current state</h1>
-                  <p data-i18n="b6">This model is pulled straight from the mechanical team's current SolidWorks file — no illustration, no placeholder geometry. Rotate it to see exactly what has been designed so far; the table above is the same one as on the Live tab, and edits made in either place show up in both.</p>
-                </div>
-              </div>
             </article>
           </div>
         </div>
@@ -947,9 +935,6 @@ const COPY = {
     cadHintTouch: "Arraste para rodar · pince para ampliar · toque numa peça",
     cadCaptionLabel: "Modelo CAD em tempo real do SolidWorks", cadDateLabel: "última atualização",
     cadNote: "Este é o estado atual real do desenho — apenas as peças já modeladas aparecem aqui, ao contrário do modelo ilustrativo do separador Em Direto.",
-    cadStatusTitle: "Estado do projeto",
-    t6: "CAD — estado atual",
-    b6: "Este modelo vem diretamente do ficheiro SolidWorks atual da equipa mecânica — sem ilustração, sem geometria provisória. Rode-o para ver exatamente o que já foi desenhado; a tabela acima é a mesma do separador Em Direto, e as alterações feitas num lado aparecem no outro.",
     roleAdvisor: "Consultor", roleBio: "Biomédica", roleConcept: "Arte conceptual", roleDirRD: "Diretora de I&D", roleMvp2: "Líder MVP 2", roleProg: "Líder de programa", roleResearch: "Investigação", roleTest: "Eng. de testes",
     aDown: "Descarregar", aUp: "Enviar", aLinks: "Ligações e atas",
     ready: "Este departamento está pronto para o seu conteúdo.",
@@ -1120,19 +1105,6 @@ function renderPartMap(forced){
     });
   });
   if (window.ULF_CAROUSEL) window.ULF_CAROUSEL.sizeViewport();
-
-  const cadSummary = document.getElementById('cadStatusSummary');
-  if (cadSummary) {
-    const counts = { todo: 0, wip: 0, done: 0 };
-    PARTS.concat(OFF_PARTS).forEach(p => { counts[p.status] = (counts[p.status] || 0) + 1; });
-    cadSummary.innerHTML = '';
-    STATUS_KEYS.forEach(key => {
-      const item = document.createElement('span'); item.className = 'legendItem';
-      const dot = document.createElement('span'); dot.className = 'statusDot ' + key;
-      item.append(dot, counts[key] + ' ' + PART_STR[lang][key]);
-      cadSummary.appendChild(item);
-    });
-  }
 }
 
 /**
